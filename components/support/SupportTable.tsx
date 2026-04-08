@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Tabs } from '@/components/ui/Tabs'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { TicketStatusBadge, Badge } from '@/components/ui/Badge'
 import { timeAgo } from '@/lib/utils'
@@ -92,9 +91,6 @@ export function SupportTable({ tickets, total, page, tab, tabs }: {
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="px-5 pt-4">
-        <Tabs tabs={tabs} active={tab} onChange={key => navigate({ tab: key, page: '1' })} />
-      </div>
       <DataTable
         columns={columns}
         data={tickets}

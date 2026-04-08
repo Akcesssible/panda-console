@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Tabs } from '@/components/ui/Tabs'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { DriverStatusBadge, SubscriptionBadge, Badge } from '@/components/ui/Badge'
 import { formatDate, timeAgo } from '@/lib/utils'
@@ -32,15 +31,6 @@ export function DriversTable({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      {/* Tabs */}
-      <div className="px-5 pt-4">
-        <Tabs
-          tabs={tabs}
-          active={tab}
-          onChange={key => navigate({ tab: key, page: '1' })}
-        />
-      </div>
-
       {/* Search */}
       <div className="px-5 py-3 border-b border-gray-100">
         <input

@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { SettingsView } from '@/components/settings/SettingsView'
+import { PageHeader } from '@/components/ui/PageHeader'
 
 async function getSettingsData() {
   const supabase = createAdminClient()
@@ -27,12 +28,22 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
   const data = await getSettingsData()
 
+  const TABS = [
+    { key: 'admin_users', label: 'Admin Users' },
+    { key: 'zones', label: 'Cities & Zones' },
+    { key: 'config', label: 'System Config' },
+    { key: 'logs', label: 'System Logs' },
+  ]
+
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-500 mt-0.5">System configuration — Super Admin only</p>
-      </div>
+    <div className="space-y-4 max-w-5xl">
+      <PageHeader
+        title="Settings"
+        subtitle="System configuration — Super Admin only"
+        tabs={TABS}
+        activeTab={tab}
+        basePath="/settings"
+      />
       <SettingsView tab={tab} {...data} currentAdmin={adminUser} />
     </div>
   )

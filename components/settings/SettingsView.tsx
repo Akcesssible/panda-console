@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Tabs } from '@/components/ui/Tabs'
+import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
 import { formatDateTime, timeAgo } from '@/lib/utils'
@@ -35,31 +34,25 @@ export function SettingsView({
   currentAdmin: AdminUser
 }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [addAdminModal, setAddAdminModal] = useState(false)
   const [addZoneModal, setAddZoneModal] = useState(false)
 
-  function navigate(updates: Record<string, string>) {
-    const params = new URLSearchParams(searchParams.toString())
-    Object.entries(updates).forEach(([k, v]) => params.set(k, v))
-    router.push(`/settings?${params.toString()}`)
-  }
-
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="px-5 pt-4 flex items-center justify-between">
-        <Tabs tabs={TABS} active={tab} onChange={key => navigate({ tab: key })} />
-        {tab === 'admin_users' && (
-          <button onClick={() => setAddAdminModal(true)} className="px-3 py-1.5 text-sm font-medium bg-primary$ text-white rounded-lg hover:bg-primary-dark$">
-            + Add Admin
-          </button>
-        )}
-        {tab === 'zones' && (
-          <button onClick={() => setAddZoneModal(true)} className="px-3 py-1.5 text-sm font-medium bg-primary$ text-white rounded-lg hover:bg-primary-dark$">
-            + Add Zone
-          </button>
-        )}
-      </div>
+      {(tab === 'admin_users' || tab === 'zones') && (
+        <div className="px-5 pt-4 flex justify-end">
+          {tab === 'admin_users' && (
+            <button onClick={() => setAddAdminModal(true)} className="px-3 py-1.5 text-sm font-medium bg-[#2B39C7] text-white rounded-lg hover:bg-[#202b95]">
+              + Add Admin
+            </button>
+          )}
+          {tab === 'zones' && (
+            <button onClick={() => setAddZoneModal(true)} className="px-3 py-1.5 text-sm font-medium bg-[#2B39C7] text-white rounded-lg hover:bg-[#202b95]">
+              + Add Zone
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="p-5">
         {tab === 'admin_users' && <AdminUsersTab admins={admins} currentAdmin={currentAdmin} onRefresh={() => router.refresh()} />}

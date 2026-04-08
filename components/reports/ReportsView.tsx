@@ -1,7 +1,5 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Tabs } from '@/components/ui/Tabs'
 import { KPICard } from '@/components/ui/KPICard'
 import { formatTZS, timeAgo } from '@/lib/utils'
 
@@ -17,15 +15,6 @@ export function ReportsView({ tab, rows, summary }: {
   rows: Record<string, unknown>[]
   summary: Record<string, unknown>
 }) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  function navigate(updates: Record<string, string>) {
-    const params = new URLSearchParams(searchParams.toString())
-    Object.entries(updates).forEach(([k, v]) => params.set(k, v))
-    router.push(`/reports?${params.toString()}`)
-  }
-
   function exportCSV() {
     if (!rows.length) return
     const keys = Object.keys(rows[0])
@@ -44,17 +33,16 @@ export function ReportsView({ tab, rows, summary }: {
   return (
     <div className="space-y-5">
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-5 pt-4 flex items-center justify-between">
-          <Tabs tabs={TABS} active={tab} onChange={key => navigate({ tab: key })} />
-          {rows.length > 0 && (
+        {rows.length > 0 && (
+          <div className="px-5 pt-4 flex justify-end">
             <button
               onClick={exportCSV}
               className="px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50"
             >
               Export CSV
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Summary cards */}
         <div className="p-5">

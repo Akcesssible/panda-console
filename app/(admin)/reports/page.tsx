@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUser } from '@/lib/auth'
 import { ReportsView } from '@/components/reports/ReportsView'
+import { PageHeader } from '@/components/ui/PageHeader'
 
 async function getReportData(tab: string) {
   const supabase = createAdminClient()
@@ -54,12 +55,22 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const tab = params.tab ?? 'drivers'
   const [, data] = await Promise.all([getAdminUser(), getReportData(tab)])
 
+  const TABS = [
+    { key: 'drivers', label: 'Driver Performance' },
+    { key: 'rides', label: 'Ride Analytics' },
+    { key: 'revenue', label: 'Revenue' },
+    { key: 'churn', label: 'Churn Analysis' },
+  ]
+
   return (
-    <div className="space-y-6 max-w-7xl">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Reports</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Read-only analytics and performance reports</p>
-      </div>
+    <div className="space-y-4 max-w-7xl">
+      <PageHeader
+        title="Reports"
+        subtitle="Read-only analytics and performance reports"
+        tabs={TABS}
+        activeTab={tab}
+        basePath="/reports"
+      />
       <ReportsView tab={tab} rows={data.rows} summary={data.summary} />
     </div>
   )

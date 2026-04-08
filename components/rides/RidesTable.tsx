@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Tabs } from '@/components/ui/Tabs'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { RideStatusBadge } from '@/components/ui/Badge'
 import { formatTZS, timeAgo } from '@/lib/utils'
@@ -116,10 +115,6 @@ export function RidesTable({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="px-5 pt-4">
-        <Tabs tabs={tabs} active={tab} onChange={key => navigate({ tab: key, page: '1' })} />
-      </div>
-
       {isLive && (
         <div className="px-5 py-2 bg-green-50 border-b border-green-100">
           <span className="text-xs text-green-700 font-medium">

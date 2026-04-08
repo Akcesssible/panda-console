@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Tabs } from '@/components/ui/Tabs'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { SubscriptionBadge, PaymentStatusBadge } from '@/components/ui/Badge'
 import { formatDate, formatTZS } from '@/lib/utils'
@@ -88,7 +87,6 @@ export function SubscriptionsView({
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
       <div className="px-5 pt-4 flex items-center justify-between">
-        <Tabs tabs={TABS} active={tab} onChange={key => navigate({ tab: key, page: '1' })} />
         {tab === 'plans' && (
           <button
             onClick={() => setPlanModal(true)}

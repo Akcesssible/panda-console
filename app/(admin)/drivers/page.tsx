@@ -1,5 +1,6 @@
 import { getDrivers } from '@/lib/queries/drivers'
 import { DriversTable } from '@/components/drivers/DriversTable'
+import { PageHeader } from '@/components/ui/PageHeader'
 
 export default async function DriversPage({
   searchParams,
@@ -34,14 +35,14 @@ export default async function DriversPage({
   ]
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">Drivers</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage your driver fleet</p>
-        </div>
-      </div>
-
+    <div className="space-y-4 max-w-7xl">
+      <PageHeader
+        title="Drivers"
+        subtitle="Manage your driver fleet"
+        tabs={TABS}
+        activeTab={tab}
+        basePath="/drivers"
+      />
       <DriversTable
         drivers={drivers}
         total={total}

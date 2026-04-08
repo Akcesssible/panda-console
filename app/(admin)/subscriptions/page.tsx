@@ -1,5 +1,6 @@
 import { getSubscriptions, getPlans, getPayments } from '@/lib/queries/subscriptions'
 import { SubscriptionsView } from '@/components/subscriptions/SubscriptionsView'
+import { PageHeader } from '@/components/ui/PageHeader'
 
 export default async function SubscriptionsPage({
   searchParams,
@@ -20,12 +21,23 @@ export default async function SubscriptionsPage({
       : Promise.resolve({ payments: [], total: 0 }),
   ])
 
+  const TABS = [
+    { key: 'active', label: 'Active' },
+    { key: 'expired', label: 'Expired' },
+    { key: 'failed', label: 'Failed Payments' },
+    { key: 'plans', label: 'Plans & Pricing' },
+    { key: 'payment_history', label: 'Payment History' },
+  ]
+
   return (
-    <div className="space-y-6 max-w-7xl">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Subscriptions</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Manage driver subscription plans and payments</p>
-      </div>
+    <div className="space-y-4 max-w-7xl">
+      <PageHeader
+        title="Subscriptions"
+        subtitle="Manage driver subscription plans and payments"
+        tabs={TABS}
+        activeTab={tab}
+        basePath="/subscriptions"
+      />
       <SubscriptionsView
         subscriptions={subsResult.subscriptions}
         subsTotal={subsResult.total}

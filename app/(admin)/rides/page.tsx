@@ -1,5 +1,6 @@
 import { getRides } from '@/lib/queries/rides'
 import { RidesTable } from '@/components/rides/RidesTable'
+import { PageHeader } from '@/components/ui/PageHeader'
 import type { RideStatus } from '@/lib/types'
 
 export default async function RidesPage({
@@ -29,11 +30,14 @@ export default async function RidesPage({
   ]
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Rides</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Monitor and manage all rides</p>
-      </div>
+    <div className="space-y-4 max-w-7xl">
+      <PageHeader
+        title="Rides"
+        subtitle="Monitor and manage all rides"
+        tabs={TABS}
+        activeTab={tab}
+        basePath="/rides"
+      />
       <RidesTable rides={rides} total={total} page={page} tab={tab} tabs={TABS} isLive={tab === 'live'} />
     </div>
   )

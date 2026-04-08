@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Tabs } from '@/components/ui/Tabs'
 import { formatTZS } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import type { PricingRule, AdminRole } from '@/lib/types'
@@ -44,17 +43,16 @@ export function PricingView({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="px-5 pt-4 flex items-center justify-between">
-        <Tabs tabs={TABS} active={tab} onChange={key => navigate({ tab: key })} />
-        {canWrite && tab === 'active' && (
+      {canWrite && tab === 'active' && (
+        <div className="px-5 pt-4 flex justify-end">
           <button
             onClick={() => setCreateModal(true)}
-            className="px-3 py-1.5 text-sm font-medium bg-primary$ text-white rounded-lg hover:bg-primary-dark$"
+            className="px-3 py-1.5 text-sm font-medium bg-[#2B39C7] text-white rounded-lg hover:bg-[#202b95]"
           >
             + New Rule
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Immutability notice */}
       <div className="px-5 py-2 bg-amber-50 border-b border-amber-100">

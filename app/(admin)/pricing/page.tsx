@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUser } from '@/lib/auth'
 import { PricingView } from '@/components/pricing/PricingView'
+import { PageHeader } from '@/components/ui/PageHeader'
 import type { PricingRule } from '@/lib/types'
 
 async function getPricingData() {
@@ -20,12 +21,20 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   const active = rules.filter(r => r.is_active)
   const history = rules.filter(r => !r.is_active)
 
+  const TABS = [
+    { key: 'active', label: 'Active Rules' },
+    { key: 'history', label: 'Pricing History' },
+  ]
+
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Pricing</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Manage fare rules and pricing configuration</p>
-      </div>
+    <div className="space-y-4 max-w-5xl">
+      <PageHeader
+        title="Pricing"
+        subtitle="Manage fare rules and pricing configuration"
+        tabs={TABS}
+        activeTab={tab}
+        basePath="/pricing"
+      />
       <PricingView
         activeRules={active}
         historyRules={history}

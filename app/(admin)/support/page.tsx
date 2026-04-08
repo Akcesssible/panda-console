@@ -1,5 +1,6 @@
 import { getTickets } from '@/lib/queries/support'
 import { SupportTable } from '@/components/support/SupportTable'
+import { PageHeader } from '@/components/ui/PageHeader'
 
 export default async function SupportPage({
   searchParams,
@@ -27,11 +28,14 @@ export default async function SupportPage({
   ]
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Support</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Manage disputes and support tickets</p>
-      </div>
+    <div className="space-y-4 max-w-6xl">
+      <PageHeader
+        title="Support"
+        subtitle="Manage disputes and support tickets"
+        tabs={TABS}
+        activeTab={tab}
+        basePath="/support"
+      />
       <SupportTable tickets={tickets} total={total} page={page} tab={tab} tabs={TABS} />
     </div>
   )
