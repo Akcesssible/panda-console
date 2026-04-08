@@ -9,43 +9,36 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { InformationCircleIcon } from '@hugeicons/core-free-icons'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { FilterButton } from '@/components/ui/FilterButton'
+import { Badge } from '@/components/ui/Badge'
+import type { BadgeVariant } from '@/components/ui/Badge'
 
 // ── Action metadata ──────────────────────────────────────────────────────────
-type StatusVariant = 'green' | 'red' | 'yellow' | 'orange' | 'gray'
-
 const ACTION_META: Record<string, {
   label: string
   type: string
   status: string
-  statusVariant: StatusVariant
+  statusVariant: BadgeVariant
   refLabel: string
   refHref: (id: string | null) => string
 }> = {
-  'driver.approve':            { label: 'New driver approved',       type: 'Driver',       status: 'success',    statusVariant: 'green',  refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.reject':             { label: 'Driver rejected',           type: 'Driver',       status: 'rejected',   statusVariant: 'red',    refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.suspend':            { label: 'Driver suspended',          type: 'Driver',       status: 'suspended',  statusVariant: 'red',    refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.reactivate':         { label: 'Driver reactivated',        type: 'Driver',       status: 'success',    statusVariant: 'green',  refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.flag':               { label: 'Driver flagged',            type: 'Driver',       status: 'pending',    statusVariant: 'yellow', refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.signup':             { label: 'New driver signed up',      type: 'Driver',       status: 'pending',    statusVariant: 'yellow', refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'subscription.assign':       { label: 'Subscription activated',    type: 'Subscription', status: 'success',    statusVariant: 'green',  refLabel: 'Subscription',    refHref: () => '/subscriptions' },
-  'subscription.revoke':       { label: 'Subscription revoked',      type: 'Subscription', status: 'expired',    statusVariant: 'red',    refLabel: 'Subscription',    refHref: () => '/subscriptions' },
-  'subscription.expire':       { label: 'Subscription expired',      type: 'Subscription', status: 'expired',    statusVariant: 'red',    refLabel: 'Subscription',    refHref: () => '/subscriptions' },
-  'pricing.rule.create':       { label: 'Pricing rule created',      type: 'Pricing',      status: 'success',    statusVariant: 'green',  refLabel: 'Pricing Rule',    refHref: () => '/pricing' },
-  'pricing.rule.deactivate':   { label: 'Pricing rule deactivated',  type: 'Pricing',      status: 'inactive',   statusVariant: 'gray',   refLabel: 'Pricing Rule',    refHref: () => '/pricing' },
-  'support.ticket.resolve':    { label: 'Ticket resolved',           type: 'Support',      status: 'resolved',   statusVariant: 'green',  refLabel: 'Support Ticket',  refHref: id => `/support/${id}` },
-  'support.ticket.open':       { label: 'Fare dispute opened',       type: 'Support',      status: 'open',       statusVariant: 'red',    refLabel: 'Dispute',         refHref: id => `/support/${id}` },
-  'support.fare.adjust':       { label: 'Fare adjusted',             type: 'Support',      status: 'completed',  statusVariant: 'green',  refLabel: 'Support Ticket',  refHref: id => `/support/${id}` },
-  'ride.flag':                 { label: 'Ride flagged',              type: 'Ride',         status: 'flagged',    statusVariant: 'orange', refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
-  'ride.complete':             { label: 'Ride completed',            type: 'Ride',         status: 'completed',  statusVariant: 'green',  refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
-  'ride.cancel':               { label: 'Ride cancelled by driver',  type: 'Ride',         status: 'cancelled',  statusVariant: 'red',    refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
-}
-
-const PILL: Record<StatusVariant, string> = {
-  green:  'bg-green-50  text-green-600  border border-green-300',
-  red:    'bg-red-50    text-red-500    border border-red-300',
-  yellow: 'bg-yellow-50 text-yellow-600 border border-yellow-300',
-  orange: 'bg-orange-50 text-orange-600 border border-orange-300',
-  gray:   'bg-gray-100  text-gray-500   border border-gray-300',
+  //  action                    label                          type           status        variant    refLabel           refHref
+  'driver.approve':           { label: 'New driver approved',      type: 'Driver',       status: 'success',   statusVariant: 'green',  refLabel: 'Driver Profile', refHref: id => `/drivers/${id}` },
+  'driver.reject':            { label: 'Driver rejected',          type: 'Driver',       status: 'rejected',  statusVariant: 'red',    refLabel: 'Driver Profile', refHref: id => `/drivers/${id}` },
+  'driver.suspend':           { label: 'Driver suspended',         type: 'Driver',       status: 'suspended', statusVariant: 'red',    refLabel: 'Driver Profile', refHref: id => `/drivers/${id}` },
+  'driver.reactivate':        { label: 'Driver reactivated',       type: 'Driver',       status: 'success',   statusVariant: 'green',  refLabel: 'Driver Profile', refHref: id => `/drivers/${id}` },
+  'driver.flag':              { label: 'Driver flagged',           type: 'Driver',       status: 'flagged',   statusVariant: 'orange', refLabel: 'Driver Profile', refHref: id => `/drivers/${id}` },
+  'driver.signup':            { label: 'New driver signed up',     type: 'Driver',       status: 'pending',   statusVariant: 'yellow', refLabel: 'Driver Profile', refHref: id => `/drivers/${id}` },
+  'subscription.assign':      { label: 'Subscription activated',   type: 'Subscription', status: 'active',    statusVariant: 'green',  refLabel: 'Subscription',   refHref: () => '/subscriptions' },
+  'subscription.revoke':      { label: 'Subscription revoked',     type: 'Subscription', status: 'expired',   statusVariant: 'red',    refLabel: 'Subscription',   refHref: () => '/subscriptions' },
+  'subscription.expire':      { label: 'Subscription expired',     type: 'Subscription', status: 'expired',   statusVariant: 'red',    refLabel: 'Subscription',   refHref: () => '/subscriptions' },
+  'pricing.rule.create':      { label: 'Pricing rule created',     type: 'Pricing',      status: 'active',    statusVariant: 'green',  refLabel: 'Pricing Rule',   refHref: () => '/pricing' },
+  'pricing.rule.deactivate':  { label: 'Pricing rule deactivated', type: 'Pricing',      status: 'inactive',  statusVariant: 'gray',   refLabel: 'Pricing Rule',   refHref: () => '/pricing' },
+  'support.ticket.resolve':   { label: 'Ticket resolved',          type: 'Support',      status: 'resolved',  statusVariant: 'green',  refLabel: 'Support Ticket', refHref: id => `/support/${id}` },
+  'support.ticket.open':      { label: 'Fare dispute opened',      type: 'Support',      status: 'open',      statusVariant: 'red',    refLabel: 'Dispute',        refHref: id => `/support/${id}` },
+  'support.fare.adjust':      { label: 'Fare adjusted',            type: 'Support',      status: 'completed', statusVariant: 'green',  refLabel: 'Support Ticket', refHref: id => `/support/${id}` },
+  'ride.flag':                { label: 'Ride flagged',             type: 'Ride',         status: 'flagged',   statusVariant: 'orange', refLabel: 'Ride Details',   refHref: id => `/rides/${id}` },
+  'ride.complete':            { label: 'Ride completed',           type: 'Ride',         status: 'completed', statusVariant: 'green',  refLabel: 'Ride Details',   refHref: id => `/rides/${id}` },
+  'ride.cancel':              { label: 'Ride cancelled by driver', type: 'Ride',         status: 'cancelled', statusVariant: 'red',    refLabel: 'Ride Details',   refHref: id => `/rides/${id}` },
 }
 
 // ── Dev mock data (shown when DB returns empty) ───────────────────────────────
@@ -160,11 +153,9 @@ export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }
                 </Link>
 
                 {/* Status */}
-                <span>
-                  <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-normal ${PILL[meta?.statusVariant ?? 'gray']}`}>
-                    {meta?.status ?? 'done'}
-                  </span>
-                </span>
+                <Badge variant={meta?.statusVariant ?? 'gray'}>
+                  {meta?.status ?? 'done'}
+                </Badge>
 
                 {/* Time */}
                 <span className="text-gray-400 text-xs">{timeAgoShort(log.created_at)}</span>

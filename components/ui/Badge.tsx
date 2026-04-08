@@ -1,4 +1,4 @@
-type BadgeVariant = 'green' | 'red' | 'yellow' | 'blue' | 'gray' | 'orange' | 'purple'
+export type BadgeVariant = 'green' | 'red' | 'yellow' | 'blue' | 'gray' | 'orange' | 'purple'
 
 const VARIANTS: Record<BadgeVariant, string> = {
   green:  'bg-green-50   text-green-600  border border-green-300',
