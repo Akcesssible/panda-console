@@ -12,9 +12,9 @@ interface SearchBarProps {
 
 export function SearchBar({ value, onChange, placeholder = 'Search', className = '' }: SearchBarProps) {
   return (
-    <div className={`flex items-center bg-white border border-gray-200 rounded-full overflow-hidden shadow-sm ${className}`}>
-      <div className="flex items-center justify-center w-9 h-9 bg-[#2B39C7] rounded-full m-0.5 shrink-0">
-        <HugeiconsIcon icon={Search01Icon} size={15} color="white" strokeWidth={2} />
+    <div className={`flex items-center bg-white border border-gray-300 rounded-full overflow-hidden ${className}`}>
+      <div className="flex items-center justify-center w-9 h-9 bg-[#EBEBED] rounded-full m-0.5 shrink-0">
+        <HugeiconsIcon icon={Search01Icon} size={15} color="#2B39C7" strokeWidth={2} />
       </div>
       <input
         type="text"

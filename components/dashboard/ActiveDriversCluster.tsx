@@ -15,9 +15,9 @@ export function ActiveDriversCluster({
   subscriptionConversionRate, activeSubscriptions, totalDrivers,
 }: Props) {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden flex flex-col">
+    <div className="rounded-2xl bg-white overflow-hidden flex flex-col space-y-2">
       {/* Daily Active Drivers — gradient card */}
-      <div className="relative bg-gradient-to-br from-[#2B39C7] to-[#1a2499] p-5 flex-1 flex flex-col justify-between overflow-hidden">
+      <div className="relative bg-gradient-to-br from-[#2B39C7] to-[#1a2499] mx-[.3rem] my-[.3rem] p-5 rounded-2xl flex-1 flex flex-col justify-between overflow-hidden">
 
         {/* Glow image — left-aligned, shifted up 56px */}
         <Image
@@ -26,18 +26,16 @@ export function ActiveDriversCluster({
           width={400}
           height={400}
           className="absolute left-0 pointer-events-none select-none"
-          style={{ left: 240, top: -200, zIndex: 0 }}
+          style={{ left: 180, top: -200, zIndex: 0 }}
           priority
         />
 
         {/* Header */}
-        <p className="relative z-10 text-xs font-medium text-blue-200 uppercase tracking-wider">
-          Daily Active Drivers
-        </p>
+        <span className="relative z-10 text-base font-medium text-[#f2f2f2] tracking-[-0.5px]">Daily Active Drivers</span>
 
         {/* Metrics group */}
         <div className="relative z-10">
-          <p className="text-4xl font-bold text-white mb-2">{activeDrivers.toLocaleString()}</p>
+          <p className="text-4xl font-semibold text-white mb-2 tracking[-.5px]">{activeDrivers.toLocaleString()}</p>
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-green-300 bg-green-400/20 px-2 py-0.5 rounded-full">+6.3%</span>
             <span className="text-xs text-blue-200">vs yesterday</span>
@@ -52,7 +50,7 @@ export function ActiveDriversCluster({
       </div>
 
       {/* Sub KPIs — 2 col grid */}
-      <div className="grid grid-cols-2 divide-x divide-y divide-gray-100">
+      <div className="bg-white grid grid-cols-2 rounded-2xl divide-x divide-y divide-gray-100">
         <SubKPI
           label="Completed Trips Today"
           value={completedToday.toLocaleString()}

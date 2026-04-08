@@ -91,20 +91,18 @@ export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }
     <div className="bg-white rounded-2xl overflow-hidden flex flex-col h-full">
 
       {/* ── Card header ───────────────────────────────────────── */}
-      <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100">
-        {/* Title */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-base font-semibold text-[#1d242d]">Recent Activity</span>
+      <div className="flex items-center px-6 py-4 border-b border-gray-100">
+        {/* Left half — title */}
+        <div className="flex items-center gap-1.5 w-1/2">
+          <span className="text-base font-medium text-[#1d242d] tracking-[-0.5px]">Recent Activity</span>
           <HugeiconsIcon icon={InformationCircleIcon} size={15} color="#d1d5db" strokeWidth={1.5} />
         </div>
 
-        {/* Search — grows to fill space */}
-        <div className="flex-1">
-          <SearchBar value={search} onChange={setSearch} placeholder="Search" />
+        {/* Right half — search + filter grouped */}
+        <div className="flex items-center gap-2 w-1/2">
+          <SearchBar value={search} onChange={setSearch} placeholder="Search" className="flex-1" />
+          <FilterButton />
         </div>
-
-        {/* Filter */}
-        <FilterButton />
       </div>
 
       {/* ── Table column headers ───────────────────────────────── */}

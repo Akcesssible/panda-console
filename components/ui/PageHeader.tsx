@@ -44,7 +44,7 @@ export function PageHeader({
 
       {/* Right — pill tab switcher */}
       {tabs && tabs.length > 0 && (
-        <div className="flex items-center bg-[#E8E9EE] rounded-full p-1 gap-0.5">
+        <div className="flex items-center bg-[#DADFE5] rounded-full p-1 gap-0.5">
           {tabs.map(tab => (
             <button
               key={tab.key}
@@ -52,7 +52,7 @@ export function PageHeader({
               className={`px-4 py-2 text-sm rounded-full transition-all whitespace-nowrap ${
                 activeTab === tab.key
                   ? 'bg-white text-[#1d242d] font-medium shadow-sm'
-                  : 'text-gray-500 hover:text-[#1d242d]'
+                  : 'text-[#3D4C5E] hover:text-[#1d242d]'
               }`}
             >
               {tab.label}

@@ -132,7 +132,7 @@ export function DataTable<T extends Record<string, unknown>>({
             <HugeiconsIcon icon={InformationCircleIcon} size={15} color="#d1d5db" strokeWidth={1.5} />
           </div>
           {/* Right half — search + filter */}
-          <div className="flex items-center gap-2 w-1/2">
+          <div className="flex items-center justify-end gap-2 w-1/2">
             {onSearch && (
               <SearchBar
                 value={searchValue}

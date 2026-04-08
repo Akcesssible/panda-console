@@ -12,10 +12,10 @@ function settled(r: PromiseSettledResult<any>, fallback: any) {
 }
 
 const MOCK_STATS: StatItem[] = [
-  { label: 'Active Subscriptions', value: 842,         sub: 'of 1,168 total drivers' },
-  { label: 'Expired Subscriptions',value: 214,         sub: 'Need renewal' },
-  { label: 'Failed Payments',       value: 31,          sub: 'Requires action' },
-  { label: 'Monthly Revenue',       value: 'TZS 12.4M', sub: 'Subscription payments' },
+  { label: 'Active Subscriptions',  value: 842,         subBadge: '842 of 1,168', subText: 'drivers subscribed' },
+  { label: 'Expired Subscriptions', value: 214,         subBadge: '214',          subText: 'need renewal' },
+  { label: 'Failed Payments',       value: 31,          subBadge: '31',           subText: 'requires action' },
+  { label: 'Monthly Revenue',       value: 'TZS 12.4M', subBadge: 'This month',   subText: 'subscription payments' },
 ]
 
 export default async function SubscriptionsPage({
@@ -52,10 +52,10 @@ export default async function SubscriptionsPage({
 
   const useMock = activeSubs === 0 && expiredSubs === 0
   const stats: StatItem[] = useMock ? MOCK_STATS : [
-    { label: 'Active Subscriptions',  value: activeSubs,               sub: 'Currently subscribed' },
-    { label: 'Expired Subscriptions', value: expiredSubs,              sub: 'Need renewal' },
-    { label: 'Failed Payments',        value: failedPays,               sub: 'Requires action' },
-    { label: 'Monthly Revenue',        value: formatTZS(monthRevenue),  sub: 'This month' },
+    { label: 'Active Subscriptions',  value: activeSubs,              subBadge: String(activeSubs),           subText: 'currently subscribed' },
+    { label: 'Expired Subscriptions', value: expiredSubs,             subBadge: String(expiredSubs),          subText: 'need renewal' },
+    { label: 'Failed Payments',       value: failedPays,              subBadge: String(failedPays),           subText: 'requires action' },
+    { label: 'Monthly Revenue',       value: formatTZS(monthRevenue), subBadge: 'This month',                 subText: 'subscription payments' },
   ]
 
   const TABS = [

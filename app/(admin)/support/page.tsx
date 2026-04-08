@@ -11,10 +11,10 @@ function settled(r: PromiseSettledResult<any>, fallback: any) {
 }
 
 const MOCK_STATS: StatItem[] = [
-  { label: 'Open Tickets',         value: 23,  sub: 'Needs attention' },
-  { label: 'In Progress',          value: 8,   sub: 'Being handled' },
-  { label: 'Resolved This Month',  value: 147, sub: 'Avg 4.2h response time' },
-  { label: 'Total Tickets',        value: 178, sub: 'All time' },
+  { label: 'Open Tickets',        value: 23,  subBadge: '23',    subText: 'needs attention' },
+  { label: 'In Progress',         value: 8,   subBadge: '8',     subText: 'being handled' },
+  { label: 'Resolved This Month', value: 147, subBadge: '4.2h',  subText: 'avg response time' },
+  { label: 'Total Tickets',       value: 178, subBadge: 'All',   subText: 'all time' },
 ]
 
 export default async function SupportPage({
@@ -49,10 +49,10 @@ export default async function SupportPage({
 
   const useMock = openCount === 0 && totalCount === 0
   const stats: StatItem[] = useMock ? MOCK_STATS : [
-    { label: 'Open Tickets',        value: openCount,       sub: 'Needs attention' },
-    { label: 'In Progress',         value: inProgressCount, sub: 'Being handled' },
-    { label: 'Resolved This Month', value: resolvedCount,   sub: 'This month' },
-    { label: 'Total Tickets',       value: totalCount,      sub: 'All time' },
+    { label: 'Open Tickets',        value: openCount,       subBadge: String(openCount),       subText: 'needs attention' },
+    { label: 'In Progress',         value: inProgressCount, subBadge: String(inProgressCount), subText: 'being handled' },
+    { label: 'Resolved This Month', value: resolvedCount,   subBadge: 'This month',            subText: 'resolved tickets' },
+    { label: 'Total Tickets',       value: totalCount,      subBadge: 'All',                   subText: 'all time' },
   ]
 
   const TABS = [

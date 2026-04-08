@@ -11,10 +11,10 @@ function settled(r: PromiseSettledResult<any>, fallback: any) {
 }
 
 const MOCK_STATS: StatItem[] = [
-  { label: 'Total Drivers',     value: 4218, sub: '+421 trips vs yesterday' },
-  { label: 'Active Drivers',    value: 3102, sub: 'Kinondoni · Highest Earning Zone' },
-  { label: 'Pending Approval',  value: 23,   sub: '842 of 1,168 drivers subscribed' },
-  { label: 'Churned Drivers',   value: 441,  sub: 'Inactive from platform' },
+  { label: 'Total Drivers',    value: 4218, subBadge: '+421 trips',   subText: 'vs yesterday' },
+  { label: 'Active Drivers',   value: 3102, subBadge: 'Kinondoni',    subText: 'Highest Earning Zone' },
+  { label: 'Pending Approval', value: 23,   subBadge: '842 of 1,168', subText: 'drivers subscribed' },
+  { label: 'Churned Drivers',  value: 441,  subBadge: '842 of 1,168', subText: 'drivers subscribed' },
 ]
 
 export default async function DriversPage({
@@ -48,11 +48,12 @@ export default async function DriversPage({
   const churnedDrivers = settled(churnedR, { count: 0 }).count ?? 0
 
   const useMock = totalDrivers === 0
+  const activePct = totalDrivers ? Math.round(activeDrivers / totalDrivers * 100) : 0
   const stats: StatItem[] = useMock ? MOCK_STATS : [
-    { label: 'Total Drivers',    value: totalDrivers,   sub: 'Registered on platform' },
-    { label: 'Active Drivers',   value: activeDrivers,  sub: `${totalDrivers ? Math.round(activeDrivers / totalDrivers * 100) : 0}% of total fleet` },
-    { label: 'Pending Approval', value: pendingDrivers, sub: 'Awaiting verification' },
-    { label: 'Churned Drivers',  value: churnedDrivers, sub: 'Inactive from platform' },
+    { label: 'Total Drivers',    value: totalDrivers,   subBadge: 'Total',          subText: 'registered on platform' },
+    { label: 'Active Drivers',   value: activeDrivers,  subBadge: `${activePct}%`,  subText: 'of total fleet' },
+    { label: 'Pending Approval', value: pendingDrivers, subBadge: 'Pending',        subText: 'awaiting verification' },
+    { label: 'Churned Drivers',  value: churnedDrivers, subBadge: 'Churned',        subText: 'inactive from platform' },
   ]
 
   const TABS = [

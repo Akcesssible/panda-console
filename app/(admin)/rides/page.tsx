@@ -13,10 +13,10 @@ function settled(r: PromiseSettledResult<any>, fallback: any) {
 }
 
 const MOCK_STATS: StatItem[] = [
-  { label: 'Live Rides',       value: 47,          sub: 'Updated in real-time' },
-  { label: 'Completed Today',  value: 312,         sub: '+12% vs yesterday' },
-  { label: 'Cancelled Today',  value: 18,          sub: '5.4% cancellation rate' },
-  { label: "Today's Revenue",  value: 'TZS 2.4M',  sub: 'Commission + subscriptions' },
+  { label: 'Live Rides',      value: 47,         subBadge: 'Real-time', subText: 'updated live' },
+  { label: 'Completed Today', value: 312,        subBadge: '+12%',      subText: 'vs yesterday' },
+  { label: 'Cancelled Today', value: 18,         subBadge: '5.4%',      subText: 'cancellation rate' },
+  { label: "Today's Revenue", value: 'TZS 2.4M', subBadge: 'Today',     subText: 'commission + subscriptions' },
 ]
 
 export default async function RidesPage({
@@ -53,12 +53,14 @@ export default async function RidesPage({
   const revenueRows    = settled(revenueR,   { data: [] }).data ?? []
   const todayRevenue   = (revenueRows as Record<string, number | null>[]).reduce((s, r) => s + (r.driver_earnings_tzs ?? 0), 0)
 
+  const cancelPct = (completedToday + cancelledToday) > 0
+    ? Math.round(cancelledToday / (completedToday + cancelledToday) * 100) : 0
   const useMock = liveCount === 0 && completedToday === 0
   const stats: StatItem[] = useMock ? MOCK_STATS : [
-    { label: 'Live Rides',      value: liveCount,                sub: 'Updated in real-time' },
-    { label: 'Completed Today', value: completedToday,           sub: 'Since midnight' },
-    { label: 'Cancelled Today', value: cancelledToday,           sub: completedToday ? `${Math.round(cancelledToday / (completedToday + cancelledToday) * 100)}% cancellation rate` : '—' },
-    { label: "Today's Revenue", value: formatTZS(todayRevenue),  sub: 'Driver earnings' },
+    { label: 'Live Rides',      value: liveCount,               subBadge: 'Live',         subText: 'updated in real-time' },
+    { label: 'Completed Today', value: completedToday,          subBadge: 'Today',        subText: 'since midnight' },
+    { label: 'Cancelled Today', value: cancelledToday,          subBadge: `${cancelPct}%`, subText: 'cancellation rate' },
+    { label: "Today's Revenue", value: formatTZS(todayRevenue), subBadge: 'Earnings',     subText: 'driver earnings' },
   ]
 
   const TABS = [

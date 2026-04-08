@@ -7,10 +7,10 @@ import type { PricingRule } from '@/lib/types'
 import type { StatItem } from '@/components/ui/StatsRow'
 
 const MOCK_STATS: StatItem[] = [
-  { label: 'Active Rules',    value: 3,  sub: 'Live fare rules' },
-  { label: 'Vehicle Types',   value: 3,  sub: 'Bodaboda · Bajaj · Car' },
-  { label: 'Active Zones',    value: 5,  sub: 'Cities covered' },
-  { label: 'Pricing History', value: 12, sub: 'Deactivated rules' },
+  { label: 'Active Rules',    value: 3,  subBadge: '3 rules',   subText: 'live fare rules' },
+  { label: 'Vehicle Types',   value: 3,  subBadge: '3 types',   subText: 'Bodaboda · Bajaj · Car' },
+  { label: 'Active Zones',    value: 5,  subBadge: '5 cities',  subText: 'zones covered' },
+  { label: 'Pricing History', value: 12, subBadge: '12',        subText: 'deactivated rules' },
 ]
 
 async function getPricingData() {
@@ -33,10 +33,10 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   const useMock = rules.length === 0
   const vehicleTypes = useMock ? 3 : [...new Set(active.map(r => r.vehicle_type).filter(Boolean))].length
   const stats: StatItem[] = useMock ? MOCK_STATS : [
-    { label: 'Active Rules',    value: active.length,  sub: 'Live fare rules' },
-    { label: 'Vehicle Types',   value: vehicleTypes,   sub: 'Types covered' },
-    { label: 'Active Zones',    value: zones.length,   sub: 'Cities covered' },
-    { label: 'Pricing History', value: history.length, sub: 'Deactivated rules' },
+    { label: 'Active Rules',    value: active.length,  subBadge: String(active.length),   subText: 'live fare rules' },
+    { label: 'Vehicle Types',   value: vehicleTypes,   subBadge: String(vehicleTypes),    subText: 'types covered' },
+    { label: 'Active Zones',    value: zones.length,   subBadge: String(zones.length),    subText: 'cities covered' },
+    { label: 'Pricing History', value: history.length, subBadge: String(history.length),  subText: 'deactivated rules' },
   ]
 
   const TABS = [
