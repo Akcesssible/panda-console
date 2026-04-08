@@ -84,69 +84,86 @@ export function SubscriptionsView({
     },
   ]
 
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="px-5 pt-4 flex items-center justify-between">
-        {tab === 'plans' && (
-          <button
-            onClick={() => setPlanModal(true)}
-            className="px-3 py-1.5 text-sm font-medium bg-primary$ text-white rounded-lg hover:bg-primary-dark$"
-          >
-            + New Plan
-          </button>
-        )}
-      </div>
+  const CARD_TITLES: Record<string, string> = {
+    active: 'Active Subscriptions',
+    expired: 'Expired Subscriptions',
+    failed: 'Failed Payments',
+    plans: 'Plans & Pricing',
+    payment_history: 'Payment History',
+  }
 
+  const paymentColumns = [
+    {
+      key: 'driver',
+      label: 'Driver',
+      render: (row: Record<string, unknown>) => {
+        const p = row as unknown as SubscriptionPayment & { drivers: { full_name: string } }
+        return <span className="font-medium text-[#1d242d]">{p.drivers?.full_name ?? '—'}</span>
+      },
+    },
+    {
+      key: 'plan',
+      label: 'Plan',
+      render: (row: Record<string, unknown>) => {
+        const p = row as unknown as SubscriptionPayment & { subscription_plans: { name: string } }
+        return <span className="text-[#1d242d]">{p.subscription_plans?.name ?? '—'}</span>
+      },
+    },
+    {
+      key: 'amount_tzs',
+      label: 'Amount',
+      render: (row: Record<string, unknown>) => formatTZS((row as unknown as SubscriptionPayment).amount_tzs),
+    },
+    {
+      key: 'provider',
+      label: 'Provider',
+      render: (row: Record<string, unknown>) => (row as unknown as SubscriptionPayment).provider ?? '—',
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (row: Record<string, unknown>) => <PaymentStatusBadge status={(row as unknown as SubscriptionPayment).status} />,
+    },
+    {
+      key: 'created_at',
+      label: 'Date',
+      render: (row: Record<string, unknown>) => formatDate((row as unknown as SubscriptionPayment).created_at),
+    },
+  ]
+
+  return (
+    <div className="rounded-2xl overflow-hidden shadow-sm">
       {tab === 'plans' ? (
-        <PlansTable plans={plans} />
+        <div className="bg-white rounded-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <span className="text-base font-medium text-[#1d242d] tracking-[-0.5px]">Plans & Pricing</span>
+            <button
+              onClick={() => setPlanModal(true)}
+              className="px-4 py-2 text-sm font-medium bg-[#2B39C7] text-white rounded-lg hover:bg-[#202b95]"
+            >
+              + New Plan
+            </button>
+          </div>
+          <PlansTable plans={plans} />
+        </div>
       ) : tab === 'payment_history' || tab === 'failed' ? (
         <>
           <DataTable
-            columns={[
-              {
-                key: 'driver',
-                label: 'Driver',
-                render: (row: Record<string, unknown>) => {
-                  const p = row as unknown as SubscriptionPayment & { drivers: { full_name: string } }
-                  return p.drivers?.full_name ?? '—'
-                },
-              },
-              {
-                key: 'plan',
-                label: 'Plan',
-                render: (row: Record<string, unknown>) => {
-                  const p = row as unknown as SubscriptionPayment & { subscription_plans: { name: string } }
-                  return p.subscription_plans?.name ?? '—'
-                },
-              },
-              {
-                key: 'amount_tzs',
-                label: 'Amount',
-                render: (row: Record<string, unknown>) => formatTZS((row as unknown as SubscriptionPayment).amount_tzs),
-              },
-              {
-                key: 'provider',
-                label: 'Provider',
-                render: (row: Record<string, unknown>) => (row as unknown as SubscriptionPayment).provider ?? '—',
-              },
-              {
-                key: 'status',
-                label: 'Status',
-                render: (row: Record<string, unknown>) => <PaymentStatusBadge status={(row as unknown as SubscriptionPayment).status} />,
-              },
-              {
-                key: 'created_at',
-                label: 'Date',
-                render: (row: Record<string, unknown>) => formatDate((row as unknown as SubscriptionPayment).created_at),
-              },
-            ]}
+            columns={paymentColumns}
             data={payments}
+            cardTitle={CARD_TITLES[tab]}
+            selectable
           />
           <Pagination page={page} total={paymentsTotal} perPage={20} onPageChange={p => navigate({ page: String(p) })} />
         </>
       ) : (
         <>
-          <DataTable columns={subColumns} data={subscriptions} />
+          <DataTable
+            columns={subColumns}
+            data={subscriptions}
+            cardTitle={CARD_TITLES[tab] ?? 'Subscriptions'}
+            selectable
+          />
           <Pagination page={page} total={subsTotal} perPage={20} onPageChange={p => navigate({ page: String(p) })} />
         </>
       )}

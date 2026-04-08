@@ -18,20 +18,38 @@ export function Badge({ children, variant = 'gray' }: { children: React.ReactNod
   )
 }
 
+// Dot + label style (matches table design)
+function DotBadge({ dot, label }: { dot: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
+      <span className="text-sm text-[#1d242d]">{label}</span>
+    </span>
+  )
+}
+
 // Domain-specific badge helpers
 export function DriverStatusBadge({ status }: { status: string }) {
-  const map: Record<string, BadgeVariant> = {
-    active: 'green', pending: 'yellow', suspended: 'red', churned: 'gray',
+  const map: Record<string, { dot: string; label: string }> = {
+    active:    { dot: 'bg-green-500',  label: 'Active' },
+    pending:   { dot: 'bg-yellow-400', label: 'Pending' },
+    suspended: { dot: 'bg-red-500',    label: 'Suspended' },
+    churned:   { dot: 'bg-orange-400', label: 'Churned' },
   }
-  return <Badge variant={map[status] ?? 'gray'}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>
+  const m = map[status] ?? { dot: 'bg-gray-400', label: status }
+  return <DotBadge dot={m.dot} label={m.label} />
 }
 
 export function RideStatusBadge({ status }: { status: string }) {
-  const map: Record<string, BadgeVariant> = {
-    requested: 'yellow', accepted: 'blue', ongoing: 'blue',
-    completed: 'green', cancelled: 'red',
+  const map: Record<string, { dot: string; label: string }> = {
+    requested: { dot: 'bg-yellow-400', label: 'Requested' },
+    accepted:  { dot: 'bg-blue-400',   label: 'Accepted' },
+    ongoing:   { dot: 'bg-[#2B39C7]',  label: 'Ongoing' },
+    completed: { dot: 'bg-green-500',  label: 'Completed' },
+    cancelled: { dot: 'bg-red-500',    label: 'Cancelled' },
   }
-  return <Badge variant={map[status] ?? 'gray'}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>
+  const m = map[status] ?? { dot: 'bg-gray-400', label: status }
+  return <DotBadge dot={m.dot} label={m.label} />
 }
 
 export function SubscriptionBadge({ status }: { status: string }) {

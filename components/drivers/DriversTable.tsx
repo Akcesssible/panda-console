@@ -2,11 +2,32 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
-import { DriverStatusBadge, SubscriptionBadge, Badge } from '@/components/ui/Badge'
-import { formatDate, timeAgo } from '@/lib/utils'
+import { DriverStatusBadge, SubscriptionBadge } from '@/components/ui/Badge'
+import { formatDate, timeAgoShort } from '@/lib/utils'
 import type { Driver } from '@/lib/types'
 
 interface Tab { key: string; label: string }
+
+// ── Mock data (shown when DB is not yet seeded) ───────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MOCK_DRIVERS: any[] = [
+  { id: 'm1', full_name: 'John Mawella',    driver_number: 'DRV-000001', phone: '0712 345 678', status: 'active',    total_trips: 1284, last_active_at: new Date(Date.now() - 2*60_000).toISOString(),       vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'active' }] },
+  { id: 'm2', full_name: 'Asha Kassim',     driver_number: 'DRV-000002', phone: '0754 221 990', status: 'churned',   total_trips: 342,  last_active_at: new Date(Date.now() - 32*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'bajaj' }],    driver_subscriptions: [{ status: 'expired' }] },
+  { id: 'm3', full_name: "Liam O'Connor",   driver_number: 'DRV-000003', phone: '0765 432 109', status: 'active',    total_trips: 2567, last_active_at: new Date(Date.now() - 5*60_000).toISOString(),        vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'active' }] },
+  { id: 'm4', full_name: 'Sofia Lee',       driver_number: 'DRV-000004', phone: '0789 654 321', status: 'active',    total_trips: 1256, last_active_at: new Date(Date.now() - 10*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'bajaj' }],    driver_subscriptions: [{ status: 'active' }] },
+  { id: 'm5', full_name: 'Maya Patel',      driver_number: 'DRV-000005', phone: '0798 876 543', status: 'churned',   total_trips: 874,  last_active_at: new Date(Date.now() - 20*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'expired' }] },
+  { id: 'm6', full_name: 'Ethan Wright',    driver_number: 'DRV-000006', phone: '0800 123 456', status: 'active',    total_trips: 1789, last_active_at: new Date(Date.now() - 15*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'bodaboda' }], driver_subscriptions: [{ status: 'active' }] },
+  { id: 'm7', full_name: 'Olivia Martinez', driver_number: 'DRV-000007', phone: '0822 345 678', status: 'active',    total_trips: 3456, last_active_at: new Date(Date.now() - 3*60_000).toISOString(),        vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'active' }] },
+  { id: 'm8', full_name: 'Noah Smith',      driver_number: 'DRV-000008', phone: '0843 987 654', status: 'churned',   total_trips: 912,  last_active_at: new Date(Date.now() - 25*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'bodaboda' }], driver_subscriptions: [{ status: 'expired' }] },
+]
+
+const CARD_TITLES: Record<string, string> = {
+  all: 'Total Drivers',
+  active: 'Active Drivers',
+  pending: 'Pending Approval',
+  suspended: 'Suspended Drivers',
+  churned: 'Churned Drivers',
+}
 
 export function DriversTable({
   drivers, total, page, tab, tabs, search,
@@ -27,33 +48,50 @@ export function DriversTable({
     router.push(`/drivers?${params.toString()}`)
   }
 
+  const displayDrivers = drivers.length > 0 ? drivers : MOCK_DRIVERS as Driver[]
+  const displayTotal   = drivers.length > 0 ? total : MOCK_DRIVERS.length
+
   const columns = getColumns(tab)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      {/* Search */}
-      <div className="px-5 py-3 border-b border-gray-100">
-        <input
-          defaultValue={search}
-          placeholder="Search by name, phone, or driver number..."
-          className="w-64 text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary$"
-          onChange={e => navigate({ search: e.target.value, page: '1' })}
-        />
-        <span className="ml-4 text-sm text-gray-500">Total: {total.toLocaleString()}</span>
-      </div>
-
-      {/* Table */}
+    <div className="rounded-2xl overflow-hidden shadow-sm">
       <DataTable
         columns={columns}
-        data={drivers}
+        data={displayDrivers}
+        cardTitle={CARD_TITLES[tab] ?? 'Drivers'}
+        searchValue={search ?? ''}
+        onSearch={v => navigate({ search: v, page: '1' })}
+        selectable
+        rowActions={row => {
+          const d = row as Driver
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const actions: any[] = [{ label: 'View Profile', onClick: () => router.push(`/drivers/${d.id}`) }]
+          if (d.status === 'pending') {
+            actions.push({ label: 'Approve', onClick: () => router.push(`/drivers/${d.id}?action=approve`) })
+            actions.push({ label: 'Reject', onClick: () => router.push(`/drivers/${d.id}?action=reject`), danger: true })
+          }
+          if (d.status === 'active') {
+            actions.push({ label: 'Suspend', onClick: () => router.push(`/drivers/${d.id}?action=suspend`), danger: true })
+            actions.push({ label: 'Flag', onClick: () => router.push(`/drivers/${d.id}?action=flag`), danger: true })
+          }
+          if (d.status === 'suspended') {
+            actions.push({ label: 'Reactivate', onClick: () => router.push(`/drivers/${d.id}?action=reactivate`) })
+          }
+          return actions
+        }}
         onRowClick={(row: Driver) => router.push(`/drivers/${row.id}`)}
       />
-
-      <Pagination page={page} total={total} perPage={20} onPageChange={p => navigate({ page: String(p) })} />
+      <Pagination
+        page={page}
+        total={displayTotal}
+        perPage={20}
+        onPageChange={p => navigate({ page: String(p) })}
+      />
     </div>
   )
 }
 
+// ── Column definitions per tab ────────────────────────────────────────────────
 function getColumns(tab: string) {
   const base = [
     {
@@ -63,7 +101,7 @@ function getColumns(tab: string) {
         const d = row as unknown as Driver
         return (
           <div>
-            <p className="font-medium text-gray-900">{d.full_name}</p>
+            <p className="font-medium text-[#1d242d]">{d.full_name}</p>
             <p className="text-xs text-gray-400">{d.driver_number}</p>
           </div>
         )
@@ -71,22 +109,26 @@ function getColumns(tab: string) {
     },
     {
       key: 'phone',
-      label: 'Phone',
-      render: (row: Record<string, unknown>) => (row as unknown as Driver).phone,
+      label: 'Phone Number',
+      render: (row: Record<string, unknown>) => (
+        <span className="text-gray-600">{(row as unknown as Driver).phone}</span>
+      ),
     },
     {
       key: 'vehicle_type',
-      label: 'Vehicle',
+      label: 'Vehicle Type',
       render: (row: Record<string, unknown>) => {
         const d = row as unknown as Driver
-        const v = d.vehicles?.[0]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const v = (d as any).vehicles?.[0]
         if (!v) return <span className="text-gray-400">—</span>
-        return <span className="capitalize">{v.vehicle_type}</span>
+        const labels: Record<string, string> = { car: 'Car', bajaj: 'Bajaj', bodaboda: 'Boda' }
+        return <span className="font-semibold text-[#1d242d]">{labels[v.vehicle_type] ?? v.vehicle_type}</span>
       },
     },
   ]
 
-  if (tab === 'all') {
+  if (tab === 'all' || tab === 'active') {
     return [
       ...base,
       {
@@ -94,14 +136,20 @@ function getColumns(tab: string) {
         label: 'Subscription',
         render: (row: Record<string, unknown>) => {
           const d = row as unknown as Driver
-          const sub = d.driver_subscriptions?.[0]
-          return sub ? <SubscriptionBadge status={sub.status} /> : <span className="text-gray-400 text-xs">None</span>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const sub = (d as any).driver_subscriptions?.[0]
+          if (!sub) return <span className="text-gray-400 text-sm">None</span>
+          const label = sub.status === 'active' ? 'Active' : sub.status === 'expired' ? 'Expired' : sub.status
+          const color = sub.status === 'active' ? 'text-green-600' : 'text-red-500'
+          return <span className={`text-sm ${color}`}>{label}</span>
         },
       },
       {
         key: 'total_trips',
         label: 'Total Trips',
-        render: (row: Record<string, unknown>) => (row as unknown as Driver).total_trips,
+        render: (row: Record<string, unknown>) => (
+          <span className="text-gray-700">{((row as unknown as Driver).total_trips ?? 0).toLocaleString()}</span>
+        ),
       },
       {
         key: 'status',
@@ -112,36 +160,7 @@ function getColumns(tab: string) {
         key: 'last_active_at',
         label: 'Last Active',
         render: (row: Record<string, unknown>) => (
-          <span className="text-gray-500 text-xs">{timeAgo((row as unknown as Driver).last_active_at ?? undefined)}</span>
-        ),
-      },
-    ]
-  }
-
-  if (tab === 'active') {
-    return [
-      ...base,
-      {
-        key: 'subscription',
-        label: 'Subscription',
-        render: (row: Record<string, unknown>) => {
-          const sub = (row as unknown as Driver).driver_subscriptions?.[0]
-          return sub ? <SubscriptionBadge status={sub.status} /> : <span className="text-gray-400 text-xs">None</span>
-        },
-      },
-      {
-        key: 'rating',
-        label: 'Rating',
-        render: (row: Record<string, unknown>) => {
-          const r = (row as unknown as Driver).rating
-          return <span className="text-gray-700">⭐ {r?.toFixed(1)}</span>
-        },
-      },
-      {
-        key: 'last_active_at',
-        label: 'Last Active',
-        render: (row: Record<string, unknown>) => (
-          <span className="text-gray-500 text-xs">{timeAgo((row as unknown as Driver).last_active_at ?? undefined)}</span>
+          <span className="text-gray-400 text-sm">{timeAgoShort((row as unknown as Driver).last_active_at ?? undefined)}</span>
         ),
       },
     ]
@@ -151,14 +170,11 @@ function getColumns(tab: string) {
     return [
       ...base,
       {
-        key: 'documents',
-        label: 'Documents',
-        render: () => <Badge variant="yellow">Pending</Badge>,
-      },
-      {
         key: 'joined_at',
         label: 'Signup Date',
-        render: (row: Record<string, unknown>) => formatDate((row as unknown as Driver).joined_at),
+        render: (row: Record<string, unknown>) => (
+          <span className="text-gray-600">{formatDate((row as unknown as Driver).joined_at)}</span>
+        ),
       },
       {
         key: 'status',
@@ -175,18 +191,15 @@ function getColumns(tab: string) {
         key: 'suspended_reason',
         label: 'Reason',
         render: (row: Record<string, unknown>) => (
-          <span className="text-gray-600 text-xs">{(row as unknown as Driver).suspended_reason ?? '—'}</span>
+          <span className="text-gray-600 text-sm">{(row as unknown as Driver).suspended_reason ?? '—'}</span>
         ),
       },
       {
         key: 'suspended_at',
         label: 'Suspended On',
-        render: (row: Record<string, unknown>) => formatDate((row as unknown as Driver).suspended_at ?? undefined),
-      },
-      {
-        key: 'total_trips',
-        label: 'Total Trips',
-        render: (row: Record<string, unknown>) => (row as unknown as Driver).total_trips,
+        render: (row: Record<string, unknown>) => (
+          <span className="text-gray-600">{formatDate((row as unknown as Driver).suspended_at ?? undefined)}</span>
+        ),
       },
       {
         key: 'complaints_count',
@@ -202,22 +215,24 @@ function getColumns(tab: string) {
     return [
       ...base,
       {
-        key: 'last_active_at',
-        label: 'Last Active',
+        key: 'total_trips',
+        label: 'Total Trips',
         render: (row: Record<string, unknown>) => (
-          <span className="text-gray-500 text-xs">{timeAgo((row as unknown as Driver).last_active_at ?? undefined)}</span>
+          <span className="text-gray-700">{((row as unknown as Driver).total_trips ?? 0).toLocaleString()}</span>
         ),
       },
       {
-        key: 'total_trips',
-        label: 'Total Trips',
-        render: (row: Record<string, unknown>) => (row as unknown as Driver).total_trips,
+        key: 'last_active_at',
+        label: 'Last Active',
+        render: (row: Record<string, unknown>) => (
+          <span className="text-gray-400 text-sm">{timeAgoShort((row as unknown as Driver).last_active_at ?? undefined)}</span>
+        ),
       },
       {
         key: 'churn_reason',
         label: 'Churn Reason',
         render: (row: Record<string, unknown>) => (
-          <span className="text-gray-500 text-xs">{(row as unknown as Driver).churn_reason ?? 'Inactivity'}</span>
+          <span className="text-gray-500 text-sm">{(row as unknown as Driver).churn_reason ?? 'Inactivity'}</span>
         ),
       },
     ]
