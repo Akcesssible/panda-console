@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { timeAgo } from '@/lib/utils'
 import type { AuditLog } from '@/lib/types'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { InformationCircleIcon, Search01Icon, FilterHorizontalIcon } from '@hugeicons/core-free-icons'
 
 const ACTION_META: Record<string, { label: string; type: string; status: string; statusColor: string }> = {
   'driver.approve':           { label: 'New driver approved',     type: 'Driver',       status: 'Success',   statusColor: 'bg-green-500' },
@@ -55,15 +57,13 @@ export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-semibold text-[#1d242d]">Recent Activity</span>
-          <svg className="w-3.5 h-3.5 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
-          </svg>
+          <HugeiconsIcon icon={InformationCircleIcon} size={14} color="#d1d5db" strokeWidth={1.5} />
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
-            </svg>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              <HugeiconsIcon icon={Search01Icon} size={14} color="currentColor" strokeWidth={1.8} />
+            </span>
             <input
               type="text"
               placeholder="Search"
@@ -73,9 +73,7 @@ export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }
             />
           </div>
           <button className="flex items-center gap-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors">
-            <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"/>
-            </svg>
+            <HugeiconsIcon icon={FilterHorizontalIcon} size={14} color="currentColor" strokeWidth={1.8} />
             Filter
           </button>
         </div>

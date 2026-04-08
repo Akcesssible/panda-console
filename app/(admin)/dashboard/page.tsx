@@ -114,7 +114,6 @@ export default async function DashboardPage() {
           <ActionAlertCard
             title="Drivers Pending Approval"
             count={data.pendingDrivers}
-            unit="Drivers"
             description="New drivers awaiting verification"
             ctaLabel="Verify Driver"
             ctaHref="/drivers?tab=pending"
@@ -122,7 +121,6 @@ export default async function DashboardPage() {
           <ActionAlertCard
             title="Expired Subscriptions"
             count={data.expiredSubs}
-            unit="Drivers"
             description="Subscriptions need renewal"
             badge="+6.3% vs yesterday"
             ctaLabel="Notify Drivers"
