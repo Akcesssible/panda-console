@@ -153,9 +153,11 @@ export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }
                 </Link>
 
                 {/* Status */}
-                <Badge variant={meta?.statusVariant ?? 'gray'}>
-                  {meta?.status ?? 'done'}
-                </Badge>
+                <span className="flex items-center">
+                  <Badge variant={meta?.statusVariant ?? 'gray'}>
+                    {meta?.status ?? 'done'}
+                  </Badge>
+                </span>
 
                 {/* Time */}
                 <span className="text-gray-400 text-xs">{timeAgoShort(log.created_at)}</span>
