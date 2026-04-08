@@ -132,7 +132,7 @@ export function SubscriptionsView({
   ]
 
   return (
-    <div className="rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
       {tab === 'plans' ? (
         <div className="bg-white rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">

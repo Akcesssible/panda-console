@@ -38,7 +38,7 @@ export function SettingsView({
   const [addZoneModal, setAddZoneModal] = useState(false)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
       {(tab === 'admin_users' || tab === 'zones') && (
         <div className="px-5 pt-4 flex justify-end">
           {tab === 'admin_users' && (

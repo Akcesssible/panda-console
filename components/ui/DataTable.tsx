@@ -121,7 +121,7 @@ export function DataTable<T extends Record<string, unknown>>({
   }
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden flex flex-col">
+    <div className="flex flex-col">
 
       {/* ── Card header ─────────────────────────────────────────── */}
       {(cardTitle || onSearch) && (
@@ -254,7 +254,7 @@ export function Pagination({
   }
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
+    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
       {/* Left — total count */}
       <span className="text-sm text-[#1d242d]">
         Total Data: <span className="font-medium">{total.toLocaleString()}</span>

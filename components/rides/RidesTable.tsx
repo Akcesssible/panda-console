@@ -129,7 +129,7 @@ export function RidesTable({
   ]
 
   return (
-    <div className="rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
       {isLive && (
         <div className="px-6 py-2 bg-green-50 border-b border-green-100 rounded-t-2xl">
           <span className="text-xs text-green-700 font-medium">● Live — updates in real-time</span>

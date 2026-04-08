@@ -110,7 +110,7 @@ export function SupportTable({ tickets, total, page, tab, tabs }: {
   ]
 
   return (
-    <div className="rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
       <DataTable
         columns={columns}
         data={displayTickets}

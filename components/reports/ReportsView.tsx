@@ -32,7 +32,7 @@ export function ReportsView({ tab, rows, summary }: {
 
   return (
     <div className="space-y-5">
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
         {rows.length > 0 && (
           <div className="px-5 pt-4 flex justify-end">
             <button
@@ -52,7 +52,7 @@ export function ReportsView({ tab, rows, summary }: {
 
       {/* Data table */}
       {rows.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
