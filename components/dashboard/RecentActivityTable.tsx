@@ -11,31 +11,41 @@ import { SearchBar } from '@/components/ui/SearchBar'
 import { FilterButton } from '@/components/ui/FilterButton'
 
 // ── Action metadata ──────────────────────────────────────────────────────────
+type StatusVariant = 'green' | 'red' | 'yellow' | 'orange' | 'gray'
+
 const ACTION_META: Record<string, {
   label: string
   type: string
   status: string
-  statusColor: string
+  statusVariant: StatusVariant
   refLabel: string
   refHref: (id: string | null) => string
 }> = {
-  'driver.approve':            { label: 'New driver approved',       type: 'Driver',       status: 'Success',   statusColor: 'bg-green-500',  refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.reject':             { label: 'Driver rejected',           type: 'Driver',       status: 'Rejected',  statusColor: 'bg-red-500',    refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.suspend':            { label: 'Driver suspended',          type: 'Driver',       status: 'Suspended', statusColor: 'bg-red-500',    refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.reactivate':         { label: 'Driver reactivated',        type: 'Driver',       status: 'Success',   statusColor: 'bg-green-500',  refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.flag':               { label: 'Driver flagged',            type: 'Driver',       status: 'Pending',   statusColor: 'bg-yellow-400', refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'driver.signup':             { label: 'New driver signed up',      type: 'Driver',       status: 'Pending',   statusColor: 'bg-yellow-400', refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
-  'subscription.assign':       { label: 'Subscription activated',    type: 'Subscription', status: 'Success',   statusColor: 'bg-green-500',  refLabel: 'Subscription',    refHref: () => '/subscriptions' },
-  'subscription.revoke':       { label: 'Subscription revoked',      type: 'Subscription', status: 'Expired',   statusColor: 'bg-red-500',    refLabel: 'Subscription',    refHref: () => '/subscriptions' },
-  'subscription.expire':       { label: 'Subscription expired',      type: 'Subscription', status: 'Expired',   statusColor: 'bg-red-500',    refLabel: 'Subscription',    refHref: () => '/subscriptions' },
-  'pricing.rule.create':       { label: 'Pricing rule created',      type: 'Pricing',      status: 'Success',   statusColor: 'bg-green-500',  refLabel: 'Pricing Rule',    refHref: () => '/pricing' },
-  'pricing.rule.deactivate':   { label: 'Pricing rule deactivated',  type: 'Pricing',      status: 'Inactive',  statusColor: 'bg-gray-400',   refLabel: 'Pricing Rule',    refHref: () => '/pricing' },
-  'support.ticket.resolve':    { label: 'Ticket resolved',           type: 'Support',      status: 'Resolved',  statusColor: 'bg-green-500',  refLabel: 'Support Ticket',  refHref: id => `/support/${id}` },
-  'support.ticket.open':       { label: 'Fare dispute opened',       type: 'Support',      status: 'Open',      statusColor: 'bg-blue-500',   refLabel: 'Dispute',         refHref: id => `/support/${id}` },
-  'support.fare.adjust':       { label: 'Fare adjusted',             type: 'Support',      status: 'Completed', statusColor: 'bg-green-500',  refLabel: 'Support Ticket',  refHref: id => `/support/${id}` },
-  'ride.flag':                 { label: 'Ride flagged',              type: 'Ride',         status: 'Flagged',   statusColor: 'bg-orange-500', refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
-  'ride.complete':             { label: 'Ride completed',            type: 'Ride',         status: 'Completed', statusColor: 'bg-green-500',  refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
-  'ride.cancel':               { label: 'Ride cancelled by driver',  type: 'Ride',         status: 'Canceled',  statusColor: 'bg-red-500',    refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
+  'driver.approve':            { label: 'New driver approved',       type: 'Driver',       status: 'success',    statusVariant: 'green',  refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.reject':             { label: 'Driver rejected',           type: 'Driver',       status: 'rejected',   statusVariant: 'red',    refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.suspend':            { label: 'Driver suspended',          type: 'Driver',       status: 'suspended',  statusVariant: 'red',    refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.reactivate':         { label: 'Driver reactivated',        type: 'Driver',       status: 'success',    statusVariant: 'green',  refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.flag':               { label: 'Driver flagged',            type: 'Driver',       status: 'pending',    statusVariant: 'yellow', refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.signup':             { label: 'New driver signed up',      type: 'Driver',       status: 'pending',    statusVariant: 'yellow', refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'subscription.assign':       { label: 'Subscription activated',    type: 'Subscription', status: 'success',    statusVariant: 'green',  refLabel: 'Subscription',    refHref: () => '/subscriptions' },
+  'subscription.revoke':       { label: 'Subscription revoked',      type: 'Subscription', status: 'expired',    statusVariant: 'red',    refLabel: 'Subscription',    refHref: () => '/subscriptions' },
+  'subscription.expire':       { label: 'Subscription expired',      type: 'Subscription', status: 'expired',    statusVariant: 'red',    refLabel: 'Subscription',    refHref: () => '/subscriptions' },
+  'pricing.rule.create':       { label: 'Pricing rule created',      type: 'Pricing',      status: 'success',    statusVariant: 'green',  refLabel: 'Pricing Rule',    refHref: () => '/pricing' },
+  'pricing.rule.deactivate':   { label: 'Pricing rule deactivated',  type: 'Pricing',      status: 'inactive',   statusVariant: 'gray',   refLabel: 'Pricing Rule',    refHref: () => '/pricing' },
+  'support.ticket.resolve':    { label: 'Ticket resolved',           type: 'Support',      status: 'resolved',   statusVariant: 'green',  refLabel: 'Support Ticket',  refHref: id => `/support/${id}` },
+  'support.ticket.open':       { label: 'Fare dispute opened',       type: 'Support',      status: 'open',       statusVariant: 'red',    refLabel: 'Dispute',         refHref: id => `/support/${id}` },
+  'support.fare.adjust':       { label: 'Fare adjusted',             type: 'Support',      status: 'completed',  statusVariant: 'green',  refLabel: 'Support Ticket',  refHref: id => `/support/${id}` },
+  'ride.flag':                 { label: 'Ride flagged',              type: 'Ride',         status: 'flagged',    statusVariant: 'orange', refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
+  'ride.complete':             { label: 'Ride completed',            type: 'Ride',         status: 'completed',  statusVariant: 'green',  refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
+  'ride.cancel':               { label: 'Ride cancelled by driver',  type: 'Ride',         status: 'cancelled',  statusVariant: 'red',    refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
+}
+
+const PILL: Record<StatusVariant, string> = {
+  green:  'bg-green-50  text-green-600  border border-green-300',
+  red:    'bg-red-50    text-red-500    border border-red-300',
+  yellow: 'bg-yellow-50 text-yellow-600 border border-yellow-300',
+  orange: 'bg-orange-50 text-orange-600 border border-orange-300',
+  gray:   'bg-gray-100  text-gray-500   border border-gray-300',
 }
 
 // ── Dev mock data (shown when DB returns empty) ───────────────────────────────
@@ -150,9 +160,10 @@ export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }
                 </Link>
 
                 {/* Status */}
-                <span className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${meta?.statusColor ?? 'bg-gray-400'}`} />
-                  <span className="text-[#1d242d]">{meta?.status ?? 'Done'}</span>
+                <span>
+                  <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-normal ${PILL[meta?.statusVariant ?? 'gray']}`}>
+                    {meta?.status ?? 'done'}
+                  </span>
                 </span>
 
                 {/* Time */}

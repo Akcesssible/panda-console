@@ -1,15 +1,13 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUser } from '@/lib/auth'
 import { EarningTrendCard } from '@/components/dashboard/EarningTrendCard'
+import { ActiveDriversCluster } from '@/components/dashboard/ActiveDriversCluster'
 import { ChurnRateCard } from '@/components/dashboard/ChurnRateCard'
 import { ActionAlertCard } from '@/components/dashboard/ActionAlertCard'
 import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable'
-import { StatsRow } from '@/components/ui/StatsRow'
-import { formatTZS } from '@/lib/utils'
 import Link from 'next/link'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
-import type { StatItem } from '@/components/ui/StatsRow'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function settled(result: PromiseSettledResult<any>, fallback: any): any {
@@ -58,29 +56,13 @@ async function getDashboardData() {
   }
 }
 
-const MOCK_STATS: StatItem[] = [
-  { label: 'Active Drivers',    value: 3102, subBadge: '+6.3%',      subText: 'vs yesterday' },
-  { label: 'Completed Trips',   value: 312,  subBadge: '+421 trips',  subText: 'vs yesterday' },
-  { label: 'Active Subscriptions', value: 842, subBadge: '842 of 1,168', subText: 'drivers subscribed' },
-  { label: "Today's Earnings",  value: 'TZS 2.4M', subBadge: 'Today', subText: 'driver earnings' },
-]
-
 export default async function DashboardPage() {
   const [adminUser, data] = await Promise.all([getAdminUser(), getDashboardData()])
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
-  const conversionPct = data.subscriptionConversionRate
-  const useMock = data.totalDrivers === 0
-  const stats: StatItem[] = useMock ? MOCK_STATS : [
-    { label: 'Active Drivers',       value: data.activeDrivers,       subBadge: '+6.3%',               subText: 'vs yesterday' },
-    { label: 'Completed Trips',      value: data.completedToday,      subBadge: 'Today',               subText: 'since midnight' },
-    { label: 'Active Subscriptions', value: data.activeSubscriptions, subBadge: `${conversionPct}%`,   subText: 'subscription rate' },
-    { label: "Today's Earnings",     value: formatTZS(data.avgEarningsPerDriver * data.activeDrivers), subBadge: 'Today', subText: 'driver earnings' },
-  ]
-
   return (
-    <div className="space-y-3 w-full">
+    <div className="space-y-3 max-w-[1400px]">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -107,12 +89,17 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats row — identical to all section pages */}
-      <StatsRow stats={stats} />
-
-      {/* Top row — 2 equal columns */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Top row — 3 equal columns */}
+      <div className="grid grid-cols-3 gap-3">
         <EarningTrendCard />
+        <ActiveDriversCluster
+          activeDrivers={data.activeDrivers}
+          completedToday={data.completedToday}
+          avgEarningsPerDriver={data.avgEarningsPerDriver}
+          subscriptionConversionRate={data.subscriptionConversionRate}
+          activeSubscriptions={data.activeSubscriptions}
+          totalDrivers={data.totalDrivers}
+        />
         <ChurnRateCard />
       </div>
 
