@@ -19,6 +19,21 @@ export function timeAgo(dateString: string | null | undefined): string {
   return formatDistanceToNow(new Date(dateString), { addSuffix: true })
 }
 
+export function timeAgoShort(dateString: string | null | undefined): string {
+  if (!dateString) return '—'
+  const now = Date.now()
+  const then = new Date(dateString).getTime()
+  const diff = now - then
+  const mins = Math.floor(diff / 60_000)
+  const hours = Math.floor(diff / 3_600_000)
+  const days = Math.floor(diff / 86_400_000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins} min ago`
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`
+  if (days === 1) return 'Yesterday'
+  return `${days} days ago`
+}
+
 export function formatDuration(minutes: number | null): string {
   if (!minutes) return '—'
   if (minutes < 60) return `${minutes}m`

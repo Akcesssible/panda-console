@@ -7,7 +7,7 @@ import { ActionAlertCard } from '@/components/dashboard/ActionAlertCard'
 import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable'
 import Link from 'next/link'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { ArrowDownLeft01Icon } from '@hugeicons/core-free-icons'
+import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function settled(result: PromiseSettledResult<any>, fallback: any): any {
@@ -62,11 +62,11 @@ export default async function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="space-y-5 max-w-[1400px]">
+    <div className="space-y-3 max-w-[1400px]">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1d242d]">
+          <h1 className="text-3xl font-medium text-[#1d242d] tracking-[-1px]">
             {greeting}, {adminUser.full_name.split(' ')[0]}
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">Real-time operational snapshot</p>
@@ -74,23 +74,23 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/rides"
-            className="flex items-center gap-2 text-sm font-medium text-[#1d242d] border border-gray-200 bg-white rounded-xl p-4 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-4 text-base font-medium text-[#1d242d] bg-white rounded-full p-4 hover:bg-gray-50 transition-colors"
           >
             Live Rides
-            <HugeiconsIcon icon={ArrowDownLeft01Icon} size={16} color="#1d242d" strokeWidth={1.5} />
+            <HugeiconsIcon icon={ArrowUpRight01Icon} size={16} color="#1d242d" strokeWidth={1.5} />
           </Link>
           <Link
             href="/subscriptions?tab=expired"
-            className="flex items-center gap-2 text-sm font-medium text-[#1d242d] border border-gray-200 bg-white rounded-xl p-4 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-4 text-base font-medium text-[#1d242d] bg-white rounded-full p-4 hover:bg-gray-50 transition-colors"
           >
             Expired Subscriptions
-            <HugeiconsIcon icon={ArrowDownLeft01Icon} size={16} color="#1d242d" strokeWidth={1.5} />
+            <HugeiconsIcon icon={ArrowUpRight01Icon} size={16} color="#1d242d" strokeWidth={1.5} />
           </Link>
         </div>
       </div>
 
       {/* Top row — 3 equal columns */}
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-3 gap-3">
         <EarningTrendCard />
         <ActiveDriversCluster
           activeDrivers={data.activeDrivers}
@@ -104,12 +104,13 @@ export default async function DashboardPage() {
       </div>
 
       {/* Bottom row — left narrow (alerts) + right wide (activity) */}
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-3 gap-3">
         {/* Left column — stacked alert cards */}
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
           <ActionAlertCard
             title="Drivers Pending Approval"
             count={data.pendingDrivers}
+            unit="Drivers"
             description="New drivers awaiting verification"
             ctaLabel="Verify Driver"
             ctaHref="/drivers?tab=pending"
@@ -117,8 +118,8 @@ export default async function DashboardPage() {
           <ActionAlertCard
             title="Expired Subscriptions"
             count={data.expiredSubs}
+            unit="Subs"
             description="Subscriptions need renewal"
-            badge="+6.3% vs yesterday"
             ctaLabel="Notify Drivers"
             ctaHref="/subscriptions?tab=expired"
           />

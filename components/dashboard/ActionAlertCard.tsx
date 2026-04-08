@@ -5,37 +5,42 @@ import { ArrowUpRight01Icon, InformationCircleIcon } from '@hugeicons/core-free-
 interface Props {
   title: string
   count: number
+  unit: string
   description: string
   badge?: string
   ctaLabel: string
   ctaHref: string
 }
 
-export function ActionAlertCard({ title, count, description, badge, ctaLabel, ctaHref }: Props) {
+export function ActionAlertCard({ title, count, unit, description, ctaLabel, ctaHref }: Props) {
   return (
-    <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
+    <div className="bg-white rounded-2xl p-6 flex flex-col justify-between flex-1 min-h-[200px]">
+
+      {/* Top — title + info */}
       <div className="flex items-center gap-1.5">
-        <span className="text-sm font-semibold text-[#1d242d]">{title}</span>
-        <HugeiconsIcon icon={InformationCircleIcon} size={14} color="#d1d5db" strokeWidth={1.5} />
+        <span className="text-base font-medium text-[#1d242d] tracking-[-.5px]">{title}</span>
+        <HugeiconsIcon icon={InformationCircleIcon} size={16} color="#9ca3af" strokeWidth={1.5} />
       </div>
 
-      <div>
-        <p className="text-4xl font-bold text-[#1d242d]">{count.toLocaleString()}</p>
-        <p className="text-sm text-gray-400 mt-0.5">{description}</p>
-        {badge && (
-          <span className="inline-flex mt-1.5 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-            {badge}
-          </span>
-        )}
+      {/* Bottom — count+desc on left, CTA on right */}
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-3xl font-medium text-[#1d242d] leading-none tracking-tight">
+            {count.toLocaleString()}{' '}
+            <span className="font-medium">{unit}</span>
+          </p>
+          <p className="text-[15px] text-gray-400 mt-2 leading-snug">{description}</p>
+        </div>
+
+        <Link
+          href={ctaHref}
+          className="shrink-0 flex items-center gap-2 bg-[#546070] text-white text-[15px] font-medium px-4 py-3 rounded-full hover:bg-[#455060] transition-colors whitespace-nowrap"
+        >
+          {ctaLabel}
+          <HugeiconsIcon icon={ArrowUpRight01Icon} size={18} color="white" strokeWidth={2} />
+        </Link>
       </div>
 
-      <Link
-        href={ctaHref}
-        className="flex items-center justify-between bg-[#1d242d] text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-[#2a3340] transition-colors"
-      >
-        {ctaLabel}
-        <HugeiconsIcon icon={ArrowUpRight01Icon} size={16} color="currentColor" strokeWidth={1.8} className="opacity-60" />
-      </Link>
     </div>
   )
 }

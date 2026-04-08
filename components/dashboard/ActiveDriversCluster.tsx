@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { formatTZS } from '@/lib/utils'
 
 interface Props {
@@ -16,18 +17,38 @@ export function ActiveDriversCluster({
   return (
     <div className="bg-white rounded-2xl overflow-hidden flex flex-col">
       {/* Daily Active Drivers — gradient card */}
-      <div className="bg-gradient-to-br from-[#2B39C7] to-[#1a2499] p-5 flex-1">
-        <p className="text-xs font-medium text-blue-200 uppercase tracking-wider mb-3">Daily Active Drivers</p>
-        <p className="text-4xl font-bold text-white mb-2">{activeDrivers.toLocaleString()}</p>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-green-300 bg-green-400/20 px-2 py-0.5 rounded-full">+6.3%</span>
-          <span className="text-xs text-blue-200">vs yesterday</span>
-          <div className="ml-auto w-5 h-5 rounded-full border border-blue-300/40 flex items-center justify-center">
-            <svg className="w-3 h-3 text-blue-200" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
-            </svg>
+      <div className="relative bg-gradient-to-br from-[#2B39C7] to-[#1a2499] p-5 flex-1 flex flex-col justify-between overflow-hidden">
+
+        {/* Glow image — left-aligned, shifted up 56px */}
+        <Image
+          src="/glow_01.png"
+          alt=""
+          width={400}
+          height={400}
+          className="absolute left-0 pointer-events-none select-none"
+          style={{ left: 240, top: -200, zIndex: 0 }}
+          priority
+        />
+
+        {/* Header */}
+        <p className="relative z-10 text-xs font-medium text-blue-200 uppercase tracking-wider">
+          Daily Active Drivers
+        </p>
+
+        {/* Metrics group */}
+        <div className="relative z-10">
+          <p className="text-4xl font-bold text-white mb-2">{activeDrivers.toLocaleString()}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-green-300 bg-green-400/20 px-2 py-0.5 rounded-full">+6.3%</span>
+            <span className="text-xs text-blue-200">vs yesterday</span>
+            <div className="ml-auto w-5 h-5 rounded-full border border-blue-300/40 flex items-center justify-center">
+              <svg className="w-3 h-3 text-blue-200" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+              </svg>
+            </div>
           </div>
         </div>
+
       </div>
 
       {/* Sub KPIs — 2 col grid */}

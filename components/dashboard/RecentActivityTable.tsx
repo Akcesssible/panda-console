@@ -1,37 +1,71 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { timeAgo } from '@/lib/utils'
+import { timeAgoShort } from '@/lib/utils'
 import type { AuditLog } from '@/lib/types'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { InformationCircleIcon, Search01Icon, FilterHorizontalIcon } from '@hugeicons/core-free-icons'
+import { InformationCircleIcon } from '@hugeicons/core-free-icons'
+import { SearchBar } from '@/components/ui/SearchBar'
+import { FilterButton } from '@/components/ui/FilterButton'
 
-const ACTION_META: Record<string, { label: string; type: string; status: string; statusColor: string }> = {
-  'driver.approve':           { label: 'New driver approved',     type: 'Driver',       status: 'Success',   statusColor: 'bg-green-500' },
-  'driver.reject':            { label: 'Driver rejected',         type: 'Driver',       status: 'Rejected',  statusColor: 'bg-red-500' },
-  'driver.suspend':           { label: 'Driver suspended',        type: 'Driver',       status: 'Suspended', statusColor: 'bg-red-500' },
-  'driver.reactivate':        { label: 'Driver reactivated',      type: 'Driver',       status: 'Success',   statusColor: 'bg-green-500' },
-  'driver.flag':              { label: 'Driver flagged',          type: 'Driver',       status: 'Pending',   statusColor: 'bg-yellow-500' },
-  'subscription.assign':      { label: 'Subscription activated',  type: 'Subscription', status: 'Success',   statusColor: 'bg-green-500' },
-  'subscription.revoke':      { label: 'Subscription revoked',    type: 'Subscription', status: 'Expired',   statusColor: 'bg-red-500' },
-  'pricing.rule.create':      { label: 'Pricing rule created',    type: 'Pricing',      status: 'Success',   statusColor: 'bg-green-500' },
-  'pricing.rule.deactivate':  { label: 'Pricing rule deactivated',type: 'Pricing',      status: 'Inactive',  statusColor: 'bg-gray-400' },
-  'support.ticket.resolve':   { label: 'Ticket resolved',         type: 'Support',      status: 'Resolved',  statusColor: 'bg-green-500' },
-  'support.fare.adjust':      { label: 'Fare adjusted',           type: 'Support',      status: 'Completed', statusColor: 'bg-green-500' },
-  'ride.flag':                { label: 'Ride flagged',            type: 'Ride',         status: 'Flagged',   statusColor: 'bg-orange-500' },
+// ── Action metadata ──────────────────────────────────────────────────────────
+const ACTION_META: Record<string, {
+  label: string
+  type: string
+  status: string
+  statusColor: string
+  refLabel: string
+  refHref: (id: string | null) => string
+}> = {
+  'driver.approve':            { label: 'New driver approved',       type: 'Driver',       status: 'Success',   statusColor: 'bg-green-500',  refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.reject':             { label: 'Driver rejected',           type: 'Driver',       status: 'Rejected',  statusColor: 'bg-red-500',    refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.suspend':            { label: 'Driver suspended',          type: 'Driver',       status: 'Suspended', statusColor: 'bg-red-500',    refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.reactivate':         { label: 'Driver reactivated',        type: 'Driver',       status: 'Success',   statusColor: 'bg-green-500',  refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.flag':               { label: 'Driver flagged',            type: 'Driver',       status: 'Pending',   statusColor: 'bg-yellow-400', refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'driver.signup':             { label: 'New driver signed up',      type: 'Driver',       status: 'Pending',   statusColor: 'bg-yellow-400', refLabel: 'Driver Profile',  refHref: id => `/drivers/${id}` },
+  'subscription.assign':       { label: 'Subscription activated',    type: 'Subscription', status: 'Success',   statusColor: 'bg-green-500',  refLabel: 'Subscription',    refHref: () => '/subscriptions' },
+  'subscription.revoke':       { label: 'Subscription revoked',      type: 'Subscription', status: 'Expired',   statusColor: 'bg-red-500',    refLabel: 'Subscription',    refHref: () => '/subscriptions' },
+  'subscription.expire':       { label: 'Subscription expired',      type: 'Subscription', status: 'Expired',   statusColor: 'bg-red-500',    refLabel: 'Subscription',    refHref: () => '/subscriptions' },
+  'pricing.rule.create':       { label: 'Pricing rule created',      type: 'Pricing',      status: 'Success',   statusColor: 'bg-green-500',  refLabel: 'Pricing Rule',    refHref: () => '/pricing' },
+  'pricing.rule.deactivate':   { label: 'Pricing rule deactivated',  type: 'Pricing',      status: 'Inactive',  statusColor: 'bg-gray-400',   refLabel: 'Pricing Rule',    refHref: () => '/pricing' },
+  'support.ticket.resolve':    { label: 'Ticket resolved',           type: 'Support',      status: 'Resolved',  statusColor: 'bg-green-500',  refLabel: 'Support Ticket',  refHref: id => `/support/${id}` },
+  'support.ticket.open':       { label: 'Fare dispute opened',       type: 'Support',      status: 'Open',      statusColor: 'bg-blue-500',   refLabel: 'Dispute',         refHref: id => `/support/${id}` },
+  'support.fare.adjust':       { label: 'Fare adjusted',             type: 'Support',      status: 'Completed', statusColor: 'bg-green-500',  refLabel: 'Support Ticket',  refHref: id => `/support/${id}` },
+  'ride.flag':                 { label: 'Ride flagged',              type: 'Ride',         status: 'Flagged',   statusColor: 'bg-orange-500', refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
+  'ride.complete':             { label: 'Ride completed',            type: 'Ride',         status: 'Completed', statusColor: 'bg-green-500',  refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
+  'ride.cancel':               { label: 'Ride cancelled by driver',  type: 'Ride',         status: 'Canceled',  statusColor: 'bg-red-500',    refLabel: 'Ride Details',    refHref: id => `/rides/${id}` },
 }
 
-function getReference(log: AuditLog): string {
-  const name = log.metadata?.driver_name ?? log.metadata?.name ?? log.admin_email.split('@')[0]
-  const type = log.entity_type.charAt(0).toUpperCase() + log.entity_type.slice(1)
-  return `${name} → ${type}`
+// ── Dev mock data (shown when DB returns empty) ───────────────────────────────
+const MOCK_LOGS: AuditLog[] = [
+  { id: 'm1', action: 'driver.approve',      entity_type: 'driver',       entity_id: '1',  metadata: { driver_name: 'John M.' },    admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 2  * 60_000).toISOString() },
+  { id: 'm2', action: 'subscription.assign', entity_type: 'subscription', entity_id: '2',  metadata: { name: 'Weekly Plan' },       admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 5  * 60_000).toISOString() },
+  { id: 'm3', action: 'ride.complete',       entity_type: 'ride',         entity_id: '49321', metadata: { name: 'Ride #49321' },    admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 8  * 60_000).toISOString() },
+  { id: 'm4', action: 'driver.signup',       entity_type: 'driver',       entity_id: '3',  metadata: { driver_name: 'Asha K.' },    admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 15 * 60_000).toISOString() },
+  { id: 'm5', action: 'ride.cancel',         entity_type: 'ride',         entity_id: '49318', metadata: { name: 'Ride #49318' },    admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 30 * 60_000).toISOString() },
+  { id: 'm6', action: 'subscription.expire', entity_type: 'subscription', entity_id: '5',  metadata: { driver_name: 'Neema P.' },   admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 3  * 3_600_000).toISOString() },
+  { id: 'm7', action: 'support.ticket.open', entity_type: 'support',      entity_id: '49112', metadata: { name: 'Ride #49112' },   admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 26 * 3_600_000).toISOString() },
+]
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function getRefName(log: AuditLog): string {
+  return (
+    (log.metadata?.driver_name as string | undefined) ??
+    (log.metadata?.name as string | undefined) ??
+    log.admin_email.split('@')[0]
+  )
 }
 
+// ── Component ─────────────────────────────────────────────────────────────────
 export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }) {
-  const [logs, setLogs] = useState<AuditLog[]>(initialLogs)
+  const [logs, setLogs] = useState<AuditLog[]>(
+    initialLogs.length > 0 ? initialLogs : MOCK_LOGS
+  )
   const [search, setSearch] = useState('')
 
+  // Realtime subscription
   useEffect(() => {
     const supabase = createClient()
     const channel = supabase
@@ -47,62 +81,84 @@ export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }
     if (!search) return true
     const meta = ACTION_META[log.action]
     const label = meta?.label ?? log.action
-    return label.toLowerCase().includes(search.toLowerCase()) ||
-      (meta?.type ?? log.entity_type).toLowerCase().includes(search.toLowerCase())
+    const type = meta?.type ?? log.entity_type
+    const name = getRefName(log)
+    const q = search.toLowerCase()
+    return label.toLowerCase().includes(q) || type.toLowerCase().includes(q) || name.toLowerCase().includes(q)
   })
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-semibold text-[#1d242d]">Recent Activity</span>
-          <HugeiconsIcon icon={InformationCircleIcon} size={14} color="#d1d5db" strokeWidth={1.5} />
+
+      {/* ── Card header ───────────────────────────────────────── */}
+      <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100">
+        {/* Title */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-base font-semibold text-[#1d242d]">Recent Activity</span>
+          <HugeiconsIcon icon={InformationCircleIcon} size={15} color="#d1d5db" strokeWidth={1.5} />
         </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <HugeiconsIcon icon={Search01Icon} size={14} color="currentColor" strokeWidth={1.8} />
-            </span>
-            <input
-              type="text"
-              placeholder="Search"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2B39C7] w-48"
-            />
-          </div>
-          <button className="flex items-center gap-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors">
-            <HugeiconsIcon icon={FilterHorizontalIcon} size={14} color="currentColor" strokeWidth={1.8} />
-            Filter
-          </button>
+
+        {/* Search — grows to fill space */}
+        <div className="flex-1">
+          <SearchBar value={search} onChange={setSearch} placeholder="Search" />
         </div>
+
+        {/* Filter */}
+        <FilterButton />
       </div>
 
-      {/* Table header */}
-      <div className="grid grid-cols-5 px-5 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide border-b border-gray-100">
-        <span className="col-span-2">Event</span>
-        <span>Type</span>
-        <span>Status</span>
-        <span>Time</span>
+      {/* ── Table column headers ───────────────────────────────── */}
+      <div className="grid px-6 py-3 border-b border-gray-100"
+        style={{ gridTemplateColumns: '2.5fr 1fr 2fr 1.3fr 1fr' }}>
+        {['Event', 'Type', 'Reference', 'Status', 'Time'].map(col => (
+          <span key={col} className="text-sm font-semibold text-[#1d242d]">{col}</span>
+        ))}
       </div>
 
-      {/* Rows */}
-      <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
+      {/* ── Rows ──────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
         {filtered.length === 0 ? (
-          <div className="px-5 py-10 text-sm text-gray-400 text-center">No activity yet</div>
+          <div className="px-6 py-10 text-sm text-gray-400 text-center">No activity found</div>
         ) : (
-          filtered.slice(0, 20).map(log => {
+          filtered.slice(0, 20).map((log, i) => {
             const meta = ACTION_META[log.action]
+            const refName = getRefName(log)
+            const refLabel = meta?.refLabel ?? log.entity_type
+            const refHref = meta?.refHref(log.entity_id) ?? '#'
+            const isEven = i % 2 === 1
+
             return (
-              <div key={log.id} className="grid grid-cols-5 px-5 py-3 text-sm hover:bg-gray-50 items-center">
-                <span className="col-span-2 text-[#1d242d]">{meta?.label ?? log.action}</span>
-                <span className="text-gray-400">{meta?.type ?? log.entity_type}</span>
-                <span className="flex items-center gap-1.5">
+              <div
+                key={log.id}
+                className={`grid px-6 py-3.5 items-center text-sm transition-colors hover:bg-[#eef0fb] ${
+                  isEven ? 'bg-[#F5F7FF]' : 'bg-white'
+                }`}
+                style={{ gridTemplateColumns: '2.5fr 1fr 2fr 1.3fr 1fr' }}
+              >
+                {/* Event */}
+                <span className="text-[#1d242d] font-normal">{meta?.label ?? log.action}</span>
+
+                {/* Type */}
+                <span className="text-gray-500">{meta?.type ?? log.entity_type}</span>
+
+                {/* Reference */}
+                <Link
+                  href={refHref}
+                  className="flex items-center gap-1 group"
+                >
+                  <span className="font-semibold text-[#1d242d] group-hover:underline">{refName}</span>
+                  <span className="text-gray-400"> → </span>
+                  <span className="text-gray-500 group-hover:text-[#2B39C7] group-hover:underline transition-colors">{refLabel}</span>
+                </Link>
+
+                {/* Status */}
+                <span className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${meta?.statusColor ?? 'bg-gray-400'}`} />
-                  <span className="text-gray-500">{meta?.status ?? 'Done'}</span>
+                  <span className="text-[#1d242d]">{meta?.status ?? 'Done'}</span>
                 </span>
-                <span className="text-gray-400 text-xs">{timeAgo(log.created_at)}</span>
+
+                {/* Time */}
+                <span className="text-gray-400 text-xs">{timeAgoShort(log.created_at)}</span>
               </div>
             )
           })
