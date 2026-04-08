@@ -55,8 +55,8 @@ export function DriversTable({
       {/* Table */}
       <DataTable
         columns={columns}
-        data={drivers as Record<string, unknown>[]}
-        onRowClick={row => router.push(`/drivers/${(row as Driver).id}`)}
+        data={drivers}
+        onRowClick={(row: Driver) => router.push(`/drivers/${row.id}`)}
       />
 
       <Pagination page={page} total={total} perPage={20} onPageChange={p => navigate({ page: String(p) })} />
@@ -70,7 +70,7 @@ function getColumns(tab: string) {
       key: 'full_name',
       label: 'Driver Name',
       render: (row: Record<string, unknown>) => {
-        const d = row as Driver
+        const d = row as unknown as Driver
         return (
           <div>
             <p className="font-medium text-gray-900">{d.full_name}</p>
@@ -82,13 +82,13 @@ function getColumns(tab: string) {
     {
       key: 'phone',
       label: 'Phone',
-      render: (row: Record<string, unknown>) => (row as Driver).phone,
+      render: (row: Record<string, unknown>) => (row as unknown as Driver).phone,
     },
     {
       key: 'vehicle_type',
       label: 'Vehicle',
       render: (row: Record<string, unknown>) => {
-        const d = row as Driver
+        const d = row as unknown as Driver
         const v = d.vehicles?.[0]
         if (!v) return <span className="text-gray-400">—</span>
         return <span className="capitalize">{v.vehicle_type}</span>
@@ -103,7 +103,7 @@ function getColumns(tab: string) {
         key: 'subscription',
         label: 'Subscription',
         render: (row: Record<string, unknown>) => {
-          const d = row as Driver
+          const d = row as unknown as Driver
           const sub = d.driver_subscriptions?.[0]
           return sub ? <SubscriptionBadge status={sub.status} /> : <span className="text-gray-400 text-xs">None</span>
         },
@@ -111,18 +111,18 @@ function getColumns(tab: string) {
       {
         key: 'total_trips',
         label: 'Total Trips',
-        render: (row: Record<string, unknown>) => (row as Driver).total_trips,
+        render: (row: Record<string, unknown>) => (row as unknown as Driver).total_trips,
       },
       {
         key: 'status',
         label: 'Status',
-        render: (row: Record<string, unknown>) => <DriverStatusBadge status={(row as Driver).status} />,
+        render: (row: Record<string, unknown>) => <DriverStatusBadge status={(row as unknown as Driver).status} />,
       },
       {
         key: 'last_active_at',
         label: 'Last Active',
         render: (row: Record<string, unknown>) => (
-          <span className="text-gray-500 text-xs">{timeAgo((row as Driver).last_active_at ?? undefined)}</span>
+          <span className="text-gray-500 text-xs">{timeAgo((row as unknown as Driver).last_active_at ?? undefined)}</span>
         ),
       },
     ]
@@ -135,7 +135,7 @@ function getColumns(tab: string) {
         key: 'subscription',
         label: 'Subscription',
         render: (row: Record<string, unknown>) => {
-          const sub = (row as Driver).driver_subscriptions?.[0]
+          const sub = (row as unknown as Driver).driver_subscriptions?.[0]
           return sub ? <SubscriptionBadge status={sub.status} /> : <span className="text-gray-400 text-xs">None</span>
         },
       },
@@ -143,7 +143,7 @@ function getColumns(tab: string) {
         key: 'rating',
         label: 'Rating',
         render: (row: Record<string, unknown>) => {
-          const r = (row as Driver).rating
+          const r = (row as unknown as Driver).rating
           return <span className="text-gray-700">⭐ {r?.toFixed(1)}</span>
         },
       },
@@ -151,7 +151,7 @@ function getColumns(tab: string) {
         key: 'last_active_at',
         label: 'Last Active',
         render: (row: Record<string, unknown>) => (
-          <span className="text-gray-500 text-xs">{timeAgo((row as Driver).last_active_at ?? undefined)}</span>
+          <span className="text-gray-500 text-xs">{timeAgo((row as unknown as Driver).last_active_at ?? undefined)}</span>
         ),
       },
     ]
@@ -168,12 +168,12 @@ function getColumns(tab: string) {
       {
         key: 'joined_at',
         label: 'Signup Date',
-        render: (row: Record<string, unknown>) => formatDate((row as Driver).joined_at),
+        render: (row: Record<string, unknown>) => formatDate((row as unknown as Driver).joined_at),
       },
       {
         key: 'status',
         label: 'Status',
-        render: (row: Record<string, unknown>) => <DriverStatusBadge status={(row as Driver).status} />,
+        render: (row: Record<string, unknown>) => <DriverStatusBadge status={(row as unknown as Driver).status} />,
       },
     ]
   }
@@ -185,24 +185,24 @@ function getColumns(tab: string) {
         key: 'suspended_reason',
         label: 'Reason',
         render: (row: Record<string, unknown>) => (
-          <span className="text-gray-600 text-xs">{(row as Driver).suspended_reason ?? '—'}</span>
+          <span className="text-gray-600 text-xs">{(row as unknown as Driver).suspended_reason ?? '—'}</span>
         ),
       },
       {
         key: 'suspended_at',
         label: 'Suspended On',
-        render: (row: Record<string, unknown>) => formatDate((row as Driver).suspended_at ?? undefined),
+        render: (row: Record<string, unknown>) => formatDate((row as unknown as Driver).suspended_at ?? undefined),
       },
       {
         key: 'total_trips',
         label: 'Total Trips',
-        render: (row: Record<string, unknown>) => (row as Driver).total_trips,
+        render: (row: Record<string, unknown>) => (row as unknown as Driver).total_trips,
       },
       {
         key: 'complaints_count',
         label: 'Complaints',
         render: (row: Record<string, unknown>) => (
-          <span className="text-red-600 font-medium">{(row as Driver).complaints_count}</span>
+          <span className="text-red-600 font-medium">{(row as unknown as Driver).complaints_count}</span>
         ),
       },
     ]
@@ -215,19 +215,19 @@ function getColumns(tab: string) {
         key: 'last_active_at',
         label: 'Last Active',
         render: (row: Record<string, unknown>) => (
-          <span className="text-gray-500 text-xs">{timeAgo((row as Driver).last_active_at ?? undefined)}</span>
+          <span className="text-gray-500 text-xs">{timeAgo((row as unknown as Driver).last_active_at ?? undefined)}</span>
         ),
       },
       {
         key: 'total_trips',
         label: 'Total Trips',
-        render: (row: Record<string, unknown>) => (row as Driver).total_trips,
+        render: (row: Record<string, unknown>) => (row as unknown as Driver).total_trips,
       },
       {
         key: 'churn_reason',
         label: 'Churn Reason',
         render: (row: Record<string, unknown>) => (
-          <span className="text-gray-500 text-xs">{(row as Driver).churn_reason ?? 'Inactivity'}</span>
+          <span className="text-gray-500 text-xs">{(row as unknown as Driver).churn_reason ?? 'Inactivity'}</span>
         ),
       },
     ]

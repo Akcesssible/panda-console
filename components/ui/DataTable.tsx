@@ -1,15 +1,18 @@
 interface Column<T> {
   key: string
   label: string
-  render?: (row: T) => React.ReactNode
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  render?: (row: any) => React.ReactNode
   className?: string
 }
 
 interface DataTableProps<T> {
   columns: Column<T>[]
-  data: T[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any[]
   keyField?: keyof T
-  onRowClick?: (row: T) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onRowClick?: (row: any) => void
   emptyMessage?: string
 }
 

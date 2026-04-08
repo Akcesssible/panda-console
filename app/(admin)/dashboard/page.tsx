@@ -39,7 +39,7 @@ async function getDashboardData() {
   ])
 
   const totalEarningsToday = (todayEarnings ?? []).reduce(
-    (sum, r) => sum + (r.driver_earnings_tzs ?? 0), 0
+    (sum: number, r: Record<string, number | null>) => sum + (r.driver_earnings_tzs ?? 0), 0
   )
   const avgEarningsPerDriver = activeDrivers && activeDrivers > 0
     ? totalEarningsToday / activeDrivers
