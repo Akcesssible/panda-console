@@ -62,7 +62,7 @@ function AlertItem({
         </div>
         <Link
           href={href}
-          className="text-xs font-medium text-blue-600 hover:text-blue-800 whitespace-nowrap mt-1"
+          className="text-xs font-medium text-primary$ hover:text-primary-dark$ whitespace-nowrap mt-1"
         >
           {ctaLabel}
         </Link>

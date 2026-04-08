@@ -50,12 +50,12 @@ export function SettingsView({
       <div className="px-5 pt-4 flex items-center justify-between">
         <Tabs tabs={TABS} active={tab} onChange={key => navigate({ tab: key })} />
         {tab === 'admin_users' && (
-          <button onClick={() => setAddAdminModal(true)} className="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <button onClick={() => setAddAdminModal(true)} className="px-3 py-1.5 text-sm font-medium bg-primary$ text-white rounded-lg hover:bg-primary-dark$">
             + Add Admin
           </button>
         )}
         {tab === 'zones' && (
-          <button onClick={() => setAddZoneModal(true)} className="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <button onClick={() => setAddZoneModal(true)} className="px-3 py-1.5 text-sm font-medium bg-primary$ text-white rounded-lg hover:bg-primary-dark$">
             + Add Zone
           </button>
         )}
@@ -181,7 +181,7 @@ function ConfigTab({ config, onRefresh }: { config: SystemConfig[]; onRefresh: (
                 <span className="text-sm font-mono text-gray-700">{item.value}</span>
                 <button
                   onClick={() => { setEditing(item.key); setValue(item.value) }}
-                  className="text-xs text-blue-600 hover:text-blue-800"
+                  className="text-xs text-primary$ hover:text-primary-dark$"
                 >
                   Edit
                 </button>
@@ -237,7 +237,7 @@ function AddAdminModal({ open, onClose }: { open: boolean; onClose: () => void }
         <>
           <button onClick={onClose} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Cancel</button>
           <button disabled={!form.full_name || !form.email || loading} onClick={handleSubmit}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            className="px-4 py-2 text-sm bg-primary$ text-white rounded-lg hover:bg-primary-dark$ disabled:opacity-50">
             {loading ? 'Creating...' : 'Create Admin'}
           </button>
         </>
@@ -254,7 +254,7 @@ function AddAdminModal({ open, onClose }: { open: boolean; onClose: () => void }
               value={form[field as keyof typeof form]}
               onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))}
               placeholder={placeholder}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$"
             />
           </div>
         ))}
@@ -263,7 +263,7 @@ function AddAdminModal({ open, onClose }: { open: boolean; onClose: () => void }
           <select
             value={form.role}
             onChange={e => setForm(prev => ({ ...prev, role: e.target.value }))}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$"
           >
             <option value="ops_admin">Operations Admin</option>
             <option value="support_agent">Support Agent</option>
@@ -297,7 +297,7 @@ function AddZoneModal({ open, onClose }: { open: boolean; onClose: () => void })
         <>
           <button onClick={onClose} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Cancel</button>
           <button disabled={!form.name || loading} onClick={handleSubmit}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            className="px-4 py-2 text-sm bg-primary$ text-white rounded-lg hover:bg-primary-dark$ disabled:opacity-50">
             {loading ? 'Creating...' : 'Create Zone'}
           </button>
         </>
@@ -307,12 +307,12 @@ function AddZoneModal({ open, onClose }: { open: boolean; onClose: () => void })
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Zone Name</label>
           <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Kinondoni"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
           <input value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))} placeholder="Dar es Salaam"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$" />
         </div>
       </div>
     </Modal>

@@ -61,7 +61,7 @@ export function TicketActions({ ticket, adminUser }: { ticket: SupportTicket; ad
           {!ticket.assigned_to && !isResolved && (
             <button
               onClick={assignToSelf}
-              className="w-full py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="w-full py-2 text-sm font-medium bg-primary$ text-white rounded-lg hover:bg-primary-dark$"
             >
               Assign to Me
             </button>

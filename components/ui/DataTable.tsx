@@ -88,7 +88,7 @@ export function Pagination({
             onClick={() => onPageChange(p)}
             className={`px-3 py-1 text-xs border rounded ${
               p === page
-                ? 'bg-blue-600 text-white border-blue-600'
+                ? 'bg-primary$ text-white border-primary$'
                 : 'border-gray-200 hover:bg-gray-50'
             }`}
           >

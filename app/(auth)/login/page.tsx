@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -30,55 +31,66 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 w-full max-w-sm">
-        {/* Logo */}
-        <div className="mb-8">
-          <span className="text-2xl font-bold text-gray-900">panda</span>
-        </div>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Logo — top left */}
+      <div className="p-8">
+        <Image src="/panda-logo.svg" alt="Panda Console" width={120} height={40} priority />
+      </div>
 
-        <h1 className="text-lg font-semibold text-gray-900 mb-1">Sign in to Panda Console</h1>
-        <p className="text-sm text-gray-500 mb-6">Back office admin access only</p>
+      {/* Form — centered */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full max-w-md px-4">
+          <h1 className="text-3xl font-semibold text-gray-900 text-center mb-8">
+            Sign in to Panda Console
+          </h1>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="admin@pandahailing.com"
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <form onSubmit={handleLogin} className="space-y-3">
+            {/* Email field */}
+            <div className="bg-[#E8E8E8] rounded-2xl px-4 pt-3 pb-3 border-2 border-transparent focus-within:border-[#1d242d] transition-colors">
+              <label className="block font-mono text-xs font-normal text-gray-500 uppercase tracking-wider mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="kevin@pandahailing.com"
+                required
+                className="w-full bg-transparent text-[#1d242d] text-sm placeholder-gray-400 focus:outline-none"
+              />
+            </div>
+
+            {/* Password field */}
+            <div className="bg-[#E8E8E8] rounded-2xl px-4 pt-3 pb-3 border-2 border-transparent focus-within:border-[#1d242d] transition-colors">
+              <label className="block font-mono text-xs font-normal text-gray-500 uppercase tracking-wider mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                className="w-full bg-transparent text-[#1d242d] text-sm placeholder-gray-400 focus:outline-none"
+              />
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-xl">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#2B39C7] text-white py-3.5 px-4 rounded-2xl text-sm font-medium hover:bg-[#202b95] disabled:opacity-60 transition-colors mt-2 cursor-pointer"
+            >
+              {loading ? 'Signing in...' : 'Login'}
+            </button>
+          </form>
+
+          <div className="mt-6 flex justify-between text-sm text-gray-500">
+            <button className="hover:text-gray-800 transition-colors">Reset Password</button>
+            <button className="hover:text-gray-800 transition-colors">Contact Support</button>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition-colors"
-          >
-            {loading ? 'Signing in...' : 'Login'}
-          </button>
-        </form>
-
-        <div className="mt-6 flex justify-between text-xs text-gray-400">
-          <button className="hover:text-gray-600">Reset Password</button>
-          <button className="hover:text-gray-600">Contact Support</button>
         </div>
       </div>
     </div>

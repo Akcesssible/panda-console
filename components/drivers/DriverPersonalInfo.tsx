@@ -45,7 +45,7 @@ export function DriverPersonalInfo({ driver, documents }: { driver: Driver; docu
                       href={doc.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:text-blue-800"
+                      className="text-xs text-primary$ hover:text-primary-dark$"
                     >
                       View
                     </a>

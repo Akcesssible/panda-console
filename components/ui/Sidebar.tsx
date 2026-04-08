@@ -48,11 +48,11 @@ export default function Sidebar({ role }: { role: AdminRole }) {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                 active
-                  ? 'bg-blue-50 text-blue-700 font-medium'
+                  ? 'bg-primary-50$ text-primary$ font-medium'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <span className={`w-4 h-4 ${active ? 'text-blue-600' : 'text-gray-400'}`}>
+              <span className={`w-4 h-4 ${active ? 'text-primary$' : 'text-gray-400'}`}>
                 {item.icon}
               </span>
               {item.label}

@@ -92,7 +92,7 @@ export function SubscriptionsView({
         {tab === 'plans' && (
           <button
             onClick={() => setPlanModal(true)}
-            className="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-3 py-1.5 text-sm font-medium bg-primary$ text-white rounded-lg hover:bg-primary-dark$"
           >
             + New Plan
           </button>
@@ -218,7 +218,7 @@ function CreatePlanModal({ open, onClose }: { open: boolean; onClose: () => void
           <button
             disabled={!form.name || !form.price_tzs || loading}
             onClick={handleSubmit}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 text-sm bg-primary$ text-white rounded-lg hover:bg-primary-dark$ disabled:opacity-50"
           >
             {loading ? 'Creating...' : 'Create Plan'}
           </button>
@@ -237,7 +237,7 @@ function CreatePlanModal({ open, onClose }: { open: boolean; onClose: () => void
               value={form[field as keyof typeof form]}
               onChange={f(field)}
               placeholder={placeholder}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$"
             />
           </div>
         ))}
@@ -247,7 +247,7 @@ function CreatePlanModal({ open, onClose }: { open: boolean; onClose: () => void
             value={form.description}
             onChange={f('description')}
             rows={2}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$"
           />
         </div>
       </div>

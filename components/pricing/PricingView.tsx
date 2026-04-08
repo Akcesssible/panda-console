@@ -49,7 +49,7 @@ export function PricingView({
         {canWrite && tab === 'active' && (
           <button
             onClick={() => setCreateModal(true)}
-            className="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-3 py-1.5 text-sm font-medium bg-primary$ text-white rounded-lg hover:bg-primary-dark$"
           >
             + New Rule
           </button>
@@ -75,7 +75,7 @@ export function PricingView({
                   {rule.vehicle_type ?? 'All vehicles'}
                 </span>
                 {rule.zone_id && (
-                  <span className="text-xs text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                  <span className="text-xs text-primary$ bg-primary-50$ border border-primary-200$ px-1.5 py-0.5 rounded">
                     Zone: {(rule.zones as { name: string } | null)?.name}
                   </span>
                 )}
@@ -191,7 +191,7 @@ function CreatePricingRuleModal({
           <button
             disabled={!form.name || !form.base_fare_tzs || !form.per_km_rate_tzs || loading}
             onClick={handleSubmit}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 text-sm bg-primary$ text-white rounded-lg hover:bg-primary-dark$ disabled:opacity-50"
           >
             {loading ? 'Creating...' : 'Create Rule'}
           </button>
@@ -202,12 +202,12 @@ function CreatePricingRuleModal({
         <div className="col-span-2">
           <label className="block text-xs font-medium text-gray-700 mb-1">Rule Name</label>
           <input value={form.name} onChange={f('name')} placeholder="e.g. Kinondoni Bajaj Peak"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$" />
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Vehicle Type</label>
           <select value={form.vehicle_type} onChange={f('vehicle_type')}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$">
             <option value="">All Vehicles</option>
             <option value="bodaboda">Bodaboda</option>
             <option value="bajaj">Bajaj</option>
@@ -217,7 +217,7 @@ function CreatePricingRuleModal({
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Zone</label>
           <select value={form.zone_id} onChange={f('zone_id')}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$">
             <option value="">All Zones</option>
             {zones.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
           </select>
@@ -235,7 +235,7 @@ function CreatePricingRuleModal({
           <div key={field}>
             <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
             <input value={form[field as keyof typeof form]} onChange={f(field)} placeholder={ph}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary$" />
           </div>
         ))}
         {error && <p className="col-span-2 text-sm text-red-600">{error}</p>}

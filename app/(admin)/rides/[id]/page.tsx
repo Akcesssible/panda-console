@@ -64,7 +64,7 @@ export default async function RideDetailPage({ params }: { params: Promise<{ id:
               <p className="text-xs text-gray-400 mb-0.5">Driver</p>
               {ride.drivers ? (
                 <div>
-                  <Link href={`/drivers/${ride.drivers.id}`} className="font-medium text-blue-600 hover:underline">
+                  <Link href={`/drivers/${ride.drivers.id}`} className="font-medium text-primary$ hover:underline">
                     {ride.drivers.full_name}
                   </Link>
                   <p className="text-xs text-gray-500">{ride.drivers.phone} · {ride.drivers.driver_number}</p>
@@ -143,7 +143,7 @@ export default async function RideDetailPage({ params }: { params: Promise<{ id:
             {timeline.map((t, i) => (
               <div key={i} className="flex gap-3">
                 <div className="flex flex-col items-center">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
+                  <div className="w-2 h-2 rounded-full bg-primary-50$0 mt-1.5" />
                   {i < timeline.length - 1 && <div className="w-px h-6 bg-gray-200 mt-1" />}
                 </div>
                 <div>

@@ -65,7 +65,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
           {ticket.drivers && (
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Linked Driver</h3>
-              <Link href={`/drivers/${ticket.driver_id}`} className="text-sm font-medium text-blue-600 hover:underline">
+              <Link href={`/drivers/${ticket.driver_id}`} className="text-sm font-medium text-primary$ hover:underline">
                 {(ticket.drivers as { full_name: string }).full_name}
               </Link>
               <p className="text-xs text-gray-500">{(ticket.drivers as { phone: string }).phone}</p>
@@ -76,7 +76,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
           {ticket.rides && (
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Related Ride</h3>
-              <Link href={`/rides/${ticket.ride_id}`} className="text-sm font-medium text-blue-600 hover:underline">
+              <Link href={`/rides/${ticket.ride_id}`} className="text-sm font-medium text-primary$ hover:underline">
                 {(ticket.rides as { ride_number: string }).ride_number}
               </Link>
               {(ticket.rides as { total_fare_tzs: number }).total_fare_tzs && (

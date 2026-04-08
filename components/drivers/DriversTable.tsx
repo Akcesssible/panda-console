@@ -46,7 +46,7 @@ export function DriversTable({
         <input
           defaultValue={search}
           placeholder="Search by name, phone, or driver number..."
-          className="w-64 text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-64 text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary$"
           onChange={e => navigate({ search: e.target.value, page: '1' })}
         />
         <span className="ml-4 text-sm text-gray-500">Total: {total.toLocaleString()}</span>
