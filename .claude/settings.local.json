@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npm --version)",
-      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-eslint --src-dir=false --import-alias=\"@/*\" --yes)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-eslint --src-dir=false --import-alias=\"@/*\" --yes)",
+      "Bash(npm install:*)"
     ]
   }
 }
