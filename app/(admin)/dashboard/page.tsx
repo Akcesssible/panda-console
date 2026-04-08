@@ -6,22 +6,15 @@ import { AlertsPanel } from '@/components/dashboard/AlertsPanel'
 import { RecentActivityFeed } from '@/components/dashboard/RecentActivityFeed'
 import { formatTZS } from '@/lib/utils'
 
+function settled<T>(result: PromiseSettledResult<T>, fallback: T): T {
+  return result.status === 'fulfilled' ? result.value : fallback
+}
+
 async function getDashboardData() {
   const supabase = createAdminClient()
   const today = new Date().toISOString().split('T')[0]
 
-  const [
-    { count: totalDrivers },
-    { count: activeDrivers },
-    { count: pendingDrivers },
-    { count: completedToday },
-    { data: todayEarnings },
-    { count: activeSubscriptions },
-    { count: openTickets },
-    { count: expiredSubs },
-    { data: earningsTrend },
-    { data: recentActivity },
-  ] = await Promise.all([
+  const results = await Promise.allSettled([
     supabase.from('drivers').select('*', { count: 'exact', head: true }),
     supabase.from('drivers').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('drivers').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
@@ -32,37 +25,33 @@ async function getDashboardData() {
     supabase.from('driver_subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('support_tickets').select('*', { count: 'exact', head: true }).in('status', ['open', 'in_progress']),
     supabase.from('driver_subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'expired'),
-    // 7-day earning trend
-    supabase.rpc('get_7day_earnings_trend').select('*'),
-    // Recent audit logs
+    supabase.rpc('get_7day_earnings_trend'),
     supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(20),
   ])
 
-  const totalEarningsToday = (todayEarnings ?? []).reduce(
-    (sum: number, r: Record<string, number | null>) => sum + (r.driver_earnings_tzs ?? 0), 0
+  const activeDrivers  = settled(results[1], { count: 0 }).count ?? 0
+  const pendingDrivers = settled(results[2], { count: 0 }).count ?? 0
+  const completedToday = settled(results[3], { count: 0 }).count ?? 0
+  const todayEarnings  = settled(results[4], { data: [] }).data ?? []
+  const activeSubscriptions = settled(results[5], { count: 0 }).count ?? 0
+  const openTickets    = settled(results[6], { count: 0 }).count ?? 0
+  const expiredSubs    = settled(results[7], { count: 0 }).count ?? 0
+  const earningsTrend  = settled(results[8], { data: [] }).data ?? []
+  const recentActivity = settled(results[9], { data: [] }).data ?? []
+
+  const totalEarningsToday = (todayEarnings as Record<string, number | null>[]).reduce(
+    (sum: number, r) => sum + (r.driver_earnings_tzs ?? 0), 0
   )
-  const avgEarningsPerDriver = activeDrivers && activeDrivers > 0
-    ? totalEarningsToday / activeDrivers
-    : 0
-  const subscriptionConversionRate = activeDrivers && activeDrivers > 0
-    ? Math.round(((activeSubscriptions ?? 0) / activeDrivers) * 100)
+  const avgEarningsPerDriver = activeDrivers > 0 ? totalEarningsToday / activeDrivers : 0
+  const subscriptionConversionRate = activeDrivers > 0
+    ? Math.round((activeSubscriptions / activeDrivers) * 100)
     : 0
 
   return {
-    kpis: {
-      activeDrivers: activeDrivers ?? 0,
-      completedToday: completedToday ?? 0,
-      avgEarningsPerDriver,
-      subscriptionConversionRate,
-      activeSubscriptions: activeSubscriptions ?? 0,
-    },
-    alerts: {
-      pendingDrivers: pendingDrivers ?? 0,
-      expiredSubs: expiredSubs ?? 0,
-      openTickets: openTickets ?? 0,
-    },
-    earningsTrend: earningsTrend ?? [],
-    recentActivity: recentActivity ?? [],
+    kpis: { activeDrivers, completedToday, avgEarningsPerDriver, subscriptionConversionRate, activeSubscriptions },
+    alerts: { pendingDrivers, expiredSubs, openTickets },
+    earningsTrend,
+    recentActivity,
   }
 }
 
