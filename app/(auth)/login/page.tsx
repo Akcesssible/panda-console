@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -11,6 +11,8 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const sessionExpired = searchParams.get('reason') === 'session_expired'
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -43,6 +45,12 @@ export default function LoginPage() {
           <h1 className="text-3xl font-semibold text-gray-900 text-center mb-8">
             Sign in to Panda Console
           </h1>
+
+          {sessionExpired && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl mb-4 text-center">
+              Your session has expired. Please sign in again.
+            </p>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-3">
             {/* Email field */}
