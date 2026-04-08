@@ -3,7 +3,14 @@
     "allow": [
       "Bash(npm --version)",
       "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-eslint --src-dir=false --import-alias=\"@/*\" --yes)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node -e ':*)",
+      "Read(//c/Program Files/GitHub CLI//**)",
+      "Read(//c/Users/HP/AppData/Local/Programs/**)",
+      "Read(//c/Users/HP/AppData/Roaming/winget/**)",
+      "Bash('/c/Program Files/GitHub CLI/gh.exe' pr create --title 'feat: Panda Console MVP' --body ':*)",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }

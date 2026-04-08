@@ -6,6 +6,8 @@ import { ChurnRateCard } from '@/components/dashboard/ChurnRateCard'
 import { ActionAlertCard } from '@/components/dashboard/ActionAlertCard'
 import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable'
 import Link from 'next/link'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ArrowDownLeft01Icon } from '@hugeicons/core-free-icons'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function settled(result: PromiseSettledResult<any>, fallback: any): any {
@@ -72,23 +74,17 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/rides"
-            className="flex items-center gap-1.5 text-sm font-medium text-[#1d242d] border border-gray-200 bg-white rounded-xl px-4 py-2 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 text-sm font-medium text-[#1d242d] border border-gray-200 bg-white rounded-xl p-4 hover:bg-gray-50 transition-colors"
           >
             Live Rides
-            <svg className="w-3.5 h-3.5 opacity-50" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
-              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
-            </svg>
+            <HugeiconsIcon icon={ArrowDownLeft01Icon} size={16} color="#1d242d" strokeWidth={1.5} />
           </Link>
           <Link
             href="/subscriptions?tab=expired"
-            className="flex items-center gap-1.5 text-sm font-medium text-[#1d242d] border border-gray-200 bg-white rounded-xl px-4 py-2 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 text-sm font-medium text-[#1d242d] border border-gray-200 bg-white rounded-xl p-4 hover:bg-gray-50 transition-colors"
           >
             Expired Subscriptions
-            <svg className="w-3.5 h-3.5 opacity-50" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
-              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
-            </svg>
+            <HugeiconsIcon icon={ArrowDownLeft01Icon} size={16} color="#1d242d" strokeWidth={1.5} />
           </Link>
         </div>
       </div>

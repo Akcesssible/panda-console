@@ -26,7 +26,7 @@ export default function TopBar({ adminUser }: { adminUser: AdminUser }) {
       </Link>
 
       {/* Right actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <div className='flex items-center gap-4 p-2 bg-white rounded-full'>
           <button className="w-9 h-9 flex items-center justify-center rounded-full text-gray-400 hover:bg-[#DADFE5] transition-colors">
             <HugeiconsIcon icon={Search02Icon} size={24} color="#1E1E1E" strokeWidth={1.5} />
@@ -41,14 +41,18 @@ export default function TopBar({ adminUser }: { adminUser: AdminUser }) {
             <HugeiconsIcon icon={InformationCircleIcon} size={24} color="#1E1E1E" strokeWidth={1.5} />
           </button>
         </div>
-        <div className="w-px h-6 bg-gray-200 mx-1" />
+        {/* <div className="w-px h-6 bg-gray-200 mx-1" /> */}
 
         {/* User pill */}
-        <div className="flex items-center gap-2.5 pl-1">
+        <div className="flex items-center gap-2.5 ml-1 p-2 bg-white rounded-full">
           <div className="relative">
-            <div className="w-9 h-9 rounded-full bg-[#e8eaf6] flex items-center justify-center text-sm font-semibold text-[#2B39C7]">
-              {getInitials(adminUser.full_name)}
-            </div>
+            <Image
+              src="/admin-ceo-img.png"
+              alt={adminUser.full_name}
+              width={36}
+              height={36}
+              className="rounded-full object-cover w-9 h-9"
+            />
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
           </div>
           <div className="hidden sm:block">
