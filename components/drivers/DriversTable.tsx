@@ -140,8 +140,7 @@ function getColumns(tab: string) {
           const sub = (d as any).driver_subscriptions?.[0]
           if (!sub) return <span className="text-gray-400 text-sm">None</span>
           const label = sub.status === 'active' ? 'Active' : sub.status === 'expired' ? 'Expired' : sub.status
-          const color = sub.status === 'active' ? 'text-green-600' : 'text-red-500'
-          return <span className={`text-sm ${color}`}>{label}</span>
+          return <span className="text-sm text-gray-600">{label}</span>
         },
       },
       {

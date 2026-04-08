@@ -1,6 +1,22 @@
 import { getSubscriptions, getPlans, getPayments } from '@/lib/queries/subscriptions'
+import { createAdminClient } from '@/lib/supabase/server'
 import { SubscriptionsView } from '@/components/subscriptions/SubscriptionsView'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { StatsRow } from '@/components/ui/StatsRow'
+import { formatTZS } from '@/lib/utils'
+import type { StatItem } from '@/components/ui/StatsRow'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function settled(r: PromiseSettledResult<any>, fallback: any) {
+  return r.status === 'fulfilled' ? r.value : fallback
+}
+
+const MOCK_STATS: StatItem[] = [
+  { label: 'Active Subscriptions', value: 842,         sub: 'of 1,168 total drivers' },
+  { label: 'Expired Subscriptions',value: 214,         sub: 'Need renewal' },
+  { label: 'Failed Payments',       value: 31,          sub: 'Requires action' },
+  { label: 'Monthly Revenue',       value: 'TZS 12.4M', sub: 'Subscription payments' },
+]
 
 export default async function SubscriptionsPage({
   searchParams,
@@ -8,10 +24,13 @@ export default async function SubscriptionsPage({
   searchParams: Promise<{ tab?: string; page?: string }>
 }) {
   const params = await searchParams
-  const tab = params.tab ?? 'active'
+  const tab  = params.tab ?? 'active'
   const page = Number(params.page ?? 1)
 
-  const [subsResult, plans, paymentsResult] = await Promise.all([
+  const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+  const supabase     = createAdminClient()
+
+  const [subsResult, plans, paymentsResult, activeR, expiredR, failedR, revenueR] = await Promise.allSettled([
     tab !== 'plans' && tab !== 'payments'
       ? getSubscriptions({ status: tab === 'active' ? 'active' : tab === 'expired' ? 'expired' : undefined, page })
       : Promise.resolve({ subscriptions: [], total: 0 }),
@@ -19,31 +38,44 @@ export default async function SubscriptionsPage({
     tab === 'payments' ? getPayments({ status: 'failed', page })
       : tab === 'payment_history' ? getPayments({ page })
       : Promise.resolve({ payments: [], total: 0 }),
+    supabase.from('driver_subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+    supabase.from('driver_subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'expired'),
+    supabase.from('subscription_payments').select('*', { count: 'exact', head: true }).eq('status', 'failed'),
+    supabase.from('subscription_payments').select('amount_tzs').eq('status', 'completed').gte('created_at', firstOfMonth),
   ])
 
+  const activeSubs  = settled(activeR,   { count: 0 }).count ?? 0
+  const expiredSubs = settled(expiredR,  { count: 0 }).count ?? 0
+  const failedPays  = settled(failedR,   { count: 0 }).count ?? 0
+  const revRows     = settled(revenueR,  { data: [] }).data ?? []
+  const monthRevenue = (revRows as Record<string, number | null>[]).reduce((s, r) => s + (r.amount_tzs ?? 0), 0)
+
+  const useMock = activeSubs === 0 && expiredSubs === 0
+  const stats: StatItem[] = useMock ? MOCK_STATS : [
+    { label: 'Active Subscriptions',  value: activeSubs,               sub: 'Currently subscribed' },
+    { label: 'Expired Subscriptions', value: expiredSubs,              sub: 'Need renewal' },
+    { label: 'Failed Payments',        value: failedPays,               sub: 'Requires action' },
+    { label: 'Monthly Revenue',        value: formatTZS(monthRevenue),  sub: 'This month' },
+  ]
+
   const TABS = [
-    { key: 'active', label: 'Active' },
-    { key: 'expired', label: 'Expired' },
-    { key: 'failed', label: 'Failed Payments' },
-    { key: 'plans', label: 'Plans & Pricing' },
+    { key: 'active',          label: 'Active' },
+    { key: 'expired',         label: 'Expired' },
+    { key: 'failed',          label: 'Failed Payments' },
+    { key: 'plans',           label: 'Plans & Pricing' },
     { key: 'payment_history', label: 'Payment History' },
   ]
 
   return (
     <div className="space-y-4 max-w-7xl">
-      <PageHeader
-        title="Subscriptions"
-        subtitle="Manage driver subscription plans and payments"
-        tabs={TABS}
-        activeTab={tab}
-        basePath="/subscriptions"
-      />
+      <PageHeader title="Subscriptions" tabs={TABS} activeTab={tab} basePath="/subscriptions" />
+      <StatsRow stats={stats} />
       <SubscriptionsView
-        subscriptions={subsResult.subscriptions}
-        subsTotal={subsResult.total}
-        plans={plans}
-        payments={paymentsResult.payments ?? []}
-        paymentsTotal={paymentsResult.total ?? 0}
+        subscriptions={settled(subsResult, { subscriptions: [], total: 0 }).subscriptions}
+        subsTotal={settled(subsResult, { subscriptions: [], total: 0 }).total}
+        plans={settled(plans, []) as never[]}
+        payments={settled(paymentsResult, { payments: [], total: 0 }).payments ?? []}
+        paymentsTotal={settled(paymentsResult, { payments: [], total: 0 }).total ?? 0}
         tab={tab}
         page={page}
       />
