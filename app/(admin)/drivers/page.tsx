@@ -64,7 +64,7 @@ export default async function DriversPage({
   ]
 
   return (
-    <div className="space-y-4 max-w-7xl">
+    <div className="space-y-4 w-full">
       <PageHeader title="Drivers" tabs={TABS} activeTab={tab} basePath="/drivers" />
       <StatsRow stats={stats} />
       <DriversTable drivers={drivers} total={total} page={page} tab={tab} tabs={TABS} search={search} />

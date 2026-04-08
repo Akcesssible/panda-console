@@ -45,7 +45,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   ]
 
   return (
-    <div className="space-y-4 max-w-5xl">
+    <div className="space-y-4 w-full">
       <PageHeader title="Pricing" tabs={TABS} activeTab={tab} basePath="/pricing" />
       <StatsRow stats={stats} />
       <PricingView activeRules={active} historyRules={history} zones={zones} tab={tab} adminRole={adminUser.role} />

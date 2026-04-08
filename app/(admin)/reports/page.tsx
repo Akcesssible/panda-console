@@ -63,7 +63,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   ]
 
   return (
-    <div className="space-y-4 max-w-7xl">
+    <div className="space-y-4 w-full">
       <PageHeader
         title="Reports"
         subtitle="Read-only analytics and performance reports"

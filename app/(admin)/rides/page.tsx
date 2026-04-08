@@ -69,7 +69,7 @@ export default async function RidesPage({
   ]
 
   return (
-    <div className="space-y-4 max-w-7xl">
+    <div className="space-y-4 w-full">
       <PageHeader title="Rides" tabs={TABS} activeTab={tab} basePath="/rides" />
       <StatsRow stats={stats} />
       <RidesTable rides={rides} total={total} page={page} tab={tab} tabs={TABS} isLive={tab === 'live'} />

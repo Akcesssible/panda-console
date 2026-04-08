@@ -63,7 +63,7 @@ export default async function SupportPage({
   ]
 
   return (
-    <div className="space-y-4 max-w-6xl">
+    <div className="space-y-4 w-full">
       <PageHeader title="Support" tabs={TABS} activeTab={tab} basePath="/support" />
       <StatsRow stats={stats} />
       <SupportTable tickets={tickets} total={total} page={page} tab={tab} tabs={TABS} />

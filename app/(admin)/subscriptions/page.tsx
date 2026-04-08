@@ -67,7 +67,7 @@ export default async function SubscriptionsPage({
   ]
 
   return (
-    <div className="space-y-4 max-w-7xl">
+    <div className="space-y-4 w-full">
       <PageHeader title="Subscriptions" tabs={TABS} activeTab={tab} basePath="/subscriptions" />
       <StatsRow stats={stats} />
       <SubscriptionsView
