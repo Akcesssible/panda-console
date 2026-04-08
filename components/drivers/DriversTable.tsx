@@ -54,7 +54,7 @@ export function DriversTable({
   const columns = getColumns(tab)
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100">
       <DataTable
         columns={columns}
         data={displayDrivers}

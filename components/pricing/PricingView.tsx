@@ -42,7 +42,7 @@ export function PricingView({
   const rules = tab === 'active' ? activeRules : historyRules
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
       {canWrite && tab === 'active' && (
         <div className="px-5 pt-4 flex justify-end">
           <button
