@@ -3,8 +3,21 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { AdminUser, AdminRole } from '@/lib/types'
 
+const DEV_ADMIN: AdminUser = {
+  id: '00000000-0000-0000-0000-000000000001',
+  auth_id: '00000000-0000-0000-0000-000000000001',
+  full_name: 'Dev Admin',
+  email: 'dev@pandahailing.com',
+  role: 'super_admin',
+  is_active: true,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+}
+
 // Get authenticated admin user — redirects to /login if not authed
 export async function getAdminUser(): Promise<AdminUser> {
+  if (process.env.NODE_ENV === 'development') return DEV_ADMIN
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

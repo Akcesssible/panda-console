@@ -1,12 +1,14 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUser } from '@/lib/auth'
-import { KPICard } from '@/components/ui/KPICard'
-import { EarningsTrendChart } from '@/components/dashboard/EarningsTrendChart'
-import { AlertsPanel } from '@/components/dashboard/AlertsPanel'
-import { RecentActivityFeed } from '@/components/dashboard/RecentActivityFeed'
-import { formatTZS } from '@/lib/utils'
+import { EarningTrendCard } from '@/components/dashboard/EarningTrendCard'
+import { ActiveDriversCluster } from '@/components/dashboard/ActiveDriversCluster'
+import { ChurnRateCard } from '@/components/dashboard/ChurnRateCard'
+import { ActionAlertCard } from '@/components/dashboard/ActionAlertCard'
+import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable'
+import Link from 'next/link'
 
-function settled<T>(result: PromiseSettledResult<T>, fallback: T): T {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function settled(result: PromiseSettledResult<any>, fallback: any): any {
   return result.status === 'fulfilled' ? result.value : fallback
 }
 
@@ -29,29 +31,26 @@ async function getDashboardData() {
     supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(20),
   ])
 
-  const activeDrivers  = settled(results[1], { count: 0 }).count ?? 0
-  const pendingDrivers = settled(results[2], { count: 0 }).count ?? 0
-  const completedToday = settled(results[3], { count: 0 }).count ?? 0
-  const todayEarnings  = settled(results[4], { data: [] }).data ?? []
+  const totalDrivers        = settled(results[0], { count: 0 }).count ?? 0
+  const activeDrivers       = settled(results[1], { count: 0 }).count ?? 0
+  const pendingDrivers      = settled(results[2], { count: 0 }).count ?? 0
+  const completedToday      = settled(results[3], { count: 0 }).count ?? 0
+  const todayEarnings       = settled(results[4], { data: [] }).data ?? []
   const activeSubscriptions = settled(results[5], { count: 0 }).count ?? 0
-  const openTickets    = settled(results[6], { count: 0 }).count ?? 0
-  const expiredSubs    = settled(results[7], { count: 0 }).count ?? 0
-  const earningsTrend  = settled(results[8], { data: [] }).data ?? []
-  const recentActivity = settled(results[9], { data: [] }).data ?? []
+  const expiredSubs         = settled(results[7], { count: 0 }).count ?? 0
+  const recentActivity      = settled(results[9], { data: [] }).data ?? []
 
   const totalEarningsToday = (todayEarnings as Record<string, number | null>[]).reduce(
-    (sum: number, r) => sum + (r.driver_earnings_tzs ?? 0), 0
+    (sum, r) => sum + (r.driver_earnings_tzs ?? 0), 0
   )
   const avgEarningsPerDriver = activeDrivers > 0 ? totalEarningsToday / activeDrivers : 0
   const subscriptionConversionRate = activeDrivers > 0
-    ? Math.round((activeSubscriptions / activeDrivers) * 100)
-    : 0
+    ? Math.round((activeSubscriptions / activeDrivers) * 100) : 0
 
   return {
-    kpis: { activeDrivers, completedToday, avgEarningsPerDriver, subscriptionConversionRate, activeSubscriptions },
-    alerts: { pendingDrivers, expiredSubs, openTickets },
-    earningsTrend,
-    recentActivity,
+    totalDrivers, activeDrivers, pendingDrivers, completedToday,
+    avgEarningsPerDriver, subscriptionConversionRate, activeSubscriptions,
+    expiredSubs, recentActivity,
   }
 }
 
@@ -61,60 +60,80 @@ export default async function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-5 max-w-[1400px]">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">
-          {greeting}, {adminUser.full_name.split(' ')[0]}
-        </h1>
-        <p className="text-sm text-gray-500 mt-0.5">Real-time operational snapshot</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1d242d]">
+            {greeting}, {adminUser.full_name.split(' ')[0]}
+          </h1>
+          <p className="text-sm text-gray-400 mt-0.5">Real-time operational snapshot</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/rides"
+            className="flex items-center gap-1.5 text-sm font-medium text-[#1d242d] border border-gray-200 bg-white rounded-xl px-4 py-2 hover:bg-gray-50 transition-colors"
+          >
+            Live Rides
+            <svg className="w-3.5 h-3.5 opacity-50" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+            </svg>
+          </Link>
+          <Link
+            href="/subscriptions?tab=expired"
+            className="flex items-center gap-1.5 text-sm font-medium text-[#1d242d] border border-gray-200 bg-white rounded-xl px-4 py-2 hover:bg-gray-50 transition-colors"
+          >
+            Expired Subscriptions
+            <svg className="w-3.5 h-3.5 opacity-50" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+            </svg>
+          </Link>
+        </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          label="Daily Active Drivers"
-          value={data.kpis.activeDrivers.toLocaleString()}
-          trend={{ value: 'Live count', positive: true }}
+      {/* Top row — 3 equal columns */}
+      <div className="grid grid-cols-3 gap-5">
+        <EarningTrendCard />
+        <ActiveDriversCluster
+          activeDrivers={data.activeDrivers}
+          completedToday={data.completedToday}
+          avgEarningsPerDriver={data.avgEarningsPerDriver}
+          subscriptionConversionRate={data.subscriptionConversionRate}
+          activeSubscriptions={data.activeSubscriptions}
+          totalDrivers={data.totalDrivers}
         />
-        <KPICard
-          label="Completed Trips Today"
-          value={data.kpis.completedToday.toLocaleString()}
-        />
-        <KPICard
-          label="Avg Earnings / Driver"
-          value={formatTZS(data.kpis.avgEarningsPerDriver)}
-          sub="Today"
-        />
-        <KPICard
-          label="Subscription Conversion"
-          value={`${data.kpis.subscriptionConversionRate}%`}
-          sub={`${data.kpis.activeSubscriptions} active subscriptions`}
-        />
+        <ChurnRateCard />
       </div>
 
-      {/* Main content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chart */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">Earning Trend — Last 7 Days</h2>
-          <EarningsTrendChart />
+      {/* Bottom row — left narrow (alerts) + right wide (activity) */}
+      <div className="grid grid-cols-3 gap-5">
+        {/* Left column — stacked alert cards */}
+        <div className="flex flex-col gap-5">
+          <ActionAlertCard
+            title="Drivers Pending Approval"
+            count={data.pendingDrivers}
+            unit="Drivers"
+            description="New drivers awaiting verification"
+            ctaLabel="Verify Driver"
+            ctaHref="/drivers?tab=pending"
+          />
+          <ActionAlertCard
+            title="Expired Subscriptions"
+            count={data.expiredSubs}
+            unit="Drivers"
+            description="Subscriptions need renewal"
+            badge="+6.3% vs yesterday"
+            ctaLabel="Notify Drivers"
+            ctaHref="/subscriptions?tab=expired"
+          />
         </div>
 
-        {/* Alerts */}
-        <AlertsPanel
-          pendingDrivers={data.alerts.pendingDrivers}
-          expiredSubs={data.alerts.expiredSubs}
-          openTickets={data.alerts.openTickets}
-        />
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="px-5 py-4 border-b border-gray-200">
-          <h2 className="text-sm font-semibold text-gray-900">Recent Activity</h2>
+        {/* Right column — recent activity */}
+        <div className="col-span-2">
+          <RecentActivityTable initialLogs={data.recentActivity as any[]} />
         </div>
-        <RecentActivityFeed initialLogs={data.recentActivity} />
       </div>
     </div>
   )

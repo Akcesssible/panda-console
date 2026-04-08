@@ -2,8 +2,12 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000 // 8 hours
+const IS_DEV = process.env.NODE_ENV === 'development'
 
 export async function proxy(request: NextRequest) {
+  // In development, allow direct access to all routes without auth
+  if (IS_DEV) return NextResponse.next({ request })
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
