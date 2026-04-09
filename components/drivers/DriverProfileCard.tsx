@@ -21,10 +21,10 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
           <Image
             src="/glow_02.svg"
             alt=""
-            width={320}
-            height={120}
+            width={400}
+            height={240}
             className="absolute pointer-events-none select-none"
-            style={{ left: 180, top: -200, zIndex: 0 }}
+            style={{ left: 4, top: -120, zIndex: 0 }}
           />
           {/* Watermark — above glow */}
           <Image
@@ -32,7 +32,7 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
             alt=""
             width={180}
             height={80}
-            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none select-none z-10"
+            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-60 pointer-events-none select-none z-10"
           />
         </div>
 
