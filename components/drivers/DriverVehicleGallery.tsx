@@ -14,34 +14,22 @@ export function DriverVehicleGallery({ driver }: { driver: Driver }) {
 
   const [activeIndex, setActiveIndex] = useState(0)
 
-  if (!vehicle) {
+  if (!vehicle || allPhotos.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center h-[240px]">
-        <p className="text-sm text-gray-400">No vehicle registered</p>
+        <p className="text-sm text-gray-400">{!vehicle ? 'No vehicle registered' : 'No vehicle photos'}</p>
       </div>
     )
   }
 
-  if (allPhotos.length === 0) {
-    return (
-      <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center h-[240px]">
-        <p className="text-sm text-gray-400">No vehicle photos</p>
-      </div>
-    )
-  }
-
-  function prev() {
-    setActiveIndex(i => (i - 1 + allPhotos.length) % allPhotos.length)
-  }
-  function next() {
-    setActiveIndex(i => (i + 1) % allPhotos.length)
-  }
+  function prev() { setActiveIndex(i => (i - 1 + allPhotos.length) % allPhotos.length) }
+  function next() { setActiveIndex(i => (i + 1) % allPhotos.length) }
 
   return (
-    <div className="flex gap-2 h-[240px]">
+    <div className="flex gap-2 h-[240px] rounded-2xl overflow-hidden">
 
-      {/* ── Left: main viewer ── */}
-      <div className="relative flex-1 rounded-2xl overflow-hidden bg-gray-100 group">
+      {/* ── Left: main viewer — 55% ── */}
+      <div className="relative rounded-2xl overflow-hidden bg-gray-100 group" style={{ flex: '0 0 55%' }}>
         <Image
           src={allPhotos[activeIndex]}
           alt="Vehicle"
@@ -61,9 +49,9 @@ export function DriverVehicleGallery({ driver }: { driver: Driver }) {
         {allPhotos.length > 1 && (
           <button
             onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} color="white" strokeWidth={2} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={14} color="white" strokeWidth={2} />
           </button>
         )}
 
@@ -71,26 +59,26 @@ export function DriverVehicleGallery({ driver }: { driver: Driver }) {
         {allPhotos.length > 1 && (
           <button
             onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
           >
-            <HugeiconsIcon icon={ArrowRight01Icon} size={16} color="white" strokeWidth={2} />
+            <HugeiconsIcon icon={ArrowRight01Icon} size={14} color="white" strokeWidth={2} />
           </button>
         )}
       </div>
 
-      {/* ── Right: thumbnail strip ── */}
-      <div className="w-28 flex flex-col gap-1.5 overflow-y-auto">
+      {/* ── Right: 2-column thumbnail grid — 45% ── */}
+      <div className="grid grid-cols-2 gap-1 overflow-hidden rounded-2xl" style={{ flex: '0 0 calc(45% - 8px)' }}>
         {allPhotos.map((src, i) => (
           <button
             key={i}
             onClick={() => setActiveIndex(i)}
-            className={`relative w-full aspect-square rounded-lg overflow-hidden shrink-0 border-2 transition-all duration-150 ${
-              i === activeIndex
-                ? 'border-[#2B39C7] shadow-md'
-                : 'border-transparent opacity-70 hover:opacity-100'
-            }`}
+            className="relative w-full h-full overflow-hidden"
           >
             <Image src={src} alt={`Vehicle ${i + 1}`} fill className="object-cover" />
+            {/* Blue overlay on active */}
+            {i === activeIndex && (
+              <div className="absolute inset-0 bg-[#2B39C7]/50" />
+            )}
           </button>
         ))}
       </div>
