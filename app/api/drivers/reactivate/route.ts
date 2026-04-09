@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { parseBody, DriverActionSchema } from '@/lib/validations'
 
 export async function POST(request: Request) {
   const adminUser = await getAdminUserFromRequest()
@@ -10,8 +11,10 @@ export async function POST(request: Request) {
   try { requireRole(adminUser, ['super_admin', 'ops_admin']) }
   catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
 
-  const { driver_id, notes } = await request.json()
-  if (!driver_id) return NextResponse.json({ error: 'driver_id required' }, { status: 400 })
+  const body = await parseBody(request, DriverActionSchema)
+  if (body instanceof NextResponse) return body
+
+  const { driver_id, notes } = body
 
   const supabase = createAdminClient()
 

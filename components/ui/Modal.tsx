@@ -32,7 +32,7 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
       <div className={`relative bg-white rounded-xl shadow-xl w-full ${SIZES[size]} mx-4 max-h-[90vh] flex flex-col`}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-xl font-medium text-gray-900 tracking-[-.125rem]">{title}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-700 text-xl leading-none"

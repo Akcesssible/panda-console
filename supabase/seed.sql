@@ -24,6 +24,77 @@ VALUES
   ('Bajaj Base', 'bajaj', 1500, 700, 15, 2000, 1),
   ('Car Base', 'car', 2000, 1000, 20, 3000, 1);
 
+-- Default Roles
+-- These mirror the hardcoded admin_role enum but live in custom_roles
+-- so they appear in the Roles tab and can be read by the UI.
+-- They are marked with is_builtin = true to prevent deletion.
+INSERT INTO custom_roles (id, name, description, permissions) VALUES
+  (
+    'aaaaaaaa-0000-0000-0000-000000000001',
+    'Super Admin',
+    'Full access to all modules, settings, user management, and audit logs.',
+    '{
+      "dashboard":     {"create":true,"read":true,"update":true,"delete":true,"approve":true},
+      "drivers":       {"create":true,"read":true,"update":true,"delete":true,"approve":true},
+      "rides":         {"create":true,"read":true,"update":true,"delete":true,"approve":true},
+      "riders":        {"create":true,"read":true,"update":true,"delete":true,"approve":true},
+      "subscriptions": {"create":true,"read":true,"update":true,"delete":true,"approve":true},
+      "pricing":       {"create":true,"read":true,"update":true,"delete":true,"approve":true},
+      "support":       {"create":true,"read":true,"update":true,"delete":true,"approve":true},
+      "reports":       {"create":true,"read":true,"update":true,"delete":true,"approve":true},
+      "settings":      {"create":true,"read":true,"update":true,"delete":true,"approve":true}
+    }'
+  ),
+  (
+    'aaaaaaaa-0000-0000-0000-000000000002',
+    'Ops Admin',
+    'Manage drivers, rides, riders, subscriptions, and support. Read-only reports.',
+    '{
+      "dashboard":     {"create":true, "read":true,"update":true,"delete":true,"approve":true},
+      "drivers":       {"create":true, "read":true,"update":true,"delete":false,"approve":true},
+      "rides":         {"create":false,"read":true,"update":true,"delete":false,"approve":true},
+      "riders":        {"create":false,"read":true,"update":true,"delete":false,"approve":false},
+      "subscriptions": {"create":true, "read":true,"update":true,"delete":false,"approve":true},
+      "pricing":       {"create":true, "read":true,"update":false,"delete":false,"approve":false},
+      "support":       {"create":true, "read":true,"update":true,"delete":false,"approve":true},
+      "reports":       {"create":false,"read":true,"update":false,"delete":false,"approve":false},
+      "settings":      {"create":false,"read":false,"update":false,"delete":false,"approve":false}
+    }'
+  ),
+  (
+    'aaaaaaaa-0000-0000-0000-000000000003',
+    'Support Agent',
+    'Read-only access to drivers, rides, and riders. Full access to support tickets.',
+    '{
+      "dashboard":     {"create":false,"read":true, "update":false,"delete":false,"approve":false},
+      "drivers":       {"create":false,"read":true, "update":false,"delete":false,"approve":false},
+      "rides":         {"create":false,"read":true, "update":false,"delete":false,"approve":false},
+      "riders":        {"create":false,"read":true, "update":false,"delete":false,"approve":false},
+      "subscriptions": {"create":false,"read":false,"update":false,"delete":false,"approve":false},
+      "pricing":       {"create":false,"read":false,"update":false,"delete":false,"approve":false},
+      "support":       {"create":true, "read":true, "update":true, "delete":false,"approve":true},
+      "reports":       {"create":false,"read":false,"update":false,"delete":false,"approve":false},
+      "settings":      {"create":false,"read":false,"update":false,"delete":false,"approve":false}
+    }'
+  ),
+  (
+    'aaaaaaaa-0000-0000-0000-000000000004',
+    'Finance Viewer',
+    'Read-only access to subscriptions, payments, and financial reports.',
+    '{
+      "dashboard":     {"create":false,"read":true, "update":false,"delete":false,"approve":false},
+      "drivers":       {"create":false,"read":false,"update":false,"delete":false,"approve":false},
+      "rides":         {"create":false,"read":false,"update":false,"delete":false,"approve":false},
+      "riders":        {"create":false,"read":false,"update":false,"delete":false,"approve":false},
+      "subscriptions": {"create":false,"read":true, "update":false,"delete":false,"approve":false},
+      "pricing":       {"create":false,"read":false,"update":false,"delete":false,"approve":false},
+      "support":       {"create":false,"read":false,"update":false,"delete":false,"approve":false},
+      "reports":       {"create":false,"read":true, "update":false,"delete":false,"approve":false},
+      "settings":      {"create":false,"read":false,"update":false,"delete":false,"approve":false}
+    }'
+  )
+ON CONFLICT (id) DO NOTHING;
+
 -- System Config defaults
 INSERT INTO system_config (key, value, description) VALUES
   ('default_commission_rate', '0.20', 'Default commission rate for non-subscribers (20%)'),
