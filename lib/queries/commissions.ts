@@ -11,7 +11,12 @@ export interface CommissionRide {
   commission_tzs: number
   driver_earnings_tzs: number | null
   completed_at: string | null
-  drivers: { full_name: string; driver_number: string; phone: string } | null
+  drivers: {
+    full_name: string
+    driver_number: string
+    phone: string
+    driver_subscriptions?: { status: string }[]
+  } | null
 }
 
 export async function getCommissionRides({
@@ -26,7 +31,7 @@ export async function getCommissionRides({
     .select(
       `id, ride_number, vehicle_type, total_fare_tzs, commission_rate,
        commission_tzs, driver_earnings_tzs, completed_at,
-       drivers ( full_name, driver_number, phone )`,
+       drivers ( full_name, driver_number, phone, driver_subscriptions ( status ) )`,
       { count: 'exact' },
     )
     .eq('status', 'completed')

@@ -15,6 +15,7 @@ import {
   ChartBarLineIcon,
   Configuration02Icon,
   UserMultiple02Icon,
+  Coins01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import type { AdminRole } from '@/lib/types'
 import { ROLE_PERMISSIONS } from '@/lib/types'
@@ -33,7 +34,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Riders',        href: '/riders',        module: 'riders',        icon: UserMultiple02Icon },
   { label: 'Rides',         href: '/rides',         module: 'rides',         icon: BaseballHelmetIcon },
   { label: 'Subscriptions', href: '/subscriptions', module: 'subscriptions', icon: Ticket02Icon },
-  { label: 'Pricing',       href: '/pricing',       module: 'pricing',       icon: TradeUpIcon },
+  { label: 'Commissions',  href: '/commissions',   module: 'commissions',   icon: Coins01Icon },
+  { label: 'Pricing',      href: '/pricing',        module: 'pricing',       icon: TradeUpIcon },
   { label: 'Support',       href: '/support',       module: 'support',       icon: CustomerService02Icon },
   { label: 'Reports',       href: '/reports',       module: 'reports',       icon: ChartBarLineIcon },
   { label: 'Settings',      href: '/settings',      module: 'settings',      icon: Configuration02Icon },
