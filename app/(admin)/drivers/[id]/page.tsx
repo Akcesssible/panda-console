@@ -167,7 +167,7 @@ export default async function DriverDetailPage({
 
       <div className="flex gap-4 items-start">
         {/* Left — profile card */}
-        <div className="w-72 shrink-0">
+        <div className="w-[342px] shrink-0">
           <DriverProfileCard driver={driver} />
         </div>
 
