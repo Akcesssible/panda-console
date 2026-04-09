@@ -5,6 +5,7 @@ const PER_PAGE = 20
 export interface CommissionRide {
   id: string
   ride_number: string
+  driver_id: string | null
   vehicle_type: string
   total_fare_tzs: number | null
   commission_rate: number
@@ -38,7 +39,7 @@ export async function getCommissionRides({
   let query = supabase
     .from('rides')
     .select(
-      `id, ride_number, vehicle_type, total_fare_tzs, commission_rate,
+      `id, ride_number, driver_id, vehicle_type, total_fare_tzs, commission_rate,
        commission_tzs, driver_earnings_tzs, completed_at,
        drivers ( full_name, driver_number, phone, driver_subscriptions ( status ) )`,
       { count: 'exact' },
