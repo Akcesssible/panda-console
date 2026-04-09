@@ -6,12 +6,15 @@ import { formatDate, formatTZS } from '@/lib/utils'
 import type { CommissionRide } from '@/lib/queries/commissions'
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
+// Active subscribers are excluded at the query level. The "Subscribed" badge
+// here means the driver holds an expired/grace subscription — they once had
+// a plan but it lapsed, so their rides are now commission-bearing again.
 const MOCK_COMMISSIONS: CommissionRide[] = [
   { id: 'r1', ride_number: 'RDE-000101', vehicle_type: 'bodaboda', total_fare_tzs: 12000, commission_rate: 0.20, commission_tzs: 2400,  driver_earnings_tzs: 9600,  completed_at: '2026-04-08T10:30:00Z', drivers: { full_name: 'Ali Hassan',      driver_number: 'DRV-000012', phone: '0712 111 222', driver_subscriptions: [] } },
-  { id: 'r2', ride_number: 'RDE-000102', vehicle_type: 'bajaj',    total_fare_tzs: 18000, commission_rate: 0.20, commission_tzs: 3600,  driver_earnings_tzs: 14400, completed_at: '2026-04-08T09:15:00Z', drivers: { full_name: 'Fatuma Salim',    driver_number: 'DRV-000015', phone: '0754 333 444', driver_subscriptions: [{ status: 'active' }] } },
+  { id: 'r2', ride_number: 'RDE-000102', vehicle_type: 'bajaj',    total_fare_tzs: 18000, commission_rate: 0.20, commission_tzs: 3600,  driver_earnings_tzs: 14400, completed_at: '2026-04-08T09:15:00Z', drivers: { full_name: 'Fatuma Salim',    driver_number: 'DRV-000015', phone: '0754 333 444', driver_subscriptions: [{ status: 'expired' }] } },
   { id: 'r3', ride_number: 'RDE-000103', vehicle_type: 'car',      total_fare_tzs: 35000, commission_rate: 0.20, commission_tzs: 7000,  driver_earnings_tzs: 28000, completed_at: '2026-04-07T16:45:00Z', drivers: { full_name: 'James Mwangi',    driver_number: 'DRV-000009', phone: '0789 555 666', driver_subscriptions: [] } },
   { id: 'r4', ride_number: 'RDE-000104', vehicle_type: 'bodaboda', total_fare_tzs: 8500,  commission_rate: 0.20, commission_tzs: 1700,  driver_earnings_tzs: 6800,  completed_at: '2026-04-07T14:20:00Z', drivers: { full_name: 'Grace Odhiambo', driver_number: 'DRV-000021', phone: '0798 777 888', driver_subscriptions: [] } },
-  { id: 'r5', ride_number: 'RDE-000105', vehicle_type: 'bajaj',    total_fare_tzs: 22000, commission_rate: 0.20, commission_tzs: 4400,  driver_earnings_tzs: 17600, completed_at: '2026-04-06T11:00:00Z', drivers: { full_name: 'Moses Kariuki',   driver_number: 'DRV-000033', phone: '0765 999 000', driver_subscriptions: [{ status: 'active' }] } },
+  { id: 'r5', ride_number: 'RDE-000105', vehicle_type: 'bajaj',    total_fare_tzs: 22000, commission_rate: 0.20, commission_tzs: 4400,  driver_earnings_tzs: 17600, completed_at: '2026-04-06T11:00:00Z', drivers: { full_name: 'Moses Kariuki',   driver_number: 'DRV-000033', phone: '0765 999 000', driver_subscriptions: [{ status: 'expired' }] } },
   { id: 'r6', ride_number: 'RDE-000106', vehicle_type: 'car',      total_fare_tzs: 48000, commission_rate: 0.20, commission_tzs: 9600,  driver_earnings_tzs: 38400, completed_at: '2026-04-06T08:30:00Z', drivers: { full_name: 'Sarah Mutua',     driver_number: 'DRV-000041', phone: '0800 112 233', driver_subscriptions: [] } },
 ]
 
@@ -22,14 +25,16 @@ const commissionColumns = [
     key: 'driver', label: 'Driver',
     render: (row: Record<string, unknown>) => {
       const r = row as unknown as CommissionRide
-      const hasActiveSub = r.drivers?.driver_subscriptions?.some(s => s.status === 'active') ?? false
+      // Active subscribers are filtered out at query level, so this badge
+      // indicates an expired/grace subscription — the driver used to subscribe.
+      const hadSub = (r.drivers?.driver_subscriptions?.length ?? 0) > 0
       return r.drivers ? (
         <div>
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium text-[#1d242d]">{r.drivers.full_name}</p>
-            {hasActiveSub && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700 border border-green-200">
-                Has Sub
+            {hadSub && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                Subscribed
               </span>
             )}
           </div>

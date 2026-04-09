@@ -26,7 +26,16 @@ export async function getCommissionRides({
   const from = (page - 1) * PER_PAGE
   const to   = from + PER_PAGE - 1
 
-  const { data, count, error } = await supabase
+  // Fetch driver IDs who currently hold an active subscription — they are
+  // exempt from commission, so we exclude their rides from this page.
+  const { data: activeSubs } = await supabase
+    .from('driver_subscriptions')
+    .select('driver_id')
+    .eq('status', 'active')
+
+  const activeDriverIds = (activeSubs ?? []).map(r => r.driver_id).filter(Boolean) as string[]
+
+  let query = supabase
     .from('rides')
     .select(
       `id, ride_number, vehicle_type, total_fare_tzs, commission_rate,
@@ -39,6 +48,12 @@ export async function getCommissionRides({
     .gt('commission_tzs', 0)
     .order('completed_at', { ascending: false })
     .range(from, to)
+
+  if (activeDriverIds.length > 0) {
+    query = query.not('driver_id', 'in', `(${activeDriverIds.join(',')})`)
+  }
+
+  const { data, count, error } = await query
 
   if (error) return { rides: [], total: 0 }
   return { rides: (data ?? []) as unknown as CommissionRide[], total: count ?? 0 }
