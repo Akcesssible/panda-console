@@ -32,7 +32,7 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
             alt=""
             width={180}
             height={80}
-            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-60 pointer-events-none select-none z-10"
+            className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none select-none z-10"
           />
         </div>
 
