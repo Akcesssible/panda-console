@@ -38,6 +38,8 @@ export async function getAdminUser(): Promise<AdminUser> {
 
 // Use in API routes — returns null instead of redirecting
 export async function getAdminUserFromRequest(): Promise<AdminUser | null> {
+  if (process.env.NODE_ENV === 'development') return DEV_ADMIN
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
