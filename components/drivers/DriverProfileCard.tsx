@@ -13,16 +13,25 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
 
       {/* ── Gradient header ── */}
-      <div className="relative h-32">
+      <div className="relative h-32 m-[.125rem]">
 
-        {/* Background — clipped so watermark doesn't bleed out */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#b8c3f5] via-[#c7d0f8] to-[#dde3ff] overflow-hidden rounded-t-2xl">
+        {/* Background — clipped so watermark/glow don't bleed out */}
+        <div className="absolute inset-0 bg-[#EDEFF5] overflow-hidden rounded-2xl">
+          {/* Watermark */}
           <Image
             src="/panda_watermark.svg"
             alt=""
             width={180}
             height={80}
             className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none select-none"
+          />
+          {/* Glow — bottom of the header */}
+          <Image
+            src="/glow_02.svg"
+            alt=""
+            width={320}
+            height={120}
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full pointer-events-none select-none"
           />
         </div>
 
@@ -33,7 +42,7 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
         </div>
 
         {/* Avatar — sits at bottom-left, overflows the header intentionally */}
-        <div className="absolute -bottom-10 left-4 z-10">
+        <div className="absolute -bottom-4 left-4 z-10">
           {driver.avatar_url ? (
             <Image
               src={driver.avatar_url}
