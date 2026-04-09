@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { formatTZS, formatDateTime } from '@/lib/utils'
+import { SubscriptionBadge } from '@/components/ui/Badge'
 import type { Driver, DriverSubscription, SubscriptionPlan } from '@/lib/types'
 
 interface LastPayment {
@@ -26,14 +27,8 @@ export function DriverSubscriptionCard({ driver, lastPayment }: Props) {
 
       {/* ── Top row ── */}
       <div className="relative z-10 flex items-start justify-between">
-        {/* Status pill */}
-        <span className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full ${
-          isActive
-            ? 'bg-green-400 text-white'
-            : 'bg-white/15 text-white/70'
-        }`}>
-          {isActive ? 'Active' : 'No Plan'}
-        </span>
+        {/* Status pill — matches platform-wide badge style */}
+        <SubscriptionBadge status={activeSub?.status ?? 'cancelled'} />
 
         {/* Panda logo */}
         <Image
