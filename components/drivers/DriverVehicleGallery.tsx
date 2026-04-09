@@ -16,7 +16,7 @@ export function DriverVehicleGallery({ driver }: { driver: Driver }) {
 
   if (!vehicle) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center min-h-[260px]">
+      <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center h-[240px]">
         <p className="text-sm text-gray-400">No vehicle registered</p>
       </div>
     )
@@ -24,7 +24,7 @@ export function DriverVehicleGallery({ driver }: { driver: Driver }) {
 
   if (allPhotos.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center min-h-[260px]">
+      <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center h-[240px]">
         <p className="text-sm text-gray-400">No vehicle photos</p>
       </div>
     )
@@ -38,7 +38,7 @@ export function DriverVehicleGallery({ driver }: { driver: Driver }) {
   }
 
   return (
-    <div className="flex gap-2 h-full min-h-[260px]">
+    <div className="flex gap-2 h-[240px]">
 
       {/* ── Left: main viewer ── */}
       <div className="relative flex-1 rounded-2xl overflow-hidden bg-gray-100 group">
