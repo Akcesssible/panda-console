@@ -15,10 +15,14 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
       {/* ── Gradient header ── */}
       <div className="relative bg-gradient-to-br from-[#b8c3f5] via-[#c7d0f8] to-[#dde3ff] h-32 overflow-hidden">
 
-        {/* "Panda" watermark */}
-        <span className="absolute -right-4 top-1/2 -translate-y-1/2 text-[72px] font-black text-white/20 select-none leading-none tracking-tighter pointer-events-none">
-          Panda
-        </span>
+        {/* Panda watermark */}
+        <Image
+          src="/panda_watermark.svg"
+          alt=""
+          width={180}
+          height={80}
+          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none select-none"
+        />
 
         {/* Verified badge — top right */}
         <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-white rounded-lg px-2.5 py-1.5 shadow-sm">
