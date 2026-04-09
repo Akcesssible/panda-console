@@ -13,25 +13,27 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
 
       {/* ── Gradient header ── */}
-      <div className="relative bg-gradient-to-br from-[#b8c3f5] via-[#c7d0f8] to-[#dde3ff] h-32 overflow-hidden">
+      <div className="relative h-32">
 
-        {/* Panda watermark */}
-        <Image
-          src="/panda_watermark.svg"
-          alt=""
-          width={180}
-          height={80}
-          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none select-none"
-        />
+        {/* Background — clipped so watermark doesn't bleed out */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#b8c3f5] via-[#c7d0f8] to-[#dde3ff] overflow-hidden rounded-t-2xl">
+          <Image
+            src="/panda_watermark.svg"
+            alt=""
+            width={180}
+            height={80}
+            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none select-none"
+          />
+        </div>
 
-        {/* Verified badge — top right */}
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-white rounded-lg px-2.5 py-1.5 shadow-sm">
+        {/* Verified badge — top right, above the clip layer */}
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white rounded-lg px-2.5 py-1.5 shadow-sm">
           <HugeiconsIcon icon={CheckmarkCircleIcon} size={14} color="#2B39C7" strokeWidth={2} />
           <span className="text-xs font-semibold text-[#2B39C7]">Verified</span>
         </div>
 
-        {/* Avatar — square rounded, bottom-left, overlapping */}
-        <div className="absolute -bottom-10 left-4">
+        {/* Avatar — sits at bottom-left, overflows the header intentionally */}
+        <div className="absolute -bottom-10 left-4 z-10">
           {driver.avatar_url ? (
             <Image
               src={driver.avatar_url}
