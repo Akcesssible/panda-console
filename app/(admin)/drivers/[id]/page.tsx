@@ -124,8 +124,6 @@ export default async function DriverDetailPage({
     getDriverById(id).catch(() => null),
   ])
 
-  if (!result && id !== 'mock-001') notFound()
-
   const useMock = !result || result.driver.total_trips === 0
   const driver      = useMock ? MOCK_DRIVER      : result!.driver
   const rides       = useMock ? MOCK_RIDES       : result!.rides
