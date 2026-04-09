@@ -17,13 +17,14 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
 
         {/* Background — clipped so watermark/glow don't bleed out */}
         <div className="absolute inset-0 bg-[#EDEFF5] overflow-hidden rounded-2xl">
-          {/* Glow — bottom of the header (behind watermark) */}
+          {/* Glow — adjust position via style prop */}
           <Image
             src="/glow_02.svg"
             alt=""
             width={320}
             height={120}
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full pointer-events-none select-none"
+            className="absolute pointer-events-none select-none"
+            style={{ left: 180, top: -200, zIndex: 0 }}
           />
           {/* Watermark — above glow */}
           <Image
