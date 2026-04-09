@@ -17,7 +17,7 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
       <div className="relative h-32 m-[.125rem]">
 
         {/* Background — clipped so watermark/glow don't bleed out */}
-        <div className="absolute inset-0 bg-[#EDEFF5] overflow-hidden rounded-2xl">
+        <div className="absolute inset-0 bg-[#EDEFF5] overflow-hidden border-2 border-[#EAEBF9] rounded-xl">
           {/* Glow — adjust position via style prop */}
           <Image
             src="/glow_02.svg"
