@@ -17,21 +17,21 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
 
         {/* Background — clipped so watermark/glow don't bleed out */}
         <div className="absolute inset-0 bg-[#EDEFF5] overflow-hidden rounded-2xl">
-          {/* Watermark */}
-          <Image
-            src="/panda_watermark.svg"
-            alt=""
-            width={180}
-            height={80}
-            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none select-none"
-          />
-          {/* Glow — bottom of the header */}
+          {/* Glow — bottom of the header (behind watermark) */}
           <Image
             src="/glow_02.svg"
             alt=""
             width={320}
             height={120}
             className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full pointer-events-none select-none"
+          />
+          {/* Watermark — above glow */}
+          <Image
+            src="/panda_watermark.svg"
+            alt=""
+            width={180}
+            height={80}
+            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none select-none z-10"
           />
         </div>
 
