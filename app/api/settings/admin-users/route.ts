@@ -68,7 +68,7 @@ export async function POST(request: Request) {
   }
 
   const { error: emailError } = await resend.emails.send({
-    from: 'Panda Console <onboarding@resend.dev>',
+    from: 'Panda Console <noreply@pandahailing.com>',
     to: email,
     subject: `You've been invited to Panda Console`,
     html: inviteEmailHtml(emailPayload),
