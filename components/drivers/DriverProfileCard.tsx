@@ -28,7 +28,7 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
           />
           {/* Watermark — above glow */}
           <Image
-            src="/panda_watermark.svg?v=2"
+            src="/panda_watermark_img.jpg"
             alt=""
             width={180}
             height={80}
