@@ -2,11 +2,11 @@ import { getDriverById } from '@/lib/queries/drivers'
 import { getAdminUser } from '@/lib/auth'
 import { notFound } from 'next/navigation'
 import { DriverDetailHeader } from '@/components/drivers/DriverDetailHeader'
-import { DriverPersonalInfo } from '@/components/drivers/DriverPersonalInfo'
-import { DriverVehicleInfo } from '@/components/drivers/DriverVehicleInfo'
+import { DriverProfileCard } from '@/components/drivers/DriverProfileCard'
+import { DriverStats } from '@/components/drivers/DriverStats'
 import { DriverSubscriptionCard } from '@/components/drivers/DriverSubscriptionCard'
+import { DriverVehicleGallery } from '@/components/drivers/DriverVehicleGallery'
 import { DriverRideHistory } from '@/components/drivers/DriverRideHistory'
-import { DriverAdminActions } from '@/components/drivers/DriverAdminActions'
 
 export default async function DriverDetailPage({
   params,
@@ -14,27 +14,36 @@ export default async function DriverDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [adminUser, result] = await Promise.all([getAdminUser(), getDriverById(id).catch(() => null)])
+  const [adminUser, result] = await Promise.all([
+    getAdminUser(),
+    getDriverById(id).catch(() => null),
+  ])
 
   if (!result) notFound()
-  const { driver, documents, rides } = result
+  const { driver, rides, todayTrips, lastPayment } = result
 
   return (
-    <div className="max-w-5xl space-y-6">
-      <DriverDetailHeader driver={driver} adminRole={adminUser.role} />
+    <div className="w-full flex flex-col gap-4">
+      <DriverDetailHeader driver={driver} adminUser={adminUser} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column */}
-        <div className="lg:col-span-2 space-y-6">
-          <DriverPersonalInfo driver={driver} documents={documents} />
-          <DriverVehicleInfo driver={driver} />
-          <DriverRideHistory rides={rides} />
+      <div className="flex gap-4 items-start">
+        {/* Left — profile card */}
+        <div className="w-72 shrink-0">
+          <DriverProfileCard driver={driver} />
         </div>
 
-        {/* Right column */}
-        <div className="space-y-6">
-          <DriverSubscriptionCard driver={driver} />
-          <DriverAdminActions driver={driver} adminUser={adminUser} />
+        {/* Right — stats + subscription + vehicle + rides */}
+        <div className="flex-1 min-w-0 flex flex-col gap-4">
+          <DriverStats driver={driver} todayTrips={todayTrips} />
+
+          <div className="grid grid-cols-3 gap-4">
+            <DriverSubscriptionCard driver={driver} lastPayment={lastPayment} />
+            <div className="col-span-2">
+              <DriverVehicleGallery driver={driver} />
+            </div>
+          </div>
+
+          <DriverRideHistory rides={rides} />
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@
 
 export type AdminRole = 'super_admin' | 'ops_admin' | 'support_agent' | 'finance_viewer'
 export type DriverStatus = 'pending' | 'active' | 'suspended' | 'churned'
+export type RiderStatus = 'active' | 'inactive' | 'banned'
 export type VehicleType = 'bodaboda' | 'bajaj' | 'car'
 export type RideStatus = 'requested' | 'accepted' | 'ongoing' | 'completed' | 'cancelled'
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'grace_period'
@@ -59,6 +60,8 @@ export interface Driver {
   joined_at: string
   created_at: string
   updated_at: string
+  avatar_url: string | null
+  address: string | null
   // Joined
   zones?: Zone | null
   vehicles?: Vehicle[]
@@ -80,6 +83,7 @@ export interface Vehicle {
   owner_email: string | null
   is_verified: boolean
   image_url: string | null
+  photos: string[]
   created_at: string
 }
 

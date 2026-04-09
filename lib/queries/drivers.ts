@@ -50,8 +50,9 @@ export async function getDrivers(params: {
 
 export async function getDriverById(id: string) {
   const supabase = createAdminClient()
+  const today = new Date().toISOString().split('T')[0]
 
-  const [driverResult, docsResult, ridesResult] = await Promise.all([
+  const [driverResult, docsResult, ridesResult, todayRidesResult, lastPaymentResult] = await Promise.all([
     supabase
       .from('drivers')
       .select(`
@@ -68,10 +69,23 @@ export async function getDriverById(id: string) {
       .eq('driver_id', id),
     supabase
       .from('rides')
-      .select('id, ride_number, pickup_address, destination_address, status, total_fare_tzs, commission_tzs, driver_earnings_tzs, requested_at, completed_at')
+      .select('id, ride_number, pickup_address, destination_address, status, total_fare_tzs, commission_tzs, driver_earnings_tzs, requested_at, completed_at, accepted_at')
       .eq('driver_id', id)
       .order('requested_at', { ascending: false })
-      .limit(50),
+      .limit(100),
+    supabase
+      .from('rides')
+      .select('*', { count: 'exact', head: true })
+      .eq('driver_id', id)
+      .gte('requested_at', today),
+    supabase
+      .from('subscription_payments')
+      .select('amount_tzs, paid_at, status')
+      .eq('driver_id', id)
+      .eq('status', 'completed')
+      .order('paid_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ])
 
   if (driverResult.error) throw driverResult.error
@@ -80,5 +94,7 @@ export async function getDriverById(id: string) {
     driver: driverResult.data as Driver,
     documents: docsResult.data ?? [],
     rides: ridesResult.data ?? [],
+    todayTrips: todayRidesResult.count ?? 0,
+    lastPayment: lastPaymentResult.data ?? null,
   }
 }

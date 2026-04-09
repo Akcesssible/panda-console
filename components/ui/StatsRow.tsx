@@ -15,14 +15,14 @@ export function StatsRow({ stats }: { stats: StatItem[] }) {
       style={{ gridTemplateColumns: `repeat(${stats.length}, 1fr)` }}
     >
       {stats.map((stat, i) => (
-        <div key={i} className="bg-[#ECEEF3] rounded-2xl px-6 py-5 flex flex-col justify-between">
+        <div key={i} className="bg-[#ECEEF3] rounded-2xl px-4 py-4 flex flex-col gap-6">
           {/* Header */}
           <p className="text-sm text-[#1d242d]">{stat.label}</p>
 
           {/* Bottom group: big number + badge row */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             {/* Big number */}
-            <p className="text-5xl font-semibold text-[#1d242d] tracking-[-2px] leading-none">
+            <p className="text-3xl font-medium text-[#1d242d] tracking-[-2px] leading-none">
               {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
             </p>
 
