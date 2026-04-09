@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { DriverStatusBadge, SubscriptionBadge } from '@/components/ui/Badge'
+import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, timeAgoShort } from '@/lib/utils'
 import type { Driver } from '@/lib/types'
 
@@ -111,9 +112,12 @@ function getColumns(tab: string) {
       render: (row: Record<string, unknown>) => {
         const d = row as unknown as Driver
         return (
-          <div>
-            <p className="font-medium text-[#1d242d]">{d.full_name}</p>
-            <p className="text-xs text-gray-400">{d.driver_number}</p>
+          <div className="flex items-center gap-3">
+            <Avatar id={d.id} name={d.full_name} size="md" />
+            <div className="min-w-0">
+              <p className="font-medium text-[#1d242d]">{d.full_name}</p>
+              <p className="text-xs text-gray-400">{d.driver_number}</p>
+            </div>
           </div>
         )
       },

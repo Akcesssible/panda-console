@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
+import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, formatTZS } from '@/lib/utils'
 import type { CommissionRide } from '@/lib/queries/commissions'
 
@@ -28,16 +29,19 @@ const columns = [
       // Active subscribers are excluded at query level — badge means expired sub
       const hadSub = (r.drivers?.driver_subscriptions?.length ?? 0) > 0
       return r.drivers ? (
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="font-medium text-[#1d242d]">{r.drivers.full_name}</p>
-            {hadSub && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                Subscribed
-              </span>
-            )}
+        <div className="flex items-center gap-3">
+          <Avatar id={r.driver_id ?? r.id} name={r.drivers.full_name} size="md" />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-[#1d242d]">{r.drivers.full_name}</p>
+              {hadSub && (
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                  Subscribed
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-400">{r.drivers.driver_number}</p>
           </div>
-          <p className="text-xs text-gray-400">{r.drivers.driver_number}</p>
         </div>
       ) : <span className="text-gray-400">—</span>
     },
