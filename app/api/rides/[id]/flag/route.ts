@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
 import { logAdminAction } from '@/lib/audit'
+import { parseBody, RideFlagSchema } from '@/lib/validations'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const adminUser = await getAdminUserFromRequest()
@@ -11,8 +12,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
 
   const { id } = await params
-  const { reason } = await request.json()
-  if (!reason) return NextResponse.json({ error: 'reason required' }, { status: 400 })
+
+  const body = await parseBody(request, RideFlagSchema)
+  if (body instanceof NextResponse) return body
+
+  const { reason } = body
 
   const supabase = createAdminClient()
 

@@ -41,6 +41,8 @@ export interface DataTableProps<T = any> {
   cardTitle?: string
   searchValue?: string
   onSearch?: (v: string) => void
+  /** Extra elements rendered at the far right of the card header (e.g. a CTA button) */
+  headerRight?: React.ReactNode
   // Row features
   selectable?: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,6 +99,7 @@ export function DataTable<T extends Record<string, unknown>>({
   cardTitle,
   searchValue = '',
   onSearch,
+  headerRight,
   selectable = false,
   rowActions,
 }: DataTableProps<T>) {
@@ -124,24 +127,29 @@ export function DataTable<T extends Record<string, unknown>>({
     <div className="flex flex-col">
 
       {/* ── Card header ─────────────────────────────────────────── */}
-      {(cardTitle || onSearch) && (
+      {(cardTitle || onSearch || headerRight) && (
         <div className="flex items-center px-6 py-4 border-b border-gray-100">
-          {/* Left half — title */}
-          <div className="flex items-center gap-1.5 w-1/2">
-            <span className="text-base font-medium text-[#1d242d] tracking-[-0.5px]">{cardTitle}</span>
-            <HugeiconsIcon icon={InformationCircleIcon} size={15} color="#d1d5db" strokeWidth={1.5} />
+          {/* Left — title */}
+          <div className="flex items-center gap-1.5 flex-1">
+            {cardTitle && (
+              <>
+                <span className="text-base font-medium text-[#1d242d] tracking-[-0.5px]">{cardTitle}</span>
+                <HugeiconsIcon icon={InformationCircleIcon} size={15} color="#d1d5db" strokeWidth={1.5} />
+              </>
+            )}
           </div>
-          {/* Right half — search + filter */}
-          <div className="flex items-center justify-end gap-2 w-1/2">
+          {/* Right — search + filter + optional extra actions */}
+          <div className="flex items-center gap-2">
             {onSearch && (
               <SearchBar
                 value={searchValue}
                 onChange={onSearch}
                 placeholder="Search"
-                className="flex-1"
+                className="w-56"
               />
             )}
-            <FilterButton />
+            {(onSearch || headerRight) && <FilterButton />}
+            {headerRight}
           </div>
         </div>
       )}

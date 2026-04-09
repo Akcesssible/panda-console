@@ -1,26 +1,37 @@
+import { z } from 'zod'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { parseBody } from '@/lib/validations'
+
+const ResolveSchema = z.object({
+  action: z.enum(['no_action', 'fare_adjusted', 'refund_issued', 'driver_warned', 'driver_suspended']),
+  note: z.string().max(2000).optional(),
+  fare_adjusted: z.number().positive().optional(),
+  refund_amount: z.number().positive().optional(),
+})
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const adminUser = await getAdminUserFromRequest()
   if (!adminUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
-  const { action, note, fare_adjusted, refund_amount } = await request.json()
+
+  const body = await parseBody(request, ResolveSchema)
+  if (body instanceof NextResponse) return body
+
+  const { action, note, fare_adjusted, refund_amount } = body
 
   const supabase = createAdminClient()
   const now = new Date().toISOString()
 
-  // Get ticket for context
   const { data: ticket } = await supabase
     .from('support_tickets')
     .select('ride_id, driver_id')
     .eq('id', id)
     .single()
 
-  // Apply resolution effects
   if (action === 'fare_adjusted' && fare_adjusted && ticket?.ride_id) {
     await supabase
       .from('rides')
@@ -52,7 +63,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (action === 'driver_suspended' && ticket?.driver_id) {
     await supabase
       .from('drivers')
-      .update({ status: 'suspended', suspended_reason: `Support ticket: ${id}`, suspended_by: adminUser.id, suspended_at: now })
+      .update({
+        status: 'suspended',
+        suspended_reason: `Support ticket: ${id}`,
+        suspended_by: adminUser.id,
+        suspended_at: now,
+      })
       .eq('id', ticket.driver_id)
 
     await logAdminAction({
@@ -62,7 +78,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     })
   }
 
-  // Resolve ticket
   const { error } = await supabase
     .from('support_tickets')
     .update({

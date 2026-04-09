@@ -267,6 +267,17 @@ export interface Rider {
   banned_at: string | null
 }
 
+export interface CustomRole {
+  id: string
+  name: string
+  description: string | null
+  permissions: Record<string, Record<string, boolean>>
+  is_active: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface AuditLog {
   id: string
   admin_id: string | null

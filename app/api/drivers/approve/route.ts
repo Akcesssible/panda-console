@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { parseBody, DriverActionSchema } from '@/lib/validations'
 
 export async function POST(request: Request) {
   const adminUser = await getAdminUserFromRequest()
@@ -13,16 +14,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { driver_id, notes } = await request.json()
-  if (!driver_id) return NextResponse.json({ error: 'driver_id is required' }, { status: 400 })
+  const body = await parseBody(request, DriverActionSchema)
+  if (body instanceof NextResponse) return body
+
+  const { driver_id, notes } = body
 
   const supabase = createAdminClient()
 
-  // Get current driver state for audit
   const { data: driver } = await supabase.from('drivers').select('status').eq('id', driver_id).single()
   if (!driver) return NextResponse.json({ error: 'Driver not found' }, { status: 404 })
 
-  // Approve
   const { data: updated, error } = await supabase
     .from('drivers')
     .update({

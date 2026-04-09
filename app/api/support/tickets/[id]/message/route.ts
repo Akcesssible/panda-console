@@ -1,21 +1,25 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest } from '@/lib/auth'
+import { parseBody, TicketMessageSchema } from '@/lib/validations'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const adminUser = await getAdminUserFromRequest()
   if (!adminUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
-  const { message, sender_type } = await request.json()
-  if (!message) return NextResponse.json({ error: 'message required' }, { status: 400 })
+
+  const body = await parseBody(request, TicketMessageSchema)
+  if (body instanceof NextResponse) return body
+
+  const { message } = body
 
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('ticket_messages')
     .insert({
       ticket_id: id,
-      sender_type: sender_type ?? 'admin',
+      sender_type: 'admin',
       sender_id: adminUser.id,
       sender_name: adminUser.full_name,
       message,

@@ -48,4 +48,7 @@ export const AUDIT_ACTIONS = {
   ADMIN_ROLE_CHANGE: 'admin.user.role_change',
   ZONE_CREATE: 'zone.create',
   ZONE_UPDATE: 'zone.update',
+  ROLE_CREATE: 'role.create',
+  ROLE_UPDATE: 'role.update',
+  ROLE_DELETE: 'role.delete',
 } as const

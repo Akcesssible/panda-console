@@ -1,92 +1,50 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { rateLimit, AUTH_LIMIT, MUTATION_LIMIT, READ_LIMIT } from '@/lib/rate-limit'
 
-const SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000 // 8 hours
-const IS_DEV = process.env.NODE_ENV === 'development'
+// NOTE: do NOT set `export const runtime` here — it is not allowed in proxy files.
+// Proxy defaults to Node.js runtime, so the in-memory rate-limit Map persists correctly.
 
-export async function proxy(request: NextRequest) {
-  // In development, allow direct access to all routes without auth
-  if (IS_DEV) return NextResponse.next({ request })
+const WRITE_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE'])
 
-  let supabaseResponse = NextResponse.next({ request })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
+function getClientIP(req: NextRequest): string {
+  return (
+    req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+    req.headers.get('x-real-ip') ??
+    'unknown'
   )
+}
 
-  // Refresh session — must always call getUser() to keep session alive
-  const { data: { user } } = await supabase.auth.getUser()
+export function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login')
-  const isApiRoute = request.nextUrl.pathname.startsWith('/api')
+  if (!pathname.startsWith('/api/')) return NextResponse.next()
 
-  // Helper: redirect while preserving any refreshed session cookies
-  function redirectTo(pathname: string, params?: Record<string, string>) {
-    const url = request.nextUrl.clone()
-    url.pathname = pathname
-    if (params) {
-      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
-    }
-    const res = NextResponse.redirect(url)
-    // Copy refreshed Supabase session cookies onto the redirect response
-    supabaseResponse.cookies.getAll().forEach(cookie =>
-      res.cookies.set(cookie.name, cookie.value, cookie)
-    )
-    return res
+  const ip = getClientIP(req)
+  const isAuth = pathname.startsWith('/api/auth')
+  const isWrite = WRITE_METHODS.has(req.method)
+
+  const bucket = isAuth ? 'auth' : isWrite ? 'write' : 'read'
+  const options = isAuth ? AUTH_LIMIT : isWrite ? MUTATION_LIMIT : READ_LIMIT
+
+  const result = rateLimit(`${ip}:${bucket}`, options)
+
+  const response = result.allowed
+    ? NextResponse.next()
+    : NextResponse.json(
+        { error: 'Too many requests — please slow down and try again shortly.' },
+        { status: 429 },
+      )
+
+  response.headers.set('X-RateLimit-Limit', String(options.limit))
+  response.headers.set('X-RateLimit-Remaining', String(result.remaining))
+  response.headers.set('X-RateLimit-Reset', String(result.resetAt))
+  if (!result.allowed) {
+    response.headers.set('Retry-After', String(result.resetAt - Math.ceil(Date.now() / 1000)))
   }
 
-  if (!user) {
-    if (!isAuthRoute && !isApiRoute) {
-      return redirectTo('/login')
-    }
-    // Clear stale session_started cookie if present
-    supabaseResponse.cookies.delete('session_started')
-    return supabaseResponse
-  }
-
-  // ── Authenticated user below ──────────────────────────────────────────────
-
-  // Enforce 8-hour session max age
-  const sessionStarted = request.cookies.get('session_started')?.value
-  const now = Date.now()
-
-  if (!sessionStarted) {
-    // First request after login — stamp the session start time
-    supabaseResponse.cookies.set('session_started', String(now), {
-      httpOnly: true,
-      sameSite: 'lax',
-      path: '/',
-      maxAge: SESSION_MAX_AGE_MS / 1000,
-    })
-  } else if (now - Number(sessionStarted) > SESSION_MAX_AGE_MS) {
-    // Session older than 8 hours — sign out and redirect to login
-    await supabase.auth.signOut()
-    return redirectTo('/login', { reason: 'session_expired' })
-  }
-
-  // Redirect authenticated users away from the login page
-  if (isAuthRoute) {
-    return redirectTo('/dashboard')
-  }
-
-  return supabaseResponse
+  return response
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: '/api/:path*',
 }

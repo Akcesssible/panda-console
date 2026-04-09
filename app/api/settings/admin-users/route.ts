@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { parseBody, InviteAdminUserSchema } from '@/lib/validations'
 
 export async function GET() {
   const adminUser = await getAdminUserFromRequest()
@@ -23,8 +24,10 @@ export async function POST(request: Request) {
   try { requireRole(adminUser, ['super_admin']) }
   catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
 
-  const { email, full_name, role } = await request.json()
-  if (!email || !full_name || !role) return NextResponse.json({ error: 'email, full_name, role required' }, { status: 400 })
+  const body = await parseBody(request, InviteAdminUserSchema)
+  if (body instanceof NextResponse) return body
+
+  const { email, full_name, role } = body
 
   const supabase = createAdminClient()
 
