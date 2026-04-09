@@ -74,7 +74,7 @@ export default async function RidesPage({
     <div className="space-y-4 w-full">
       <PageHeader title="Rides" tabs={TABS} activeTab={tab} basePath="/rides" />
       <StatsRow stats={stats} />
-      <RidesTable rides={rides} total={total} page={page} tab={tab} tabs={TABS} isLive={tab === 'live'} />
+      <RidesTable rides={rides} total={total} page={page} tab={tab} tabs={TABS} isLive={tab === 'live'} useMock={useMock} />
     </div>
   )
 }

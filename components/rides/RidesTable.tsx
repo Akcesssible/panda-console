@@ -19,15 +19,26 @@ const CARD_TITLES: Record<string, string> = {
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 const MOCK_RIDES = [
-  { id: 'm1', ride_number: 'R-00001', status: 'ongoing',   vehicle_type: 'car',      total_fare_tzs: 4500,  requested_at: new Date(Date.now() - 5*60_000).toISOString(),   drivers: { full_name: 'John Mawella',  driver_number: 'DRV-000001' }, pickup_address: 'Kariakoo Market', destination_address: 'Mlimani City' },
-  { id: 'm2', ride_number: 'R-00002', status: 'completed', vehicle_type: 'bajaj',    total_fare_tzs: 2200,  requested_at: new Date(Date.now() - 20*60_000).toISOString(),  drivers: { full_name: 'Asha Kassim',   driver_number: 'DRV-000002' }, pickup_address: 'Ubungo Terminal', destination_address: 'Sinza' },
-  { id: 'm3', ride_number: 'R-00003', status: 'requested', vehicle_type: 'car',      total_fare_tzs: null,  requested_at: new Date(Date.now() - 2*60_000).toISOString(),   drivers: null, pickup_address: 'Posta', destination_address: 'Mikocheni' },
-  { id: 'm4', ride_number: 'R-00004', status: 'cancelled', vehicle_type: 'bodaboda', total_fare_tzs: null,  requested_at: new Date(Date.now() - 60*60_000).toISOString(),  drivers: { full_name: 'Sofia Lee',     driver_number: 'DRV-000004' }, pickup_address: 'Buguruni', destination_address: 'Tabata' },
-  { id: 'm5', ride_number: 'R-00005', status: 'completed', vehicle_type: 'car',      total_fare_tzs: 8700,  requested_at: new Date(Date.now() - 3*3600_000).toISOString(), drivers: { full_name: 'Ethan Wright',  driver_number: 'DRV-000006' }, pickup_address: 'Julius Nyerere Airport', destination_address: 'Sea Cliff Hotel' },
+  { id: 'm1', ride_number: 'R-00001', status: 'ongoing',   is_flagged: false, vehicle_type: 'car',      total_fare_tzs: 4500,  requested_at: new Date(Date.now() - 5*60_000).toISOString(),   drivers: { full_name: 'John Mawella',  driver_number: 'DRV-000001' }, pickup_address: 'Kariakoo Market',       destination_address: 'Mlimani City' },
+  { id: 'm2', ride_number: 'R-00002', status: 'completed', is_flagged: false, vehicle_type: 'bajaj',    total_fare_tzs: 2200,  requested_at: new Date(Date.now() - 20*60_000).toISOString(),  drivers: { full_name: 'Asha Kassim',   driver_number: 'DRV-000002' }, pickup_address: 'Ubungo Terminal',       destination_address: 'Sinza' },
+  { id: 'm3', ride_number: 'R-00003', status: 'requested', is_flagged: false, vehicle_type: 'car',      total_fare_tzs: null,  requested_at: new Date(Date.now() - 2*60_000).toISOString(),   drivers: null,                                                         pickup_address: 'Posta',                 destination_address: 'Mikocheni' },
+  { id: 'm4', ride_number: 'R-00004', status: 'cancelled', is_flagged: false, vehicle_type: 'bodaboda', total_fare_tzs: null,  requested_at: new Date(Date.now() - 60*60_000).toISOString(),  drivers: { full_name: 'Sofia Lee',     driver_number: 'DRV-000004' }, pickup_address: 'Buguruni',              destination_address: 'Tabata' },
+  { id: 'm5', ride_number: 'R-00005', status: 'completed', is_flagged: false, vehicle_type: 'car',      total_fare_tzs: 8700,  requested_at: new Date(Date.now() - 3*3600_000).toISOString(), drivers: { full_name: 'Ethan Wright',  driver_number: 'DRV-000006' }, pickup_address: 'Julius Nyerere Airport', destination_address: 'Sea Cliff Hotel' },
+  { id: 'm6', ride_number: 'R-00006', status: 'accepted',  is_flagged: false, vehicle_type: 'bajaj',    total_fare_tzs: null,  requested_at: new Date(Date.now() - 8*60_000).toISOString(),   drivers: { full_name: 'Olivia Martinez', driver_number: 'DRV-000007' }, pickup_address: 'Masaki Peninsula',     destination_address: 'Oyster Bay' },
+  { id: 'm7', ride_number: 'R-00007', status: 'completed', is_flagged: true,  vehicle_type: 'car',      total_fare_tzs: 5100,  requested_at: new Date(Date.now() - 2*3600_000).toISOString(), drivers: { full_name: 'Noah Smith',    driver_number: 'DRV-000008' }, pickup_address: 'Tegeta',               destination_address: 'Mbezi Beach' },
+  { id: 'm8', ride_number: 'R-00008', status: 'cancelled', is_flagged: true,  vehicle_type: 'bodaboda', total_fare_tzs: null,  requested_at: new Date(Date.now() - 90*60_000).toISOString(),  drivers: { full_name: 'Maya Patel',    driver_number: 'DRV-000005' }, pickup_address: 'Chang\'ombe',          destination_address: 'Temeke' },
 ]
 
+// Mock filtered by tab so switching tabs works correctly in demo mode
+const MOCK_BY_TAB: Record<string, typeof MOCK_RIDES> = {
+  live:      MOCK_RIDES.filter(r => ['requested', 'accepted', 'ongoing'].includes(r.status)),
+  history:   MOCK_RIDES.filter(r => r.status === 'completed'),
+  cancelled: MOCK_RIDES.filter(r => r.status === 'cancelled'),
+  flagged:   MOCK_RIDES.filter(r => r.is_flagged),
+}
+
 export function RidesTable({
-  rides: initialRides, total, page, tab, tabs, isLive,
+  rides: initialRides, total, page, tab, tabs, isLive, useMock,
 }: {
   rides: Ride[]
   total: number
@@ -35,6 +46,7 @@ export function RidesTable({
   tab: string
   tabs: Tab[]
   isLive: boolean
+  useMock?: boolean
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -59,9 +71,10 @@ export function RidesTable({
     router.push(`/rides?${params.toString()}`)
   }
 
+  const mockForTab = MOCK_BY_TAB[tab] ?? MOCK_RIDES
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const displayRides: any[] = rides.length > 0 ? rides : MOCK_RIDES
-  const displayTotal = rides.length > 0 ? total : MOCK_RIDES.length
+  const displayRides: any[] = useMock ? mockForTab : rides
+  const displayTotal = useMock ? mockForTab.length : total
 
   const columns = [
     {

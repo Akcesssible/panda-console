@@ -78,6 +78,7 @@ export default async function SubscriptionsPage({
         paymentsTotal={settled(paymentsResult, { payments: [], total: 0 }).total ?? 0}
         tab={tab}
         page={page}
+        useMock={useMock}
       />
     </div>
   )

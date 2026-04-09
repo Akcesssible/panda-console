@@ -7,7 +7,7 @@ import {
   MoreVerticalIcon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
-} from '@hugeicons/core-free-icons'
+} from '@hugeicons-pro/core-stroke-rounded'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { FilterButton } from '@/components/ui/FilterButton'
 

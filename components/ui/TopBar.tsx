@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Search02Icon, Notification01Icon, InformationCircleIcon, ArrowDown01Icon } from '@hugeicons/core-free-icons'
+import { Search02Icon, Notification01Icon, InformationCircleIcon, ArrowDown01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import type { AdminUser } from '@/lib/types'
 
 const ROLE_LABELS: Record<string, string> = {

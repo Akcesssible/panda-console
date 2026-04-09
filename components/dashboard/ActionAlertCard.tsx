@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { ArrowUpRight01Icon, InformationCircleIcon } from '@hugeicons/core-free-icons'
+import { ArrowUpRight01Icon, InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded'
 
 interface Props {
   title: string

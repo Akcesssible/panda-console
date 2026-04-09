@@ -68,7 +68,7 @@ export default async function DriversPage({
     <div className="space-y-4 w-full">
       <PageHeader title="Drivers" tabs={TABS} activeTab={tab} basePath="/drivers" />
       <StatsRow stats={stats} />
-      <DriversTable drivers={drivers} total={total} page={page} tab={tab} tabs={TABS} search={search} />
+      <DriversTable drivers={drivers} total={total} page={page} tab={tab} tabs={TABS} search={search} useMock={useMock} />
     </div>
   )
 }

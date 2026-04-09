@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/Badge'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { FilterButton } from '@/components/ui/FilterButton'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { InformationCircleIcon } from '@hugeicons/core-free-icons'
+import { InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { formatTZS } from '@/lib/utils'
 import type { BadgeVariant } from '@/components/ui/Badge'
 

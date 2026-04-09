@@ -23,19 +23,31 @@ const CARD_TITLES: Record<string, string> = {
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 const MOCK_TICKETS = [
-  { id: 'm1', ticket_number: 'TKT-00001', type: 'fare_dispute',       subject: 'Overcharged fare on airport trip',   status: 'open',        reporter_type: 'rider',  reported_by: 'Alice M.', created_at: new Date(Date.now() - 10*60_000).toISOString(),    admin_users: null },
-  { id: 'm2', ticket_number: 'TKT-00002', type: 'driver_complaint',   subject: 'Driver was rude and unprofessional', status: 'in_progress', reporter_type: 'rider',  reported_by: 'Bob K.',   created_at: new Date(Date.now() - 2*3600_000).toISOString(),   admin_users: { full_name: 'Kevin M.' } },
-  { id: 'm3', ticket_number: 'TKT-00003', type: 'technical',          subject: 'App crash during payment',            status: 'open',        reporter_type: 'driver', reported_by: 'John M.', created_at: new Date(Date.now() - 5*3600_000).toISOString(),   admin_users: null },
-  { id: 'm4', ticket_number: 'TKT-00004', type: 'fare_dispute',       subject: 'Wrong route charged',                status: 'resolved',    reporter_type: 'rider',  reported_by: 'Sofia L.', created_at: new Date(Date.now() - 86400_000).toISOString(),    admin_users: { full_name: 'Kevin M.' } },
-  { id: 'm5', ticket_number: 'TKT-00005', type: 'rider_complaint',    subject: 'Rider was no-show after booking',    status: 'open',        reporter_type: 'driver', reported_by: 'Ethan W.', created_at: new Date(Date.now() - 30*60_000).toISOString(),   admin_users: null },
+  { id: 'm1', ticket_number: 'TKT-00001', type: 'fare_dispute',    subject: 'Overcharged fare on airport trip',    status: 'open',        reporter_type: 'rider',  reported_by: 'Alice M.',  created_at: new Date(Date.now() - 10*60_000).toISOString(),   admin_users: null },
+  { id: 'm2', ticket_number: 'TKT-00002', type: 'driver_complaint',subject: 'Driver was rude and unprofessional',  status: 'in_progress', reporter_type: 'rider',  reported_by: 'Bob K.',    created_at: new Date(Date.now() - 2*3600_000).toISOString(),  admin_users: { full_name: 'Kevin M.' } },
+  { id: 'm3', ticket_number: 'TKT-00003', type: 'technical',       subject: 'App crash during payment',             status: 'open',        reporter_type: 'driver', reported_by: 'John M.',   created_at: new Date(Date.now() - 5*3600_000).toISOString(),  admin_users: null },
+  { id: 'm4', ticket_number: 'TKT-00004', type: 'fare_dispute',    subject: 'Wrong route charged',                 status: 'resolved',    reporter_type: 'rider',  reported_by: 'Sofia L.',  created_at: new Date(Date.now() - 86400_000).toISOString(),   admin_users: { full_name: 'Kevin M.' } },
+  { id: 'm5', ticket_number: 'TKT-00005', type: 'rider_complaint', subject: 'Rider was no-show after booking',     status: 'open',        reporter_type: 'driver', reported_by: 'Ethan W.',  created_at: new Date(Date.now() - 30*60_000).toISOString(),   admin_users: null },
+  { id: 'm6', ticket_number: 'TKT-00006', type: 'technical',       subject: 'Map not loading correctly',           status: 'in_progress', reporter_type: 'rider',  reported_by: 'Farida H.', created_at: new Date(Date.now() - 4*3600_000).toISOString(),  admin_users: { full_name: 'Kevin M.' } },
+  { id: 'm7', ticket_number: 'TKT-00007', type: 'fare_dispute',    subject: 'Charged twice for same trip',         status: 'resolved',    reporter_type: 'rider',  reported_by: 'Daniel J.', created_at: new Date(Date.now() - 2*86400_000).toISOString(), admin_users: { full_name: 'Kevin M.' } },
+  { id: 'm8', ticket_number: 'TKT-00008', type: 'driver_complaint',subject: 'Driver cancelled last minute',        status: 'resolved',    reporter_type: 'rider',  reported_by: 'Halima N.', created_at: new Date(Date.now() - 3*86400_000).toISOString(), admin_users: { full_name: 'Kevin M.' } },
 ]
 
-export function SupportTable({ tickets, total, page, tab, tabs }: {
+// Mock filtered by tab — "resolved" tab matches both resolved and closed statuses
+const MOCK_BY_TAB: Record<string, typeof MOCK_TICKETS> = {
+  open:        MOCK_TICKETS.filter(t => t.status === 'open'),
+  in_progress: MOCK_TICKETS.filter(t => t.status === 'in_progress'),
+  resolved:    MOCK_TICKETS.filter(t => t.status === 'resolved'),
+  all:         MOCK_TICKETS,
+}
+
+export function SupportTable({ tickets, total, page, tab, tabs, useMock }: {
   tickets: SupportTicket[]
   total: number
   page: number
   tab: string
   tabs: Array<{ key: string; label: string }>
+  useMock?: boolean
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -46,9 +58,10 @@ export function SupportTable({ tickets, total, page, tab, tabs }: {
     router.push(`/support?${params.toString()}`)
   }
 
+  const mockForTab = MOCK_BY_TAB[tab] ?? MOCK_TICKETS
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const displayTickets: any[] = tickets.length > 0 ? tickets : MOCK_TICKETS
-  const displayTotal = tickets.length > 0 ? total : MOCK_TICKETS.length
+  const displayTickets: any[] = useMock ? mockForTab : tickets
+  const displayTotal = useMock ? mockForTab.length : total
 
   const columns = [
     {

@@ -49,6 +49,16 @@ export function SubscriptionBadge({ status }: { status: string }) {
   return <Badge variant={map[status] ?? 'gray'}>{status.replace('_', ' ')}</Badge>
 }
 
+export function RiderStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { variant: BadgeVariant; label: string }> = {
+    active:   { variant: 'green',  label: 'active' },
+    inactive: { variant: 'gray',   label: 'inactive' },
+    banned:   { variant: 'red',    label: 'banned' },
+  }
+  const m = map[status] ?? { variant: 'gray' as BadgeVariant, label: status }
+  return <Badge variant={m.variant}>{m.label}</Badge>
+}
+
 export function PaymentStatusBadge({ status }: { status: string }) {
   const map: Record<string, BadgeVariant> = {
     completed: 'green', pending: 'yellow', failed: 'red',

@@ -14,7 +14,8 @@ import {
   CustomerService02Icon,
   ChartBarLineIcon,
   Configuration02Icon,
-} from '@hugeicons/core-free-icons'
+  UserMultiple02Icon,
+} from '@hugeicons-pro/core-stroke-rounded'
 import type { AdminRole } from '@/lib/types'
 import { ROLE_PERMISSIONS } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
@@ -29,6 +30,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard',     href: '/dashboard',    module: 'dashboard',     icon: Home01Icon },
   { label: 'Drivers',       href: '/drivers',       module: 'drivers',       icon: SteeringIcon },
+  { label: 'Riders',        href: '/riders',        module: 'riders',        icon: UserMultiple02Icon },
   { label: 'Rides',         href: '/rides',         module: 'rides',         icon: BaseballHelmetIcon },
   { label: 'Subscriptions', href: '/subscriptions', module: 'subscriptions', icon: Ticket02Icon },
   { label: 'Pricing',       href: '/pricing',       module: 'pricing',       icon: TradeUpIcon },

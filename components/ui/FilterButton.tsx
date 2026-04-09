@@ -1,7 +1,7 @@
 'use client'
 
 import { HugeiconsIcon } from '@hugeicons/react'
-import { FilterHorizontalIcon } from '@hugeicons/core-free-icons'
+import { FilterHorizontalIcon } from '@hugeicons-pro/core-stroke-rounded'
 
 interface FilterButtonProps {
   onClick?: () => void

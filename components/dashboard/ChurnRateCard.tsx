@@ -5,7 +5,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from 'recharts'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { InformationCircleIcon } from '@hugeicons/core-free-icons'
+import { InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded'
 
 const MOCK_CHURN = [
   { month: 'Jul', rate: 4.98 },

@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from '@hugeicons/react'
-import { InformationCircleIcon } from '@hugeicons/core-free-icons'
+import { InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded'
 
 export interface StatItem {
   label: string

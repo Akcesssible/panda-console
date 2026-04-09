@@ -66,7 +66,7 @@ export default async function SupportPage({
     <div className="space-y-4 w-full">
       <PageHeader title="Support" tabs={TABS} activeTab={tab} basePath="/support" />
       <StatsRow stats={stats} />
-      <SupportTable tickets={tickets} total={total} page={page} tab={tab} tabs={TABS} />
+      <SupportTable tickets={tickets} total={total} page={page} tab={tab} tabs={TABS} useMock={useMock} />
     </div>
   )
 }

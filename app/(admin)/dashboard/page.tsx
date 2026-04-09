@@ -7,7 +7,7 @@ import { ActionAlertCard } from '@/components/dashboard/ActionAlertCard'
 import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable'
 import Link from 'next/link'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
+import { ArrowUpRight01Icon } from '@hugeicons-pro/core-stroke-rounded'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function settled(result: PromiseSettledResult<any>, fallback: any): any {

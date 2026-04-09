@@ -1,7 +1,7 @@
 'use client'
 
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Search01Icon } from '@hugeicons/core-free-icons'
+import { Search01Icon } from '@hugeicons-pro/core-stroke-rounded'
 
 interface SearchBarProps {
   value: string

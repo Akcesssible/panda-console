@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { CallIcon, CancelCircleIcon, FlagIcon } from '@hugeicons/core-free-icons'
+import { CallIcon, CancelCircleIcon, FlagIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { Modal } from '@/components/ui/Modal'
 import type { Driver, AdminUser } from '@/lib/types'
 

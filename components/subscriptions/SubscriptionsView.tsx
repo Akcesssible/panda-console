@@ -8,6 +8,46 @@ import { formatDate, formatTZS } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import type { DriverSubscription, SubscriptionPayment, SubscriptionPlan } from '@/lib/types'
 
+// ── Mock data ─────────────────────────────────────────────────────────────────
+const MOCK_SUBS = [
+  { id: 's1', driver_id: 'd1', plan_id: 'p1', status: 'active',   started_at: '2026-03-01T00:00:00Z', expires_at: '2026-04-08T00:00:00Z', rides_remaining: 40,  drivers: { full_name: 'John Mawella',    driver_number: 'DRV-000001', phone: '0712 345 678' }, subscription_plans: { name: 'Weekly Standard' } },
+  { id: 's2', driver_id: 'd2', plan_id: 'p2', status: 'active',   started_at: '2026-03-15T00:00:00Z', expires_at: '2026-04-15T00:00:00Z', rides_remaining: null, drivers: { full_name: "Liam O'Connor",   driver_number: 'DRV-000003', phone: '0765 432 109' }, subscription_plans: { name: 'Monthly Unlimited' } },
+  { id: 's3', driver_id: 'd3', plan_id: 'p1', status: 'expired',  started_at: '2026-02-01T00:00:00Z', expires_at: '2026-03-01T00:00:00Z', rides_remaining: 0,   drivers: { full_name: 'Asha Kassim',     driver_number: 'DRV-000002', phone: '0754 221 990' }, subscription_plans: { name: 'Weekly Standard' } },
+  { id: 's4', driver_id: 'd4', plan_id: 'p1', status: 'active',   started_at: '2026-03-20T00:00:00Z', expires_at: '2026-04-20T00:00:00Z', rides_remaining: 55,  drivers: { full_name: 'Sofia Lee',       driver_number: 'DRV-000004', phone: '0789 654 321' }, subscription_plans: { name: 'Weekly Standard' } },
+  { id: 's5', driver_id: 'd5', plan_id: 'p2', status: 'expired',  started_at: '2026-01-15T00:00:00Z', expires_at: '2026-02-15T00:00:00Z', rides_remaining: 0,   drivers: { full_name: 'Maya Patel',      driver_number: 'DRV-000005', phone: '0798 876 543' }, subscription_plans: { name: 'Monthly Unlimited' } },
+  { id: 's6', driver_id: 'd6', plan_id: 'p1', status: 'active',   started_at: '2026-03-25T00:00:00Z', expires_at: '2026-04-25T00:00:00Z', rides_remaining: 60,  drivers: { full_name: 'Ethan Wright',    driver_number: 'DRV-000006', phone: '0800 123 456' }, subscription_plans: { name: 'Weekly Standard' } },
+  { id: 's7', driver_id: 'd7', plan_id: 'p2', status: 'expired',  started_at: '2026-02-10T00:00:00Z', expires_at: '2026-03-10T00:00:00Z', rides_remaining: 0,   drivers: { full_name: 'Olivia Martinez', driver_number: 'DRV-000007', phone: '0822 345 678' }, subscription_plans: { name: 'Monthly Unlimited' } },
+  { id: 's8', driver_id: 'd8', plan_id: 'p1', status: 'active',   started_at: '2026-04-01T00:00:00Z', expires_at: '2026-04-30T00:00:00Z', rides_remaining: 70,  drivers: { full_name: 'Noah Smith',      driver_number: 'DRV-000008', phone: '0843 987 654' }, subscription_plans: { name: 'Weekly Standard' } },
+]
+
+const MOCK_PAYMENTS = [
+  { id: 'py1', driver_id: 'd3', subscription_id: 's3', plan_id: 'p1', amount_tzs: 15000, payment_method: 'mobile_money', provider: 'M-Pesa', status: 'failed',    created_at: '2026-03-01T09:00:00Z', drivers: { full_name: 'Asha Kassim' },     subscription_plans: { name: 'Weekly Standard' } },
+  { id: 'py2', driver_id: 'd5', subscription_id: 's5', plan_id: 'p2', amount_tzs: 45000, payment_method: 'mobile_money', provider: 'Tigo',   status: 'failed',    created_at: '2026-02-15T14:30:00Z', drivers: { full_name: 'Maya Patel' },      subscription_plans: { name: 'Monthly Unlimited' } },
+  { id: 'py3', driver_id: 'd1', subscription_id: 's1', plan_id: 'p1', amount_tzs: 15000, payment_method: 'mobile_money', provider: 'M-Pesa', status: 'completed', created_at: '2026-03-01T08:00:00Z', drivers: { full_name: 'John Mawella' },    subscription_plans: { name: 'Weekly Standard' } },
+  { id: 'py4', driver_id: 'd2', subscription_id: 's2', plan_id: 'p2', amount_tzs: 45000, payment_method: 'mobile_money', provider: 'Airtel', status: 'completed', created_at: '2026-03-15T10:00:00Z', drivers: { full_name: "Liam O'Connor" },   subscription_plans: { name: 'Monthly Unlimited' } },
+  { id: 'py5', driver_id: 'd6', subscription_id: 's6', plan_id: 'p1', amount_tzs: 15000, payment_method: 'mobile_money', provider: 'M-Pesa', status: 'completed', created_at: '2026-03-25T11:00:00Z', drivers: { full_name: 'Ethan Wright' },    subscription_plans: { name: 'Weekly Standard' } },
+  { id: 'py6', driver_id: 'd7', subscription_id: 's7', plan_id: 'p2', amount_tzs: 45000, payment_method: 'mobile_money', provider: 'Tigo',   status: 'failed',    created_at: '2026-02-10T09:30:00Z', drivers: { full_name: 'Olivia Martinez' }, subscription_plans: { name: 'Monthly Unlimited' } },
+]
+
+const MOCK_PLANS: SubscriptionPlan[] = [
+  { id: 'p1', name: 'Weekly Standard',   duration_days: 7,  price_tzs: 15000, vehicle_types: ['bodaboda', 'bajaj', 'car'], description: 'Perfect for weekly commuters',    is_active: true,  created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' },
+  { id: 'p2', name: 'Monthly Unlimited', duration_days: 30, price_tzs: 45000, vehicle_types: ['bodaboda', 'bajaj', 'car'], description: 'Best value for full-time drivers', is_active: true,  created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' },
+  { id: 'p3', name: 'Daily Pass',        duration_days: 1,  price_tzs: 3000,  vehicle_types: ['bodaboda'],                 description: 'One-day access pass',             is_active: false, created_at: '2024-03-01T00:00:00Z', updated_at: '2024-03-01T00:00:00Z' },
+]
+
+// Mock filtered per tab
+const MOCK_SUBS_BY_TAB: Record<string, typeof MOCK_SUBS> = {
+  active:          MOCK_SUBS.filter(s => s.status === 'active'),
+  expired:         MOCK_SUBS.filter(s => s.status === 'expired'),
+  failed:          [],   // payments table handles this tab
+  payment_history: [],   // payments table handles this tab
+}
+
+const MOCK_PAYMENTS_BY_TAB: Record<string, typeof MOCK_PAYMENTS> = {
+  failed:          MOCK_PAYMENTS.filter(p => p.status === 'failed'),
+  payment_history: MOCK_PAYMENTS,
+}
+
 const TABS = [
   { key: 'active', label: 'Active' },
   { key: 'expired', label: 'Expired' },
@@ -17,7 +57,7 @@ const TABS = [
 ]
 
 export function SubscriptionsView({
-  subscriptions, subsTotal, plans, payments, paymentsTotal, tab, page,
+  subscriptions, subsTotal, plans, payments, paymentsTotal, tab, page, useMock,
 }: {
   subscriptions: DriverSubscription[]
   subsTotal: number
@@ -26,6 +66,7 @@ export function SubscriptionsView({
   paymentsTotal: number
   tab: string
   page: number
+  useMock?: boolean
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -131,6 +172,12 @@ export function SubscriptionsView({
     },
   ]
 
+  const displaySubs     = (useMock ? (MOCK_SUBS_BY_TAB[tab]     ?? MOCK_SUBS)     : subscriptions) as unknown as DriverSubscription[]
+  const displaySubTotal = useMock ? displaySubs.length : subsTotal
+  const displayPayments = (useMock ? (MOCK_PAYMENTS_BY_TAB[tab] ?? MOCK_PAYMENTS) : payments)      as unknown as SubscriptionPayment[]
+  const displayPayTotal = useMock ? displayPayments.length : paymentsTotal
+  const displayPlans    = (useMock && plans.length === 0) ? MOCK_PLANS : plans
+
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-gray-100">
       {tab === 'plans' ? (
@@ -144,27 +191,27 @@ export function SubscriptionsView({
               + New Plan
             </button>
           </div>
-          <PlansTable plans={plans} />
+          <PlansTable plans={displayPlans} />
         </div>
       ) : tab === 'payment_history' || tab === 'failed' ? (
         <>
           <DataTable
             columns={paymentColumns}
-            data={payments}
+            data={displayPayments}
             cardTitle={CARD_TITLES[tab]}
             selectable
           />
-          <Pagination page={page} total={paymentsTotal} perPage={20} onPageChange={p => navigate({ page: String(p) })} />
+          <Pagination page={page} total={displayPayTotal} perPage={20} onPageChange={p => navigate({ page: String(p) })} />
         </>
       ) : (
         <>
           <DataTable
             columns={subColumns}
-            data={subscriptions}
+            data={displaySubs}
             cardTitle={CARD_TITLES[tab] ?? 'Subscriptions'}
             selectable
           />
-          <Pagination page={page} total={subsTotal} perPage={20} onPageChange={p => navigate({ page: String(p) })} />
+          <Pagination page={page} total={displaySubTotal} perPage={20} onPageChange={p => navigate({ page: String(p) })} />
         </>
       )}
 

@@ -29,8 +29,17 @@ const CARD_TITLES: Record<string, string> = {
   churned: 'Churned Drivers',
 }
 
+// Mock filtered by tab so switching tabs works correctly in demo mode
+const MOCK_BY_TAB: Record<string, typeof MOCK_DRIVERS> = {
+  all:       MOCK_DRIVERS,
+  active:    MOCK_DRIVERS.filter(d => d.status === 'active'),
+  pending:   MOCK_DRIVERS.filter(d => d.status === 'pending'),
+  suspended: MOCK_DRIVERS.filter(d => d.status === 'suspended'),
+  churned:   MOCK_DRIVERS.filter(d => d.status === 'churned'),
+}
+
 export function DriversTable({
-  drivers, total, page, tab, tabs, search,
+  drivers, total, page, tab, tabs, search, useMock,
 }: {
   drivers: Driver[]
   total: number
@@ -38,6 +47,7 @@ export function DriversTable({
   tab: string
   tabs: Tab[]
   search?: string
+  useMock?: boolean
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -48,8 +58,9 @@ export function DriversTable({
     router.push(`/drivers?${params.toString()}`)
   }
 
-  const displayDrivers = drivers.length > 0 ? drivers : MOCK_DRIVERS as Driver[]
-  const displayTotal   = drivers.length > 0 ? total : MOCK_DRIVERS.length
+  const mockForTab     = MOCK_BY_TAB[tab] ?? MOCK_DRIVERS
+  const displayDrivers = useMock ? mockForTab as Driver[] : drivers
+  const displayTotal   = useMock ? mockForTab.length : total
 
   const columns = getColumns(tab)
 

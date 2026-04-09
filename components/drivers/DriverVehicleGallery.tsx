@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons'
+import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Driver, Vehicle } from '@/lib/types'
 
 export function DriverVehicleGallery({ driver }: { driver: Driver }) {
