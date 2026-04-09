@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   const { email, full_name, role } = body
   const supabase = createAdminClient()
 
-  // Generate a Supabase invite link (does NOT send any email — we send our own)
+  // Step 1 — generate invite link (must be first, everything depends on it)
   const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
     type: 'invite',
     email,
@@ -47,17 +47,6 @@ export async function POST(request: Request) {
   if (linkError) return NextResponse.json({ error: linkError.message }, { status: 500 })
 
   const inviteUrl = linkData.properties.action_link
-
-  // Create admin_users record BEFORE sending email
-  const { data: user, error: userError } = await supabase
-    .from('admin_users')
-    .insert({ full_name, email, role, auth_id: linkData.user.id })
-    .select()
-    .single()
-
-  if (userError) return NextResponse.json({ error: userError.message }, { status: 500 })
-
-  // Send branded invitation email via Resend
   const emailPayload = {
     full_name,
     email,
@@ -67,24 +56,34 @@ export async function POST(request: Request) {
     app_url: APP_URL,
   }
 
-  const { error: emailError } = await resend.emails.send({
-    from: 'Panda Console <noreply@pandahailing.com>',
-    to: email,
-    subject: `You've been invited to Panda Console`,
-    html: inviteEmailHtml(emailPayload),
-    text: inviteEmailText(emailPayload),
-  })
+  // Step 2 — DB insert + email send in parallel (neither depends on the other)
+  const [{ data: user, error: userError }, { error: emailError }] = await Promise.all([
+    supabase
+      .from('admin_users')
+      .insert({ full_name, email, role, auth_id: linkData.user.id })
+      .select()
+      .single(),
+    resend.emails.send({
+      from: 'Panda Console <noreply@pandahailing.com>',
+      to: email,
+      subject: `You've been invited to Panda Console`,
+      html: inviteEmailHtml(emailPayload),
+      text: inviteEmailText(emailPayload),
+    }),
+  ])
+
+  if (userError) return NextResponse.json({ error: userError.message }, { status: 500 })
 
   if (emailError) {
-    // Log the error but don't fail — user is created, admin can resend manually
     console.error('[invite] Email send failed:', emailError)
   }
 
-  await logAdminAction({
+  // Step 3 — audit log: fire and forget, no need to block the response
+  logAdminAction({
     adminId: adminUser.id, adminEmail: adminUser.email, adminRole: adminUser.role,
     action: AUDIT_ACTIONS.ADMIN_CREATE, entityType: 'admin_user', entityId: user.id,
     newValue: { email, full_name, role }, request,
-  })
+  }).catch(err => console.error('[invite] Audit log failed:', err))
 
   return NextResponse.json({ user, email_sent: !emailError })
 }
