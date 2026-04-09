@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { IdCardLanyardIcon, SmartPhoneIcon, CalendarIcon, PinLocationIcon, CheckmarkBadge03Icon } from '@hugeicons-pro/core-stroke-rounded'
+import { IdCardLanyardIcon, SmartPhoneIcon, CalendarIcon, PinLocationIcon } from '@hugeicons-pro/core-stroke-rounded'
+import { CheckmarkBadge04Icon } from '@hugeicons-pro/core-solid-sharp'
 import { DriverStatusBadge } from '@/components/ui/Badge'
 import { formatDate, timeAgo } from '@/lib/utils'
 import type { Driver, Vehicle } from '@/lib/types'
@@ -37,8 +38,8 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
         </div>
 
         {/* Verified badge — top right, above the clip layer */}
-        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white rounded px-2.5 py-1.5">
-          <HugeiconsIcon icon={CheckmarkBadge03Icon} size={14} color="#2B39C7" strokeWidth={2} />
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white rounded-[.25rem] px-1.5 py-1.5">
+          <HugeiconsIcon icon={CheckmarkBadge04Icon} size={14} color="#2B39C7" strokeWidth={2} />
           <span className="text-xs font-semibold text-[#2B39C7]">Verified</span>
         </div>
 
