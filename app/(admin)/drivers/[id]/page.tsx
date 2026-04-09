@@ -3,11 +3,13 @@ import { getAdminUser } from '@/lib/auth'
 import { notFound } from 'next/navigation'
 import { DriverDetailHeader } from '@/components/drivers/DriverDetailHeader'
 import { DriverProfileCard } from '@/components/drivers/DriverProfileCard'
-import { DriverStats } from '@/components/drivers/DriverStats'
 import { DriverSubscriptionCard } from '@/components/drivers/DriverSubscriptionCard'
 import { DriverVehicleGallery } from '@/components/drivers/DriverVehicleGallery'
 import { DriverRideHistory } from '@/components/drivers/DriverRideHistory'
+import { StatsRow } from '@/components/ui/StatsRow'
+import { formatTZS } from '@/lib/utils'
 import type { Driver } from '@/lib/types'
+import type { StatItem } from '@/components/ui/StatsRow'
 
 // ── Mock data (shown when DB has no driver or returns error) ─────────────────
 const MOCK_DRIVER: Driver = {
@@ -133,6 +135,32 @@ export default async function DriverDetailPage({
   const todayTrips  = useMock ? 14               : result!.todayTrips
   const lastPayment = useMock ? MOCK_LAST_PAYMENT : result!.lastPayment
 
+  const completionRate = driver.total_trips > 0
+    ? Math.round((driver.completed_trips / driver.total_trips) * 100)
+    : 0
+  const avgEarnings = driver.total_trips > 0
+    ? (driver.total_trips * 4200) / Math.max(1, driver.total_trips / 10)
+    : 0
+
+  const stats: StatItem[] = [
+    {
+      label: 'Trips Today',
+      value: todayTrips,
+      subBadge: 'Active 5 minutes ago',
+    },
+    {
+      label: 'Total Trips',
+      value: driver.total_trips.toLocaleString(),
+      subBadge: `${driver.completed_trips.toLocaleString()} Completed Trips`,
+      subText: `${driver.cancelled_trips} Canceled`,
+    },
+    {
+      label: 'Avg Earnings / Day',
+      value: formatTZS(avgEarnings),
+      subBadge: `${completionRate}% Completion Rate`,
+    },
+  ]
+
   return (
     <div className="w-full flex flex-col gap-4">
       <DriverDetailHeader driver={driver} adminUser={adminUser} />
@@ -145,7 +173,7 @@ export default async function DriverDetailPage({
 
         {/* Right — stats + subscription + vehicle + rides */}
         <div className="flex-1 min-w-0 flex flex-col gap-4">
-          <DriverStats driver={driver} todayTrips={todayTrips} />
+          <StatsRow stats={stats} />
 
           <div className="grid grid-cols-3 gap-4">
             <DriverSubscriptionCard driver={driver} lastPayment={lastPayment} />
