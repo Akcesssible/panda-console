@@ -26,10 +26,10 @@ export function DriverVehicleGallery({ driver }: { driver: Driver }) {
   function next() { setActiveIndex(i => (i + 1) % allPhotos.length) }
 
   return (
-    <div className="flex gap-2 h-[240px] rounded-2xl overflow-hidden">
+    <div className="bg-white flex gap-1 h-[240px] rounded-2xl px-2 py-2 overflow-hidden">
 
       {/* ── Left: main viewer — 55% ── */}
-      <div className="relative rounded-2xl overflow-hidden bg-gray-100 group" style={{ flex: '0 0 55%' }}>
+      <div className="relative rounded-2xl overflow-hidden bg-gray-100 group" style={{ flex: '0 0 60%' }}>
         <Image
           src={allPhotos[activeIndex]}
           alt="Vehicle"
@@ -67,17 +67,17 @@ export function DriverVehicleGallery({ driver }: { driver: Driver }) {
       </div>
 
       {/* ── Right: 2-column thumbnail grid — 45% ── */}
-      <div className="grid grid-cols-2 gap-1 overflow-hidden rounded-2xl" style={{ flex: '0 0 calc(45% - 8px)' }}>
+      <div className="grid grid-cols-2 gap-1 overflow-hidden" style={{ flex: '0 0 calc(40% - 8px)' }}>
         {allPhotos.map((src, i) => (
           <button
             key={i}
             onClick={() => setActiveIndex(i)}
-            className="relative w-full h-full overflow-hidden"
+            className="relative w-full h-full overflow-hidden rounded-lg"
           >
-            <Image src={src} alt={`Vehicle ${i + 1}`} fill className="object-cover" />
+            <Image src={src} alt={`Vehicle ${i + 1}`} fill className="object-cover rounded-lg" />
             {/* Blue overlay on active */}
             {i === activeIndex && (
-              <div className="absolute inset-0 bg-[#2B39C7]/50" />
+              <div className="absolute inset-0 bg-[#2B39C7]/50 rounded-lg" />
             )}
           </button>
         ))}
