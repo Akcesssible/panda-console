@@ -73,7 +73,18 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(dashboardUrl)
   }
 
-  // ── 3. Rate limiting (API routes only) ───────────────────────────────────
+  // ── 3. No-cache headers on protected pages ───────────────────────────────
+  // Prevents the browser from serving a stale cached copy of a protected page
+  // when the user presses the back button after logging out. Without this, the
+  // browser may show the cached page without making a network request, bypassing
+  // the session check entirely.
+  if (!isPublic && !pathname.startsWith('/api/')) {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+  }
+
+  // ── 4. Rate limiting (API routes only) ───────────────────────────────────
 
   if (pathname.startsWith('/api/')) {
     const ip = getClientIP(req)

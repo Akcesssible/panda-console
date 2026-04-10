@@ -48,7 +48,11 @@ export default function Sidebar({ role }: { role: AdminRole }) {
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    // Hard navigation + history replace — the login page overwrites the current
+    // history entry so the back button cannot return to any protected page.
+    // router.push() would leave cached pages in history; window.location.replace()
+    // does a full reload and removes the entry from the browser history stack.
+    window.location.replace('/login')
   }
 
   const visibleItems = NAV_ITEMS.filter(item => {
