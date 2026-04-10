@@ -59,6 +59,14 @@ export function RiderStatusBadge({ status }: { status: string }) {
   return <Badge variant={m.variant}>{m.label}</Badge>
 }
 
+export function AdminUserStatusBadge({ isActive }: { isActive: boolean }) {
+  return <Badge variant={isActive ? 'green' : 'gray'}>{isActive ? 'Active' : 'Inactive'}</Badge>
+}
+
+export function IsActiveBadge({ isActive }: { isActive: boolean }) {
+  return <Badge variant={isActive ? 'green' : 'gray'}>{isActive ? 'Active' : 'Inactive'}</Badge>
+}
+
 export function PaymentStatusBadge({ status }: { status: string }) {
   const map: Record<string, BadgeVariant> = {
     completed: 'green', pending: 'yellow', failed: 'red',

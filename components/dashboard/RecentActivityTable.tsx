@@ -73,7 +73,7 @@ export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }
     const supabase = createClient()
     const channel = supabase
       .channel('audit-feed')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, payload => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, (payload: { new: unknown }) => {
         setLogs(prev => [payload.new as AuditLog, ...prev].slice(0, 20))
       })
       .subscribe()

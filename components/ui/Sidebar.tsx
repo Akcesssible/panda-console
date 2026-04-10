@@ -15,6 +15,8 @@ import {
   ChartBarLineIcon,
   Configuration02Icon,
   UserMultiple02Icon,
+  Coins01Icon,
+  Audit01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import type { AdminRole } from '@/lib/types'
 import { ROLE_PERMISSIONS } from '@/lib/types'
@@ -33,10 +35,12 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Riders',        href: '/riders',        module: 'riders',        icon: UserMultiple02Icon },
   { label: 'Rides',         href: '/rides',         module: 'rides',         icon: BaseballHelmetIcon },
   { label: 'Subscriptions', href: '/subscriptions', module: 'subscriptions', icon: Ticket02Icon },
-  { label: 'Pricing',       href: '/pricing',       module: 'pricing',       icon: TradeUpIcon },
+  { label: 'Commissions',  href: '/commissions',   module: 'commissions',   icon: Coins01Icon },
+  { label: 'Pricing',      href: '/pricing',        module: 'pricing',       icon: TradeUpIcon },
   { label: 'Support',       href: '/support',       module: 'support',       icon: CustomerService02Icon },
-  { label: 'Reports',       href: '/reports',       module: 'reports',       icon: ChartBarLineIcon },
-  { label: 'Settings',      href: '/settings',      module: 'settings',      icon: Configuration02Icon },
+  { label: 'Reports',     href: '/reports',     module: 'reports',     icon: ChartBarLineIcon },
+  { label: 'Audit Logs', href: '/audit-logs', module: 'audit_logs',  icon: Audit01Icon },
+  { label: 'Settings',   href: '/settings',   module: 'settings',    icon: Configuration02Icon },
 ]
 
 export default function Sidebar({ role }: { role: AdminRole }) {
@@ -46,7 +50,11 @@ export default function Sidebar({ role }: { role: AdminRole }) {
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    // Hard navigation + history replace — the login page overwrites the current
+    // history entry so the back button cannot return to any protected page.
+    // router.push() would leave cached pages in history; window.location.replace()
+    // does a full reload and removes the entry from the browser history stack.
+    window.location.replace('/login')
   }
 
   const visibleItems = NAV_ITEMS.filter(item => {

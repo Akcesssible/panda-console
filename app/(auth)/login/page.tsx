@@ -12,7 +12,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const sessionExpired = searchParams.get('reason') === 'session_expired'
+  const reason         = searchParams.get('reason')
+  const sessionExpired = reason === 'session_expired'
+  const deactivated    = reason === 'deactivated'
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -28,8 +30,13 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
-    router.refresh()
+    // Hard navigation — guarantees the fresh session cookie is included in
+    // the very first request to /dashboard. router.push() is a client-side
+    // transition that can race with cookie propagation; window.location.href
+    // is a full browser navigation that always carries the latest cookies.
+    // router.refresh() is intentionally removed — it was triggering a redundant
+    // server render before the navigation even started.
+    window.location.href = '/dashboard'
   }
 
   return (
@@ -49,6 +56,12 @@ export default function LoginPage() {
           {sessionExpired && (
             <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl mb-4 text-center">
               Your session has expired. Please sign in again.
+            </p>
+          )}
+
+          {deactivated && (
+            <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-2 rounded-xl mb-4 text-center">
+              Your account has been deactivated. Contact your administrator.
             </p>
           )}
 

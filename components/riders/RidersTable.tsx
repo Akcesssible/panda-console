@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { RiderStatusBadge } from '@/components/ui/Badge'
+import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, timeAgoShort } from '@/lib/utils'
 import type { Rider } from '@/lib/types'
 
@@ -108,9 +109,12 @@ function getColumns(tab: string) {
       render: (row: Record<string, unknown>) => {
         const r = row as unknown as Rider
         return (
-          <div>
-            <p className="font-medium text-[#1d242d]">{r.full_name}</p>
-            <p className="text-xs text-gray-400">{r.rider_number}</p>
+          <div className="flex items-center gap-3">
+            <Avatar id={r.id} name={r.full_name} size="md" />
+            <div className="min-w-0">
+              <p className="font-medium text-[#1d242d]">{r.full_name}</p>
+              <p className="text-xs text-gray-400">{r.rider_number}</p>
+            </div>
           </div>
         )
       },

@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
+import { getAdminUserFromRequest } from '@/lib/auth'
+import { canAccess } from '@/lib/types'
 
 export async function GET(request: Request) {
   const adminUser = await getAdminUserFromRequest()
   if (!adminUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  try { requireRole(adminUser, ['super_admin', 'ops_admin']) }
-  catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
+  // Access is governed by the permissions matrix — any role with audit_logs read+ can view
+  if (!canAccess(adminUser.role, 'audit_logs')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const { searchParams } = new URL(request.url)
   const action = searchParams.get('action')
@@ -27,7 +30,7 @@ export async function GET(request: Request) {
     .order('created_at', { ascending: false })
     .range(from, to)
 
-  if (action) query = query.eq('action', action)
+  if (action) query = query.ilike('action', `%${action}%`)
   if (entityType) query = query.eq('entity_type', entityType)
   if (adminId) query = query.eq('admin_id', adminId)
   if (fromDate) query = query.gte('created_at', fromDate)

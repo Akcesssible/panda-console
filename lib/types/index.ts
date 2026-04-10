@@ -312,22 +312,22 @@ export const ROLE_PERMISSIONS: Record<AdminRole, Record<string, 'full' | 'read' 
   super_admin: {
     dashboard: 'full', drivers: 'full', rides: 'full', riders: 'full', subscriptions: 'full',
     pricing: 'full', support: 'full', reports: 'full', settings: 'full',
-    audit_logs: 'full', admin_users: 'full',
+    commissions: 'full', audit_logs: 'full', admin_users: 'full',
   },
   ops_admin: {
     dashboard: 'full', drivers: 'full', rides: 'full', riders: 'full', subscriptions: 'full',
     pricing: 'write', support: 'full', reports: 'read', settings: 'none',
-    audit_logs: 'read', admin_users: 'none',
+    commissions: 'read', audit_logs: 'read', admin_users: 'none',
   },
   support_agent: {
     dashboard: 'read', drivers: 'read', rides: 'read', riders: 'read', subscriptions: 'none',
     pricing: 'none', support: 'full', reports: 'none', settings: 'none',
-    audit_logs: 'none', admin_users: 'none',
+    commissions: 'none', audit_logs: 'none', admin_users: 'none',
   },
   finance_viewer: {
     dashboard: 'read', drivers: 'none', rides: 'none', riders: 'none', subscriptions: 'read',
     pricing: 'none', support: 'none', reports: 'read', settings: 'none',
-    audit_logs: 'none', admin_users: 'none',
+    commissions: 'read', audit_logs: 'none', admin_users: 'none',
   },
 }
 

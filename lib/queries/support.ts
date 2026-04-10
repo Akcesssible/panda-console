@@ -8,9 +8,10 @@ export async function getTickets(params: {
   type?: string
   assignedTo?: string
   page?: number
+  search?: string
 }) {
   const supabase = createAdminClient()
-  const { status, type, assignedTo, page = 1 } = params
+  const { status, type, assignedTo, page = 1, search } = params
   const from = (page - 1) * PER_PAGE
   const to = from + PER_PAGE - 1
 
@@ -31,6 +32,7 @@ export async function getTickets(params: {
   }
   if (type) query = query.eq('type', type)
   if (assignedTo) query = query.eq('assigned_to', assignedTo)
+  if (search) query = query.or(`ticket_number.ilike.%${search}%,subject.ilike.%${search}%,reported_by.ilike.%${search}%`)
 
   const { data, count, error } = await query
   if (error) throw error

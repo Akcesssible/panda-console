@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Search02Icon, Notification01Icon, InformationCircleIcon, ArrowDown01Icon } from '@hugeicons-pro/core-stroke-rounded'
+import { Avatar } from '@/components/ui/Avatar'
 import type { AdminUser } from '@/lib/types'
 
 const ROLE_LABELS: Record<string, string> = {
@@ -11,10 +12,6 @@ const ROLE_LABELS: Record<string, string> = {
   ops_admin:      'Operations Admin',
   support_agent:  'Support Agent',
   finance_viewer: 'Finance Viewer',
-}
-
-function getInitials(name: string) {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 export default function TopBar({ adminUser }: { adminUser: AdminUser }) {
@@ -46,13 +43,7 @@ export default function TopBar({ adminUser }: { adminUser: AdminUser }) {
         {/* User pill */}
         <div className="flex items-center gap-2.5 ml-1 p-2 bg-white rounded-full">
           <div className="relative">
-            <Image
-              src="/admin-ceo-img.png"
-              alt={adminUser.full_name}
-              width={36}
-              height={36}
-              className="rounded-full object-cover w-9 h-9"
-            />
+            <Avatar id={adminUser.id} name={adminUser.full_name} size="md" />
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
           </div>
           <div className="hidden sm:block">
