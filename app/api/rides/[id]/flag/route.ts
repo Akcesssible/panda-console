@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
-import { logAdminAction } from '@/lib/audit'
+import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { parseBody, RideFlagSchema } from '@/lib/validations'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -29,7 +29,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   await logAdminAction({
     adminId: adminUser.id, adminEmail: adminUser.email, adminRole: adminUser.role,
-    action: 'ride.flag', entityType: 'ride', entityId: id,
+    action: AUDIT_ACTIONS.RIDE_FLAG, entityType: 'ride', entityId: id,
     metadata: { reason }, request,
   })
 

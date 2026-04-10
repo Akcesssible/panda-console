@@ -41,13 +41,14 @@ const MOCK_BY_TAB: Record<string, typeof MOCK_TICKETS> = {
   all:         MOCK_TICKETS,
 }
 
-export function SupportTable({ tickets, total, page, tab, tabs, useMock }: {
+export function SupportTable({ tickets, total, page, tab, tabs, useMock, search }: {
   tickets: SupportTicket[]
   total: number
   page: number
   tab: string
   tabs: Array<{ key: string; label: string }>
   useMock?: boolean
+  search?: string
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -128,6 +129,8 @@ export function SupportTable({ tickets, total, page, tab, tabs, useMock }: {
         columns={columns}
         data={displayTickets}
         cardTitle={CARD_TITLES[tab] ?? 'Support Tickets'}
+        searchValue={search ?? ''}
+        onSearch={v => navigate({ search: v, page: '1' })}
         selectable
         rowActions={row => [
           { label: 'View Ticket', onClick: () => router.push(`/support/${(row as SupportTicket).id}`) },

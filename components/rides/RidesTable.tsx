@@ -39,7 +39,7 @@ const MOCK_BY_TAB: Record<string, typeof MOCK_RIDES> = {
 }
 
 export function RidesTable({
-  rides: initialRides, total, page, tab, tabs, isLive, useMock,
+  rides: initialRides, total, page, tab, tabs, isLive, useMock, search,
 }: {
   rides: Ride[]
   total: number
@@ -48,6 +48,7 @@ export function RidesTable({
   tabs: Tab[]
   isLive: boolean
   useMock?: boolean
+  search?: string
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -156,6 +157,8 @@ export function RidesTable({
         columns={columns}
         data={displayRides}
         cardTitle={CARD_TITLES[tab] ?? 'Rides'}
+        searchValue={search ?? ''}
+        onSearch={v => navigate({ search: v, page: '1' })}
         selectable
         rowActions={row => [
           { label: 'View Details', onClick: () => router.push(`/rides/${(row as Ride).id}`) },

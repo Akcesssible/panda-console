@@ -18,10 +18,29 @@ export default function SetPasswordForm() {
   const [loading, setLoading] = useState(false)
   const [userName, setUserName] = useState('')
 
-  // On mount: exchange the token from the URL hash for a live session
+  // On mount: exchange the token from the URL for a live session.
+  // @supabase/ssr uses PKCE by default → code arrives as ?code= query param.
+  // Older/implicit-flow links arrive as #access_token= hash fragments.
+  // We handle both so the page works regardless of Supabase project settings.
   useEffect(() => {
     async function exchangeToken() {
-      // Supabase puts tokens in the URL hash after redirect
+      // ── PKCE flow: ?code= in the query string ────────────────────────────
+      const searchParams = new URLSearchParams(window.location.search)
+      const code = searchParams.get('code')
+
+      if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error || !data.session) {
+          setErrorMsg('This invitation link has expired. Please ask an admin to resend the invite.')
+          setStage('error')
+          return
+        }
+        setUserName(data.session.user.user_metadata?.full_name ?? '')
+        setStage('ready')
+        return
+      }
+
+      // ── Implicit flow: #access_token= in the URL hash ────────────────────
       const hash = window.location.hash
       const params = new URLSearchParams(hash.replace('#', ''))
       const accessToken = params.get('access_token')

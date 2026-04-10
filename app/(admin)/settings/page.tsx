@@ -6,12 +6,12 @@ import { PageHeader } from '@/components/ui/PageHeader'
 
 async function getSettingsData() {
   const supabase = createAdminClient()
-  const [{ data: admins }, { data: zones }, { data: config }, { data: logs }, { data: customRoles }] = await Promise.all([
+  const [{ data: admins }, { data: zones }, { data: config }, { data: logs, count: logsTotal }, { data: customRoles }] = await Promise.all([
     supabase.from('admin_users').select('*').order('created_at'),
     supabase.from('zones').select('*').order('name'),
     supabase.from('system_config').select('*'),
     supabase.from('audit_logs')
-      .select('*, admin_users(full_name)')
+      .select('*, admin_users(full_name)', { count: 'exact' })
       .order('created_at', { ascending: false })
       .limit(50),
     supabase.from('custom_roles').select('*').order('created_at'),
@@ -21,6 +21,7 @@ async function getSettingsData() {
     zones: zones ?? [],
     config: config ?? [],
     logs: logs ?? [],
+    logsTotal: logsTotal ?? 0,
     customRoles: customRoles ?? [],
   }
 }

@@ -172,13 +172,15 @@ if (error) {
 
 These are operational error logs for email send failures and audit log failures — not debug noise. They are appropriate in production. If you want structured logging in the future, consider a service like **Axiom** or **Logtail** (both have Vercel integrations).
 
-### I-2 · No loading.tsx files on heavy pages
-Next.js App Router supports `loading.tsx` alongside `page.tsx` to show a streaming skeleton while server data loads. The subscriptions, drivers, and commissions pages fetch significant data but have no loading state — the browser shows a blank page until all queries complete.
+### ~~I-2 · No loading.tsx files on heavy pages~~ ✅ RESOLVED (2026-04-10 13:30)
+~~Next.js App Router supports `loading.tsx` alongside `page.tsx` to show a streaming skeleton while server data loads. The subscriptions, drivers, and commissions pages fetch significant data but have no loading state — the browser shows a blank page until all queries complete.~~
 
-**Recommendation:** Add a `loading.tsx` in each `(admin)/*` folder with a skeleton that matches the page layout.
+**Resolved:** Added `loading.tsx` to all 14 admin routes. A shared `components/ui/Skeleton.tsx` provides `SkeletonHeader`, `SkeletonStatsRow`, `SkeletonTable`, and `SkeletonStandardPage` building blocks. List pages use `SkeletonStandardPage`; detail pages (driver, ride, ticket) use custom layouts that mirror their real content structure. Dashboard has a bespoke skeleton matching its 3-col chart + 2-col activity grid.
 
-### I-3 · No `error.tsx` files
-If a DB query throws an unhandled error in a server component, Next.js shows a generic error page. Custom `error.tsx` files per route would give users a better experience with a retry button.
+### ~~I-3 · No `error.tsx` files~~ ✅ RESOLVED (2026-04-10 13:33)
+~~If a DB query throws an unhandled error in a server component, Next.js shows a generic error page. Custom `error.tsx` files per route would give users a better experience with a retry button.~~
+
+**Resolved:** Added 5 error boundaries across the hierarchy. A shared `components/ui/ErrorView.tsx` provides the branded error card (icon, title, message, retry button, optional back link). `app/(admin)/error.tsx` catches all admin page errors. Detail pages (`/drivers/[id]`, `/rides/[id]`, `/support/[id]`) have their own error boundaries with contextual messages and back-navigation links. `app/error.tsx` is the root-level last-resort fallback. All boundaries log the error digest for Vercel tracing.
 
 ### I-4 · `NEXT_PUBLIC_APP_URL` not validated at startup
 The invite email uses `APP_URL` from environment variables. If it's missing, the invite link in the email will be wrong. Consider adding a startup check:
@@ -255,8 +257,8 @@ The app uses the service role (`SUPABASE_SECRET_KEY`) for all DB writes, which b
 | 🟠 6 | Wire `ChurnRateCard` to real DB query | 1 h |
 | 🟠 7 | Replace in-memory rate limiter with Upstash Redis | 2 h |
 | 🟠 8 | Fix driver detail page — remove hardcoded mock | 2 h |
-| 🟡 9 | Add `loading.tsx` skeletons to heavy pages | 3 h |
-| 🟡 10 | Add `error.tsx` per route group | 2 h |
+| ✅ 9 | ~~Add `loading.tsx` skeletons to heavy pages~~ — Done 2026-04-10 | 3 h |
+| ✅ 10 | ~~Add `error.tsx` per route group~~ — Done 2026-04-10 | 2 h |
 | 🟡 11 | Implement password reset flow on login page | 1 h |
 | 🟡 12 | Add `requireRole` to settings/roles routes | 5 min |
 | 🟡 13 | Add error feedback to `TicketActions` resolve form | 30 min |

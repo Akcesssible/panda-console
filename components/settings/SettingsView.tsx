@@ -7,10 +7,11 @@ import {
   UserAdd01Icon, UserCircleIcon, ShieldUserIcon,
   Tick02Icon, Cancel01Icon, MoreVerticalIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
-import { Badge } from '@/components/ui/Badge'
+import { Badge, AdminUserStatusBadge, IsActiveBadge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { formatDateTime, formatDate, timeAgo } from '@/lib/utils'
+import { AuditLogsView } from '@/components/audit-logs/AuditLogsView'
 import type { AdminUser, AuditLog, Zone } from '@/lib/types'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -76,13 +77,14 @@ function defaultPermissions(): Record<string, Record<Permission, boolean>> {
 // ── Root view ─────────────────────────────────────────────────────────────────
 
 export function SettingsView({
-  tab, admins, zones, config, logs, currentAdmin, customRoles,
+  tab, admins, zones, config, logs, logsTotal, currentAdmin, customRoles,
 }: {
   tab: string
   admins: AdminUser[]
   zones: Zone[]
   config: SystemConfig[]
   logs: AuditLog[]
+  logsTotal: number
   currentAdmin: AdminUser
   customRoles: CustomRole[]
 }) {
@@ -97,23 +99,13 @@ export function SettingsView({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
 
-      {/* Tab action bar — only for zones now; users & roles have their button inside the DataTable header */}
-      {tab === 'zones' && (
-        <div className="px-5 pt-4 flex justify-end">
-          <button onClick={() => setAddZoneModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-[#2B39C7] text-white rounded-lg hover:bg-[#202b95] transition-colors">
-            + Add Zone
-          </button>
-        </div>
-      )}
-
-      <div className="p-5">
-        {tab === 'users'  && <UsersTab admins={admins} currentAdmin={currentAdmin} onRefresh={refresh} onInviteUser={() => setAddUserModal(true)} />}
-        {tab === 'roles'  && <RolesTab customRoles={customRoles} onRefresh={refresh} onAddRole={() => setAddRoleModal(true)} onEditRole={setEditingRole} isSuperAdmin={currentAdmin.role === 'super_admin'} />}
-        {tab === 'zones'  && <ZonesTab zones={zones} onRefresh={refresh} />}
-        {tab === 'config' && <ConfigTab config={config} onRefresh={refresh} />}
-        {tab === 'logs'   && <AuditLogsTab logs={logs} />}
-      </div>
+      {/* No wrapper padding — DataTable handles its own internal padding.
+          Config and Logs tabs add p-5 inside themselves. */}
+      {tab === 'users'  && <UsersTab admins={admins} currentAdmin={currentAdmin} onRefresh={refresh} onInviteUser={() => setAddUserModal(true)} />}
+      {tab === 'roles'  && <RolesTab customRoles={customRoles} onRefresh={refresh} onAddRole={() => setAddRoleModal(true)} onEditRole={setEditingRole} isSuperAdmin={currentAdmin.role === 'super_admin'} />}
+      {tab === 'zones'  && <ZonesTab zones={zones} onRefresh={refresh} onAddZone={() => setAddZoneModal(true)} />}
+      {tab === 'config' && <ConfigTab config={config} onRefresh={refresh} />}
+      {tab === 'logs'   && <AuditLogsTab logs={logs} initialTotal={logsTotal} />}
 
       <AddUserModal open={addUserModal} onClose={() => { setAddUserModal(false); refresh() }} />
       <AddRoleModal open={addRoleModal} onClose={() => { setAddRoleModal(false); refresh() }} />
@@ -235,15 +227,7 @@ function UsersTab({ admins, currentAdmin, onRefresh, onInviteUser }: {
     {
       key: 'is_active',
       label: 'Status',
-      render: (admin: AdminUser) => (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${
-          admin.is_active
-            ? 'border-green-400 text-green-600 bg-green-50'
-            : 'border-gray-300 text-gray-500 bg-gray-50'
-        }`}>
-          {admin.is_active ? 'Active' : 'Inactive'}
-        </span>
-      ),
+      render: (admin: AdminUser) => <AdminUserStatusBadge isActive={admin.is_active} />,
     },
   ]
 
@@ -257,7 +241,7 @@ function UsersTab({ admins, currentAdmin, onRefresh, onInviteUser }: {
   )
 
   return (
-    <div className="-mx-5 -mt-5">
+    <div>
       <DataTable
         columns={columns}
         data={paginated}
@@ -385,14 +369,7 @@ function RolesTab({ customRoles, onRefresh, onAddRole, onEditRole, isSuperAdmin 
     {
       key: 'status',
       label: 'Status',
-      render: (role: CustomRole) => (
-        <div className="flex items-center gap-1.5">
-          <span className={`w-2 h-2 rounded-full shrink-0 ${role.is_active !== false ? 'bg-green-500' : 'bg-orange-400'}`} />
-          <span className={`text-sm font-medium ${role.is_active !== false ? 'text-green-600' : 'text-orange-500'}`}>
-            {role.is_active !== false ? 'Active' : 'Inactive'}
-          </span>
-        </div>
-      ),
+      render: (role: CustomRole) => <IsActiveBadge isActive={role.is_active !== false} />,
     },
   ]
 
@@ -408,10 +385,8 @@ function RolesTab({ customRoles, onRefresh, onAddRole, onEditRole, isSuperAdmin 
     </button>
   )
 
-  // Negative margins break out of the parent's p-5 padding so this table
-  // sits flush with the card edges — identical to every other module table.
   return (
-    <div className="-mx-5 -mt-5">
+    <div>
       <DataTable
         columns={columns}
         data={paginated}
@@ -447,7 +422,15 @@ function RolesTab({ customRoles, onRefresh, onAddRole, onEditRole, isSuperAdmin 
 
 // ── Zones Tab ─────────────────────────────────────────────────────────────────
 
-function ZonesTab({ zones, onRefresh }: { zones: Zone[]; onRefresh: () => void }) {
+function ZonesTab({ zones, onRefresh, onAddZone }: {
+  zones: Zone[]
+  onRefresh: () => void
+  onAddZone: () => void
+}) {
+  const [search, setSearch] = useState('')
+  const [page, setPage]     = useState(1)
+  const [perPage, setPerPage] = useState(10)
+
   async function toggleZone(zone: Zone) {
     await fetch(`/api/settings/zones/${zone.id}`, {
       method: 'PATCH',
@@ -457,23 +440,65 @@ function ZonesTab({ zones, onRefresh }: { zones: Zone[]; onRefresh: () => void }
     onRefresh()
   }
 
-  return (
-    <div className="divide-y divide-gray-100">
-      {zones.map(zone => (
-        <div key={zone.id} className="py-3 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-900">{zone.name}</p>
-            <p className="text-xs text-gray-500">{zone.city}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge variant={zone.is_active ? 'green' : 'gray'}>{zone.is_active ? 'Active' : 'Inactive'}</Badge>
-            <button onClick={() => toggleZone(zone)}
-              className="text-xs text-gray-500 hover:text-gray-900 border border-gray-200 px-2 py-1 rounded">
-              {zone.is_active ? 'Disable' : 'Enable'}
-            </button>
-          </div>
+  const filtered  = zones.filter(z =>
+    z.name.toLowerCase().includes(search.toLowerCase()) ||
+    z.city?.toLowerCase().includes(search.toLowerCase())
+  )
+  const paginated = filtered.slice((page - 1) * perPage, page * perPage)
+
+  const columns = [
+    {
+      key: 'name',
+      label: 'Zone',
+      render: (zone: Zone) => (
+        <div>
+          <p className="text-sm font-semibold text-[#1d242d]">{zone.name}</p>
+          <p className="text-xs text-gray-400">{zone.city}</p>
         </div>
-      ))}
+      ),
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (zone: Zone) => <IsActiveBadge isActive={zone.is_active} />,
+    },
+  ]
+
+  const addZoneBtn = (
+    <button
+      onClick={onAddZone}
+      className="bg-[#2B39C7] hover:bg-[#202b95] text-white text-sm font-semibold rounded-full px-5 py-2 transition-colors whitespace-nowrap"
+    >
+      Add Zone
+    </button>
+  )
+
+  return (
+    <div>
+      <DataTable
+        columns={columns}
+        data={paginated}
+        keyField="id"
+        cardTitle="Cities & Zones"
+        searchValue={search}
+        onSearch={v => { setSearch(v); setPage(1) }}
+        headerRight={addZoneBtn}
+        emptyMessage="No zones found."
+        rowActions={zone => [
+          {
+            label: (zone as Zone).is_active ? 'Disable' : 'Enable',
+            onClick: () => toggleZone(zone as Zone),
+            danger: (zone as Zone).is_active,
+          },
+        ]}
+      />
+      <Pagination
+        page={page}
+        total={filtered.length}
+        perPage={perPage}
+        onPageChange={setPage}
+        onPerPageChange={n => { setPerPage(n); setPage(1) }}
+      />
     </div>
   )
 }
@@ -495,58 +520,56 @@ function ConfigTab({ config, onRefresh }: { config: SystemConfig[]; onRefresh: (
   }
 
   return (
-    <div className="divide-y divide-gray-100">
-      {config.map(item => (
-        <div key={item.id} className="py-3 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-gray-900">{item.key}</p>
-            {item.description && <p className="text-xs text-gray-400">{item.description}</p>}
+    <>
+      {/* Header row — matches DataTable card header style */}
+      <div className="flex items-center px-6 py-4 border-b border-gray-100">
+        <span className="text-base font-medium text-[#1d242d] tracking-[-0.5px] flex-1">System Config</span>
+      </div>
+
+      {/* Config rows */}
+      <div className="divide-y divide-gray-100">
+        {config.map(item => (
+          <div key={item.id} className="px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-[#F5F7FF] transition-colors">
+            <div>
+              <p className="text-sm font-semibold text-[#1d242d]">{item.key}</p>
+              {item.description && <p className="text-xs text-gray-400 mt-0.5">{item.description}</p>}
+            </div>
+            <div className="flex items-center gap-3">
+              {editing === item.key ? (
+                <>
+                  <input
+                    value={value}
+                    onChange={e => setValue(e.target.value)}
+                    className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm w-36 focus:outline-none focus:ring-2 focus:ring-[#2B39C7]/30"
+                  />
+                  <button onClick={() => saveConfig(item.key)} className="text-xs font-medium text-green-600 hover:text-green-700">Save</button>
+                  <button onClick={() => setEditing(null)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm font-mono text-gray-600 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg">{item.value}</span>
+                  <button
+                    onClick={() => { setEditing(item.key); setValue(item.value) }}
+                    className="text-xs font-medium text-[#2B39C7] hover:underline"
+                  >
+                    Edit
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {editing === item.key ? (
-              <>
-                <input value={value} onChange={e => setValue(e.target.value)}
-                  className="border border-gray-200 rounded px-2 py-1 text-sm w-28" />
-                <button onClick={() => saveConfig(item.key)} className="text-xs text-green-600 font-medium">Save</button>
-                <button onClick={() => setEditing(null)} className="text-xs text-gray-400">Cancel</button>
-              </>
-            ) : (
-              <>
-                <span className="text-sm font-mono text-gray-700">{item.value}</span>
-                <button onClick={() => { setEditing(item.key); setValue(item.value) }}
-                  className="text-xs text-[#2B39C7] hover:underline">Edit</button>
-              </>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   )
 }
 
 // ── Audit Logs Tab ────────────────────────────────────────────────────────────
 
-function AuditLogsTab({ logs }: { logs: AuditLog[] }) {
-  return (
-    <div className="divide-y divide-gray-100">
-      <div className="py-2 grid grid-cols-4 gap-4 text-xs font-medium text-gray-400 uppercase tracking-wide">
-        <span className="col-span-2">Action</span>
-        <span>Admin</span>
-        <span>Time</span>
-      </div>
-      {logs.map(log => (
-        <div key={log.id} className="py-3 grid grid-cols-4 gap-4 text-sm">
-          <div className="col-span-2">
-            <p className="text-gray-800 font-mono text-xs">{log.action}</p>
-            <p className="text-xs text-gray-400">{log.entity_type}{log.entity_id ? ` · ${log.entity_id.slice(0, 8)}…` : ''}</p>
-          </div>
-          <span className="text-gray-500 truncate text-xs">{log.admin_email}</span>
-          <span className="text-gray-400 text-xs">{timeAgo(log.created_at)}</span>
-        </div>
-      ))}
-    </div>
-  )
+function AuditLogsTab({ logs, initialTotal }: { logs: AuditLog[]; initialTotal: number }) {
+  return <AuditLogsView initialLogs={logs} initialTotal={initialTotal} />
 }
+
 
 // ── Add User Modal ────────────────────────────────────────────────────────────
 

@@ -16,6 +16,7 @@ import {
   Configuration02Icon,
   UserMultiple02Icon,
   Coins01Icon,
+  Audit01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import type { AdminRole } from '@/lib/types'
 import { ROLE_PERMISSIONS } from '@/lib/types'
@@ -37,8 +38,9 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Commissions',  href: '/commissions',   module: 'commissions',   icon: Coins01Icon },
   { label: 'Pricing',      href: '/pricing',        module: 'pricing',       icon: TradeUpIcon },
   { label: 'Support',       href: '/support',       module: 'support',       icon: CustomerService02Icon },
-  { label: 'Reports',       href: '/reports',       module: 'reports',       icon: ChartBarLineIcon },
-  { label: 'Settings',      href: '/settings',      module: 'settings',      icon: Configuration02Icon },
+  { label: 'Reports',     href: '/reports',     module: 'reports',     icon: ChartBarLineIcon },
+  { label: 'Audit Logs', href: '/audit-logs', module: 'audit_logs',  icon: Audit01Icon },
+  { label: 'Settings',   href: '/settings',   module: 'settings',    icon: Configuration02Icon },
 ]
 
 export default function Sidebar({ role }: { role: AdminRole }) {

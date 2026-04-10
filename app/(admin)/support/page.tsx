@@ -20,11 +20,12 @@ const MOCK_STATS: StatItem[] = [
 export default async function SupportPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; page?: string }>
+  searchParams: Promise<{ tab?: string; page?: string; search?: string }>
 }) {
   const params = await searchParams
-  const tab  = params.tab ?? 'open'
-  const page = Number(params.page ?? 1)
+  const tab    = params.tab ?? 'open'
+  const page   = Number(params.page ?? 1)
+  const search = params.search
 
   const statusMap: Record<string, string | string[] | undefined> = {
     open: 'open', in_progress: 'in_progress', resolved: ['resolved', 'closed'], all: undefined,
@@ -34,7 +35,7 @@ export default async function SupportPage({
   const supabase     = createAdminClient()
 
   const [ticketsResult, openR, inProgressR, resolvedR, totalR] = await Promise.allSettled([
-    getTickets({ status: statusMap[tab], page }),
+    getTickets({ status: statusMap[tab], page, search }),
     supabase.from('support_tickets').select('*', { count: 'exact', head: true }).eq('status', 'open'),
     supabase.from('support_tickets').select('*', { count: 'exact', head: true }).eq('status', 'in_progress'),
     supabase.from('support_tickets').select('*', { count: 'exact', head: true }).in('status', ['resolved', 'closed']).gte('updated_at', firstOfMonth),
@@ -66,7 +67,7 @@ export default async function SupportPage({
     <div className="space-y-4 w-full">
       <PageHeader title="Support" tabs={TABS} activeTab={tab} basePath="/support" />
       <StatsRow stats={stats} />
-      <SupportTable tickets={tickets} total={total} page={page} tab={tab} tabs={TABS} useMock={useMock} />
+      <SupportTable tickets={tickets} total={total} page={page} tab={tab} tabs={TABS} useMock={useMock} search={search} />
     </div>
   )
 }

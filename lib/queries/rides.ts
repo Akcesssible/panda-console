@@ -14,7 +14,7 @@ export async function getRides(params: {
   search?: string
 }) {
   const supabase = createAdminClient()
-  const { status, flagged, driverId, zoneId, fromDate, toDate, page = 1 } = params
+  const { status, flagged, driverId, zoneId, fromDate, toDate, page = 1, search } = params
   const from = (page - 1) * PER_PAGE
   const to = from + PER_PAGE - 1
 
@@ -37,6 +37,7 @@ export async function getRides(params: {
   if (zoneId) query = query.eq('zone_id', zoneId)
   if (fromDate) query = query.gte('requested_at', fromDate)
   if (toDate) query = query.lte('requested_at', toDate)
+  if (search) query = query.or(`ride_number.ilike.%${search}%,pickup_address.ilike.%${search}%,destination_address.ilike.%${search}%`)
 
   const { data, count, error } = await query
   if (error) throw error

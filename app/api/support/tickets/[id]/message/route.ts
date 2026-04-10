@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest } from '@/lib/auth'
+import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { parseBody, TicketMessageSchema } from '@/lib/validations'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -28,5 +29,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await logAdminAction({
+    adminId: adminUser.id, adminEmail: adminUser.email, adminRole: adminUser.role,
+    action: AUDIT_ACTIONS.TICKET_MESSAGE, entityType: 'support_ticket', entityId: id,
+    newValue: { message }, request,
+  })
+
   return NextResponse.json({ message: data })
 }

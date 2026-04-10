@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
-import { SubscriptionBadge, PaymentStatusBadge } from '@/components/ui/Badge'
+import { SubscriptionBadge, PaymentStatusBadge, IsActiveBadge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, formatTZS } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
@@ -211,9 +211,7 @@ function PlansTable({ plans }: { plans: SubscriptionPlan[] }) {
           </div>
           <div className="text-right">
             <p className="text-sm font-semibold text-gray-900">{formatTZS(plan.price_tzs)}</p>
-            <span className={`text-xs ${plan.is_active ? 'text-green-600' : 'text-red-500'}`}>
-              {plan.is_active ? 'Active' : 'Inactive'}
-            </span>
+            <IsActiveBadge isActive={plan.is_active} />
           </div>
         </div>
       ))}

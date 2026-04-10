@@ -22,11 +22,12 @@ const MOCK_STATS: StatItem[] = [
 export default async function RidesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; page?: string }>
+  searchParams: Promise<{ tab?: string; page?: string; search?: string }>
 }) {
   const params = await searchParams
-  const tab  = params.tab ?? 'live'
-  const page = Number(params.page ?? 1)
+  const tab    = params.tab ?? 'live'
+  const page   = Number(params.page ?? 1)
+  const search = params.search
 
   const tabConfig: Record<string, { status?: RideStatus | RideStatus[]; flagged?: boolean }> = {
     live:      { status: ['requested', 'accepted', 'ongoing'] },
@@ -39,7 +40,7 @@ export default async function RidesPage({
   const supabase = createAdminClient()
 
   const [ridesResult, liveR, completedR, cancelledR, revenueR] = await Promise.allSettled([
-    getRides({ ...tabConfig[tab] ?? tabConfig.live, page }),
+    getRides({ ...tabConfig[tab] ?? tabConfig.live, page, search }),
     supabase.from('rides').select('*', { count: 'exact', head: true }).in('status', ['requested', 'accepted', 'ongoing']),
     supabase.from('rides').select('*', { count: 'exact', head: true }).eq('status', 'completed').gte('completed_at', today),
     supabase.from('rides').select('*', { count: 'exact', head: true }).eq('status', 'cancelled').gte('requested_at', today),
@@ -74,7 +75,7 @@ export default async function RidesPage({
     <div className="space-y-4 w-full">
       <PageHeader title="Rides" tabs={TABS} activeTab={tab} basePath="/rides" />
       <StatsRow stats={stats} />
-      <RidesTable rides={rides} total={total} page={page} tab={tab} tabs={TABS} isLive={tab === 'live'} useMock={useMock} />
+      <RidesTable rides={rides} total={total} page={page} tab={tab} tabs={TABS} isLive={tab === 'live'} useMock={useMock} search={search} />
     </div>
   )
 }

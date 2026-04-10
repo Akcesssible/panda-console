@@ -154,8 +154,7 @@ function getColumns(tab: string) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const sub = (d as any).driver_subscriptions?.[0]
           if (!sub) return <span className="text-gray-400 text-sm">None</span>
-          const label = sub.status === 'active' ? 'Active' : sub.status === 'expired' ? 'Expired' : sub.status
-          return <span className="text-sm text-gray-600">{label}</span>
+          return <SubscriptionBadge status={sub.status} />
         },
       },
       {
