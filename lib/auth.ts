@@ -3,11 +3,13 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { AdminUser, AdminRole } from '@/lib/types'
 
+// DEV_ADMIN mirrors the real super_admin so the UI looks accurate in development.
+// This is NEVER used in production — NODE_ENV=production always hits Supabase auth.
 const DEV_ADMIN: AdminUser = {
   id: '00000000-0000-0000-0000-000000000001',
   auth_id: '00000000-0000-0000-0000-000000000001',
-  full_name: 'Dev Admin',
-  email: 'dev@pandahailing.com',
+  full_name: 'Kevin Msemakweli',
+  email: 'kevin@pandahailing.com',
   role: 'super_admin',
   is_active: true,
   created_at: new Date().toISOString(),
