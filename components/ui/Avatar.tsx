@@ -7,8 +7,17 @@ import Image from 'next/image'
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const AVATAR_COUNT = 9
 
-/** Stable 1-based index (1–9) from any string ID */
-function avatarIndex(id: string): number {
+/**
+ * Explicit overrides — pin a specific person to a specific avatar regardless
+ * of what their UUID would hash to. Key = full name exactly as stored in DB.
+ */
+const AVATAR_OVERRIDES: Record<string, number> = {
+  'Kevin Msemakweli': 5,
+}
+
+/** Stable 1-based index (1–9). Checks name overrides first, then hashes ID. */
+function resolveIndex(id: string, name: string): number {
+  if (AVATAR_OVERRIDES[name] !== undefined) return AVATAR_OVERRIDES[name]
   const hash = id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
   return (hash % AVATAR_COUNT) + 1
 }
@@ -40,7 +49,7 @@ const SIZE_CLASSES = {
 const SIZE_PX = { sm: 28, md: 36, lg: 40 }
 
 export function Avatar({ id, name, size = 'md' }: AvatarProps) {
-  const src = `/avatars/avatar_${pad(avatarIndex(id))}.png`
+  const src = `/avatars/avatar_${pad(resolveIndex(id, name))}.png`
   const px  = SIZE_PX[size]
   return (
     <div className={`${SIZE_CLASSES[size]} rounded-full overflow-hidden shrink-0`}>

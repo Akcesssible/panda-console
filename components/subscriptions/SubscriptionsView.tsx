@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { SubscriptionBadge, PaymentStatusBadge } from '@/components/ui/Badge'
+import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, formatTZS } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import type { DriverSubscription, SubscriptionPayment, SubscriptionPlan } from '@/lib/types'
@@ -78,9 +79,12 @@ export function SubscriptionsView({
       render: (row: Record<string, unknown>) => {
         const s = row as unknown as DriverSubscription & { drivers: { full_name: string; driver_number: string; phone: string } }
         return s.drivers ? (
-          <div>
-            <p className="text-sm font-medium text-gray-900">{s.drivers.full_name}</p>
-            <p className="text-xs text-gray-400">{s.drivers.driver_number}</p>
+          <div className="flex items-center gap-3">
+            <Avatar id={s.driver_id ?? s.id} name={s.drivers.full_name} size="md" />
+            <div className="min-w-0">
+              <p className="font-medium text-[#1d242d]">{s.drivers.full_name}</p>
+              <p className="text-xs text-gray-400">{s.drivers.driver_number}</p>
+            </div>
           </div>
         ) : <span className="text-gray-400">—</span>
       },
@@ -118,7 +122,12 @@ export function SubscriptionsView({
       key: 'driver', label: 'Driver',
       render: (row: Record<string, unknown>) => {
         const p = row as unknown as SubscriptionPayment & { drivers: { full_name: string } }
-        return <span className="font-medium text-[#1d242d]">{p.drivers?.full_name ?? '—'}</span>
+        return p.drivers ? (
+          <div className="flex items-center gap-3">
+            <Avatar id={p.driver_id ?? p.id} name={p.drivers.full_name} size="md" />
+            <span className="font-medium text-[#1d242d]">{p.drivers.full_name}</span>
+          </div>
+        ) : <span className="text-gray-400">—</span>
       },
     },
     {
