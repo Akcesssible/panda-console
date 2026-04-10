@@ -1,29 +1,23 @@
-// Shared avatar component — vibrant initials circle, stable colour per ID.
-// Used in Settings user list, Drivers table, Commissions table, TopBar, etc.
+// Shared avatar component — gradient PNG images assigned stably per user/driver ID.
+// 9 images at /public/avatars/avatar_01.png … avatar_09.png.
+// The same ID always resolves to the same avatar (deterministic hash).
 
-// ── Palette ───────────────────────────────────────────────────────────────────
-const AVATAR_PALETTE = [
-  { bg: '#FDE68A', text: '#92400E' }, // amber
-  { bg: '#6EE7B7', text: '#065F46' }, // emerald
-  { bg: '#93C5FD', text: '#1E3A8A' }, // blue
-  { bg: '#FCA5A5', text: '#7F1D1D' }, // red
-  { bg: '#C4B5FD', text: '#4C1D95' }, // violet
-  { bg: '#FCD34D', text: '#78350F' }, // yellow
-  { bg: '#6EE7F7', text: '#164E63' }, // cyan
-  { bg: '#F9A8D4', text: '#831843' }, // pink
-  { bg: '#86EFAC', text: '#14532D' }, // green
-  { bg: '#FDBA74', text: '#7C2D12' }, // orange
-  { bg: '#A5B4FC', text: '#312E81' }, // indigo
-  { bg: '#F0ABFC', text: '#701A75' }, // fuchsia
-]
+import Image from 'next/image'
 
-/** Stable colour pick based on any string ID — same ID always gets same colour */
-export function avatarStyle(id: string) {
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const AVATAR_COUNT = 9
+
+/** Stable 1-based index (1–9) from any string ID */
+function avatarIndex(id: string): number {
   const hash = id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
-  return AVATAR_PALETTE[hash % AVATAR_PALETTE.length]
+  return (hash % AVATAR_COUNT) + 1
 }
 
-/** First letter of first name + first letter of last name, uppercased */
+function pad(n: number): string {
+  return n.toString().padStart(2, '0')
+}
+
+// ── Still exported so TopBar / anywhere else that needs initials can use them ─
 export function getInitials(fullName: string): string {
   const parts = fullName.trim().split(/\s+/)
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
@@ -38,19 +32,25 @@ interface AvatarProps {
 }
 
 const SIZE_CLASSES = {
-  sm: 'w-7 h-7 text-xs',
-  md: 'w-9 h-9 text-sm',
-  lg: 'w-10 h-10 text-sm',
+  sm: 'w-7 h-7',
+  md: 'w-9 h-9',
+  lg: 'w-10 h-10',
 }
 
+const SIZE_PX = { sm: 28, md: 36, lg: 40 }
+
 export function Avatar({ id, name, size = 'md' }: AvatarProps) {
-  const { bg, text } = avatarStyle(id)
+  const src = `/avatars/avatar_${pad(avatarIndex(id))}.png`
+  const px  = SIZE_PX[size]
   return (
-    <div
-      className={`${SIZE_CLASSES[size]} rounded-full flex items-center justify-center shrink-0 font-bold tracking-wide`}
-      style={{ backgroundColor: bg, color: text }}
-    >
-      {getInitials(name)}
+    <div className={`${SIZE_CLASSES[size]} rounded-full overflow-hidden shrink-0`}>
+      <Image
+        src={src}
+        alt={name}
+        width={px}
+        height={px}
+        className="w-full h-full object-cover"
+      />
     </div>
   )
 }

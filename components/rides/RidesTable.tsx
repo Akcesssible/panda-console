@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { RideStatusBadge } from '@/components/ui/Badge'
+import { Avatar } from '@/components/ui/Avatar'
 import { formatTZS, timeAgoShort } from '@/lib/utils'
 import type { Ride } from '@/lib/types'
 
@@ -90,9 +91,12 @@ export function RidesTable({
       render: (row: Record<string, unknown>) => {
         const r = row as unknown as Ride
         return r.drivers ? (
-          <div>
-            <p className="font-medium text-[#1d242d]">{r.drivers.full_name}</p>
-            <p className="text-xs text-gray-400">{r.drivers.driver_number}</p>
+          <div className="flex items-center gap-3">
+            <Avatar id={r.driver_id ?? r.id} name={r.drivers.full_name} size="md" />
+            <div className="min-w-0">
+              <p className="font-medium text-[#1d242d]">{r.drivers.full_name}</p>
+              <p className="text-xs text-gray-400">{r.drivers.driver_number}</p>
+            </div>
           </div>
         ) : <span className="text-gray-400 text-sm">Unassigned</span>
       },

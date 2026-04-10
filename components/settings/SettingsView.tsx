@@ -8,6 +8,7 @@ import {
   Tick02Icon, Cancel01Icon, MoreVerticalIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { Badge } from '@/components/ui/Badge'
+import { Avatar } from '@/components/ui/Avatar'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
 import { formatDateTime, formatDate, timeAgo } from '@/lib/utils'
 import type { AdminUser, AuditLog, Zone } from '@/lib/types'
@@ -189,15 +190,9 @@ function UsersTab({ admins, currentAdmin, onRefresh, onInviteUser }: {
       key: 'full_name',
       label: 'Users',
       render: (admin: AdminUser) => {
-        const { bg, text } = avatarStyle(admin.id)
         return (
           <div className="flex items-center gap-3 min-w-0">
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold tracking-wide"
-              style={{ backgroundColor: bg, color: text }}
-            >
-              {getInitials(admin.full_name)}
-            </div>
+            <Avatar id={admin.id} name={admin.full_name} size="lg" />
             <div className="min-w-0">
               <p className="text-sm font-semibold text-[#1d242d] truncate flex items-center gap-1.5">
                 {admin.full_name}
