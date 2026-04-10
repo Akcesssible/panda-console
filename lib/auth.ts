@@ -3,23 +3,10 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { AdminUser, AdminRole } from '@/lib/types'
 
-// DEV_ADMIN mirrors the real super_admin so the UI looks accurate in development.
-// This is NEVER used in production — NODE_ENV=production always hits Supabase auth.
-const DEV_ADMIN: AdminUser = {
-  id: '00000000-0000-0000-0000-000000000001',
-  auth_id: '00000000-0000-0000-0000-000000000001',
-  full_name: 'Kevin Msemakweli',
-  email: 'kevin@pandahailing.com',
-  role: 'super_admin',
-  is_active: true,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-}
-
-// Get authenticated admin user — redirects to /login if not authed
+// Get authenticated admin user — redirects to /login if not authed or inactive.
+// The proxy already blocks unauthenticated page requests; this is a second
+// guard that also verifies the user exists in admin_users and is active.
 export async function getAdminUser(): Promise<AdminUser> {
-  if (process.env.NODE_ENV === 'development') return DEV_ADMIN
-
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -33,15 +20,13 @@ export async function getAdminUser(): Promise<AdminUser> {
     .single()
 
   if (error || !data) redirect('/login')
-  if (!data.is_active) redirect('/login')
+  if (!data.is_active) redirect('/login?reason=deactivated')
 
   return data as AdminUser
 }
 
-// Use in API routes — returns null instead of redirecting
+// Use in API routes — returns null instead of redirecting.
 export async function getAdminUserFromRequest(): Promise<AdminUser | null> {
-  if (process.env.NODE_ENV === 'development') return DEV_ADMIN
-
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
