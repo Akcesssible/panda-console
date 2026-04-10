@@ -1,23 +1,36 @@
-import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { AdminUser, AdminRole } from '@/lib/types'
 
-// Get authenticated admin user — redirects to /login if not authed or inactive.
-// The proxy already blocks unauthenticated page requests; this is a second
-// guard that also verifies the user exists in admin_users and is active.
-export async function getAdminUser(): Promise<AdminUser> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+// The proxy (proxy.ts) calls supabase.auth.getUser() on every request and
+// forwards the validated auth ID as a request header. Reading that header here
+// avoids a second round trip to Supabase Auth, cutting ~1-3 s per page load.
+async function getAuthUserId(): Promise<string | null> {
+  const h = await headers()
+  return h.get('x-auth-user-id')
+}
 
-  if (!user) redirect('/login')
-
+// Fetch the admin_users record for a given Supabase auth ID.
+async function fetchAdminRecord(authId: string) {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('admin_users')
     .select('*')
-    .eq('auth_id', user.id)
+    .eq('auth_id', authId)
     .single()
+  return { data, error }
+}
+
+// Get authenticated admin user — redirects to /login if not authed or inactive.
+// Two-layer guard:
+//   Layer 1 — proxy.ts: blocks requests with no Supabase session at all.
+//   Layer 2 — here: verifies the user exists in admin_users and is_active.
+export async function getAdminUser(): Promise<AdminUser> {
+  const authId = await getAuthUserId()
+  if (!authId) redirect('/login')
+
+  const { data, error } = await fetchAdminRecord(authId)
 
   if (error || !data) redirect('/login')
   if (!data.is_active) redirect('/login?reason=deactivated')
@@ -27,19 +40,12 @@ export async function getAdminUser(): Promise<AdminUser> {
 
 // Use in API routes — returns null instead of redirecting.
 export async function getAdminUserFromRequest(): Promise<AdminUser | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const authId = await getAuthUserId()
+  if (!authId) return null
 
-  if (!user) return null
-
-  const admin = createAdminClient()
-  const { data } = await admin
-    .from('admin_users')
-    .select('*')
-    .eq('auth_id', user.id)
-    .single()
-
+  const { data } = await fetchAdminRecord(authId)
   if (!data || !data.is_active) return null
+
   return data as AdminUser
 }
 

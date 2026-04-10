@@ -30,8 +30,13 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
-    router.refresh()
+    // Hard navigation — guarantees the fresh session cookie is included in
+    // the very first request to /dashboard. router.push() is a client-side
+    // transition that can race with cookie propagation; window.location.href
+    // is a full browser navigation that always carries the latest cookies.
+    // router.refresh() is intentionally removed — it was triggering a redundant
+    // server render before the navigation even started.
+    window.location.href = '/dashboard'
   }
 
   return (

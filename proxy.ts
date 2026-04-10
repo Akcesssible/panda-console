@@ -21,12 +21,9 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   // ── 1. Session refresh via Supabase SSR ──────────────────────────────────
-  // The SSR client reads the session cookie, silently refreshes it when it's
-  // close to expiry, and writes the updated cookie back to the response.
-  // This MUST run on every request — otherwise sessions silently expire and
-  // users get booted back to /login mid-session.
-
-  let response = NextResponse.next({ request: req })
+  // Collect any cookies the SSR client wants to set during token refresh.
+  // We apply them to the final response after building it below.
+  const pendingCookies: Array<{ name: string; value: string; options: Record<string, unknown> }> = []
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,29 +34,42 @@ export async function proxy(req: NextRequest) {
           return req.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // Write updated cookies back to both the request (for downstream
-          // server components) and the response (for the browser).
-          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value))
-          response = NextResponse.next({ request: req })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
+          // Accumulate rather than building a response here — we build once
+          // below so we can also inject x-auth-user-id in the same call.
+          pendingCookies.push(...cookiesToSet as typeof pendingCookies)
         },
       },
     }
   )
 
-  // getUser() also triggers the silent token refresh inside the SSR client.
-  // IMPORTANT: always use getUser() here, never getSession() — getSession()
-  // trusts the local cookie without re-validating with Supabase Auth server.
+  // getUser() validates the token server-side AND triggers silent refresh.
+  // IMPORTANT: always use getUser(), never getSession() — getSession() trusts
+  // the local cookie without re-validating with the Supabase Auth server.
   const { data: { user } } = await supabase.auth.getUser()
 
-  // ── 2. Route protection ──────────────────────────────────────────────────
+  // ── 2. Build the forwarded request headers ───────────────────────────────
+  // Strip any client-supplied x-auth-user-id (security), then set the
+  // authoritative value from our validated getUser() result.
+  // Server components read this header via next/headers to skip their own
+  // getUser() call, cutting one full Supabase Auth round trip per page load.
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.delete('x-auth-user-id')           // never trust the client
+  if (user) {
+    requestHeaders.set('x-auth-user-id', user.id)
+  }
 
+  // Build the final response — one allocation, carries both the modified
+  // request headers (for server components) and the session cookies (for
+  // the browser) accumulated above.
+  let response = NextResponse.next({ request: { headers: requestHeaders } })
+  pendingCookies.forEach(({ name, value, options }) =>
+    response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
+  )
+
+  // ── 3. Route protection ──────────────────────────────────────────────────
   const isPublic = PUBLIC_PATHS.has(pathname)
 
   if (!user && !isPublic) {
-    // Unauthenticated request to a protected route → send to login
     const loginUrl = req.nextUrl.clone()
     loginUrl.pathname = '/login'
     loginUrl.search = ''
@@ -67,25 +77,20 @@ export async function proxy(req: NextRequest) {
   }
 
   if (user && pathname === '/login') {
-    // Already authenticated → skip the login page
     const dashboardUrl = req.nextUrl.clone()
     dashboardUrl.pathname = '/dashboard'
     return NextResponse.redirect(dashboardUrl)
   }
 
-  // ── 3. No-cache headers on protected pages ───────────────────────────────
-  // Prevents the browser from serving a stale cached copy of a protected page
-  // when the user presses the back button after logging out. Without this, the
-  // browser may show the cached page without making a network request, bypassing
-  // the session check entirely.
+  // ── 4. No-cache headers on protected pages ───────────────────────────────
+  // Prevents the browser from serving a cached copy after logout.
   if (!isPublic && !pathname.startsWith('/api/')) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
   }
 
-  // ── 4. Rate limiting (API routes only) ───────────────────────────────────
-
+  // ── 5. Rate limiting (API routes only) ───────────────────────────────────
   if (pathname.startsWith('/api/')) {
     const ip = getClientIP(req)
     const isAuth  = pathname.startsWith('/api/auth')
@@ -118,10 +123,6 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Run on all paths EXCEPT Next.js internals and static assets.
-     * Static files don't need session refresh or auth checks.
-     */
     '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }
