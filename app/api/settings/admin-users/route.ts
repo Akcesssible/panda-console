@@ -69,7 +69,7 @@ export async function POST(request: Request) {
   const [{ data: user, error: userError }, { error: emailError }] = await Promise.all([
     supabase
       .from('admin_users')
-      .insert({ full_name, email, role, auth_id: authData.user.id, is_active: true })
+      .insert({ full_name, email, role, auth_id: authData.user.id, status: 'invited', is_active: true })
       .select()
       .single(),
     resend.emails.send({
