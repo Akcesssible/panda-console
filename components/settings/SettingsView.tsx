@@ -152,15 +152,65 @@ function getInitials(fullName: string): string {
 
 // ── Users Tab ─────────────────────────────────────────────────────────────────
 
+function DeleteConfirmModal({ admin, onConfirm, onCancel, loading }: {
+  admin: AdminUser
+  onConfirm: () => void
+  onCancel: () => void
+  loading: boolean
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
+        {/* Icon */}
+        <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+            <path d="M10 11v6M14 11v6" />
+            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+          </svg>
+        </div>
+        {/* Text */}
+        <div className="text-center">
+          <h3 className="text-base font-semibold text-[#1d242d]">Delete {admin.full_name}?</h3>
+          <p className="text-sm text-gray-400 mt-1">
+            This will permanently remove their account and revoke all access. This action cannot be undone.
+          </p>
+        </div>
+        {/* Actions */}
+        <div className="flex gap-2 mt-1">
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="flex-1 py-2.5 rounded-full border border-gray-200 text-sm font-medium text-[#1d242d] hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-1 py-2.5 rounded-full bg-red-600 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-60"
+          >
+            {loading ? 'Deleting…' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function UsersTab({ admins, currentAdmin, onRefresh, onInviteUser }: {
   admins: AdminUser[]
   currentAdmin: AdminUser
   onRefresh: () => void
   onInviteUser: () => void
 }) {
-  const [search, setSearch]   = useState('')
-  const [page, setPage]       = useState(1)
-  const [perPage, setPerPage] = useState(5)
+  const [search, setSearch]         = useState('')
+  const [page, setPage]             = useState(1)
+  const [perPage, setPerPage]       = useState(5)
+  const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null)
+  const [deleting, setDeleting]     = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   async function toggleActive(admin: AdminUser) {
     await fetch(`/api/settings/admin-users/${admin.id}`, {
@@ -168,6 +218,22 @@ function UsersTab({ admins, currentAdmin, onRefresh, onInviteUser }: {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_active: !admin.is_active }),
     })
+    onRefresh()
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete) return
+    setDeleting(true)
+    setDeleteError('')
+    const res = await fetch(`/api/settings/admin-users/${pendingDelete.id}`, { method: 'DELETE' })
+    if (!res.ok) {
+      const d = await res.json()
+      setDeleteError(d.error ?? 'Delete failed. Please try again.')
+      setDeleting(false)
+      return
+    }
+    setPendingDelete(null)
+    setDeleting(false)
     onRefresh()
   }
 
@@ -225,9 +291,9 @@ function UsersTab({ admins, currentAdmin, onRefresh, onInviteUser }: {
       ),
     },
     {
-      key: 'is_active',
+      key: 'status',
       label: 'Status',
-      render: (admin: AdminUser) => <AdminUserStatusBadge isActive={admin.is_active} />,
+      render: (admin: AdminUser) => <AdminUserStatusBadge status={admin.status ?? (admin.is_active ? 'active' : 'deactivated')} />,
     },
   ]
 
@@ -242,6 +308,19 @@ function UsersTab({ admins, currentAdmin, onRefresh, onInviteUser }: {
 
   return (
     <div>
+      {pendingDelete && (
+        <DeleteConfirmModal
+          admin={pendingDelete}
+          onConfirm={confirmDelete}
+          onCancel={() => { setPendingDelete(null); setDeleteError('') }}
+          loading={deleting}
+        />
+      )}
+      {deleteError && (
+        <p className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-2 rounded-xl">
+          {deleteError}
+        </p>
+      )}
       <DataTable
         columns={columns}
         data={paginated}
@@ -252,17 +331,31 @@ function UsersTab({ admins, currentAdmin, onRefresh, onInviteUser }: {
         headerRight={inviteBtn}
         selectable
         emptyMessage="No users found."
-        rowActions={admin =>
-          admin.id === currentAdmin.id
-            ? []
-            : [
-                {
-                  label: admin.is_active ? 'Deactivate' : 'Activate',
-                  onClick: () => toggleActive(admin),
-                  danger: admin.is_active,
-                },
-              ]
-        }
+        rowActions={admin => {
+          if (admin.id === currentAdmin.id) return []
+          // Fall back to is_active when status column not yet populated
+          const isDeactivated = admin.status === 'deactivated' || (!admin.is_active && admin.status !== 'invited')
+          const actions = []
+          if (!isDeactivated) {
+            actions.push({
+              label: 'Deactivate',
+              onClick: () => toggleActive(admin),
+              danger: true,
+            })
+          } else {
+            actions.push({
+              label: 'Reactivate',
+              onClick: () => toggleActive(admin),
+              danger: false,
+            })
+            actions.push({
+              label: 'Delete User',
+              onClick: () => { setDeleteError(''); setPendingDelete(admin) },
+              danger: true,
+            })
+          }
+          return actions
+        }}
       />
       <Pagination
         page={page}
