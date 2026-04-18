@@ -102,18 +102,18 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     )
   }
 
-  // Delete auth user — cascades to admin_users via ON DELETE CASCADE
+  // Always delete the admin_users row explicitly first — do not rely on
+  // ON DELETE CASCADE, which may not be active if the migration hasn't run.
+  const { error: deleteError } = await supabase.from('admin_users').delete().eq('id', id)
+  if (deleteError) {
+    return NextResponse.json({ error: deleteError.message }, { status: 500 })
+  }
+
+  // Also delete the auth user so they can't sign in with old credentials.
+  // Fire-and-forget — if this fails the row is already gone so the user
+  // is effectively removed from the system.
   if (target.auth_id) {
-    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(target.auth_id)
-    if (authDeleteError) {
-      return NextResponse.json({ error: authDeleteError.message }, { status: 500 })
-    }
-  } else {
-    // No auth_id — delete the admin_users row directly
-    const { error: deleteError } = await supabase.from('admin_users').delete().eq('id', id)
-    if (deleteError) {
-      return NextResponse.json({ error: deleteError.message }, { status: 500 })
-    }
+    await supabase.auth.admin.deleteUser(target.auth_id)
   }
 
   await logAdminAction({
