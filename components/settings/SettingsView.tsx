@@ -682,7 +682,12 @@ function AddUserModal({ open, onClose }: { open: boolean; onClose: () => void })
     })
     if (!res.ok) {
       const d = await res.json()
-      setError(d.error ?? 'Something went wrong')
+      console.error('[invite]', d.error)
+      setError(
+        d.error?.includes('already') || d.error?.includes('duplicate') || d.error?.includes('unique')
+          ? 'A user with this email already exists.'
+          : 'Failed to send invitation. Please try again.'
+      )
       setLoading(false)
       return
     }

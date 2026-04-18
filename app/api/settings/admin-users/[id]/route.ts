@@ -18,10 +18,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (body.is_active !== undefined) updates.is_active = body.is_active
   updates.updated_at = new Date().toISOString()
 
-  // Keep status in sync with is_active
-  if (body.is_active === false) updates.status = 'deactivated'
-  if (body.is_active === true)  updates.status = 'active'
-
   const supabase = createAdminClient()
 
   // Fetch existing record — need auth_id for session revocation + old values for audit
