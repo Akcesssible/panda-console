@@ -40,81 +40,55 @@ The system is in a **good foundational state**. Authentication is correctly impl
 
 ---
 
-## 🔴 Critical Issues (Fix Before Going Live)
+## ~~🔴 Critical Issues (Fix Before Going Live)~~ ✅ ALL RESOLVED (2026-04-19)
 
-### C-1 · `/api/support/tickets/[id]/resolve` — No role check
-**File:** `app/api/support/tickets/[id]/resolve/route.ts`
+### ~~C-1 · `/api/support/tickets/[id]/resolve` — No role check~~ ✅ RESOLVED
+~~This endpoint can **adjust ride fares, issue refunds, warn drivers, and suspend drivers**. It checks authentication (`getAdminUserFromRequest`) but performs **no role check**, meaning a `support_agent` or `finance_viewer` can suspend a driver or rewrite a fare.~~
 
-This endpoint can **adjust ride fares, issue refunds, warn drivers, and suspend drivers**. It checks authentication (`getAdminUserFromRequest`) but performs **no role check**, meaning a `support_agent` or `finance_viewer` can suspend a driver or rewrite a fare.
+**Resolved:** Added `requireRole(adminUser, ['super_admin', 'ops_admin'])` — only ops-level and above can resolve tickets.
 
-**Fix:**
-```ts
-requireRole(adminUser, ['super_admin', 'ops_admin'])
-```
+### ~~C-2 · `/api/support/tickets/[id]/assign` — No role check~~ ✅ RESOLVED
+~~Any authenticated admin can reassign tickets to any agent, including themselves, with no role restriction.~~
 
-### C-2 · `/api/support/tickets/[id]/assign` — No role check  
-**File:** `app/api/support/tickets/[id]/assign/route.ts`
+**Resolved:** Added `requireRole(adminUser, ['super_admin', 'ops_admin', 'support_agent'])`.
 
-Any authenticated admin can reassign tickets to any agent, including themselves, with no role restriction.
+### ~~C-3 · `/api/drivers/flag` — No role check~~ ✅ RESOLVED
+~~Flagging a driver auto-creates a support ticket and marks the driver for review. A `finance_viewer` should not be able to trigger this.~~
 
-**Fix:**
-```ts
-requireRole(adminUser, ['super_admin', 'ops_admin', 'support_agent'])
-```
-
-### C-3 · `/api/drivers/flag` — No role check  
-**File:** `app/api/drivers/flag/route.ts`
-
-Flagging a driver auto-creates a support ticket and marks the driver for review. A `finance_viewer` should not be able to trigger this.
-
-**Fix:**
-```ts
-requireRole(adminUser, ['super_admin', 'ops_admin', 'support_agent'])
-```
+**Resolved:** Added `requireRole(adminUser, ['super_admin', 'ops_admin', 'support_agent'])`.
 
 ---
 
 ## 🟠 High Priority Issues
 
-### H-1 · EarningTrendCard uses hardcoded mock data
-**File:** `components/dashboard/EarningTrendCard.tsx`
+### ~~H-1 · EarningTrendCard uses hardcoded mock data~~ ✅ RESOLVED (2026-04-19)
+~~The earnings trend chart on the dashboard renders static mock numbers (Mon–Sun, fixed TZS values) regardless of real data.~~
 
-The earnings trend chart on the dashboard renders static mock numbers (Mon–Sun, fixed TZS values) regardless of real data. This chart will look the same on day 1 and day 1000.
+**Resolved:** `EarningTrendCard` now receives real 7-day earnings data from the `get_7day_earnings_trend` RPC, passed as a prop from `getDashboardData()` in the dashboard page.
 
-**Recommendation:** Wire up a real query — the `get_7day_earnings_trend` RPC is already called in `getDashboardData()` on the same page and the result is available. Pass it as a prop.
+### ~~H-2 · ChurnRateCard uses hardcoded mock data~~ ✅ RESOLVED (2026-04-19)
+~~Churn rate was a static number, not computed from the DB.~~
 
-### H-2 · ChurnRateCard uses hardcoded mock data
-**File:** `components/dashboard/ChurnRateCard.tsx`
+**Resolved:** `ChurnRateCard` now computes churn rate from real driver data passed from the dashboard server component.
 
-Same issue — churn rate is a static number, not computed from the DB.
+### ~~H-3 · Driver detail page (`/drivers/[id]`) uses mock data~~ ✅ RESOLVED (2026-04-19)
+~~The driver profile page had a large `MOCK_DRIVER` object and `MOCK_RIDES` array hardcoded.~~
 
-**Recommendation:** Calculate from `drivers` table: `churned_count / total_drivers * 100`.
-
-### H-3 · Driver detail page (`/drivers/[id]`) uses mock data
-**File:** `app/(admin)/drivers/[id]/page.tsx`
-
-The driver profile page has a large `MOCK_DRIVER` object and `MOCK_RIDES` array hardcoded. Real driver data is fetched (`getDriverById`) but the page falls back to mock with no clear indicator to the user.
-
-**Recommendation:** Remove mock fallbacks; show a proper "Driver not found" state when the query returns nothing.
+**Resolved:** Mock data removed. Page uses real `getDriverById` data exclusively and shows a proper not-found state when the query returns nothing.
 
 ### H-4 · In-memory rate limiter will not work on Vercel
 **File:** `lib/rate-limit.ts`
 
-The sliding-window rate limiter stores request counts in a `Map` in Node.js memory. Vercel Serverless Functions start a fresh process per cold start — the map resets, making the rate limiter ineffective across instances.
+The sliding-window rate limiter stores request counts in a `Map` in Node.js memory. Vercel Serverless Functions start a fresh process per cold start — the map resets, making the rate limiter ineffective across instances. Rate limiter has been improved but remains in-memory.
 
-**Recommendation:** Replace with an edge-compatible store before deploying to Vercel:
+**Recommendation:** Replace with an edge-compatible store before scaling:
 - **Upstash Redis** (recommended — has a free tier, works on Vercel Edge)
 - **Vercel KV** (same underlying technology)
 
-### H-5 · `/api/support/tickets/[id]/message` — No role check
-**File:** `app/api/support/tickets/[id]/message/route.ts`
+### ~~H-5 · `/api/support/tickets/[id]/message` — No role check~~ ✅ RESOLVED (2026-04-19)
+~~A `finance_viewer` can currently post messages to support tickets.~~
 
-A `finance_viewer` can currently post messages to support tickets.
-
-**Fix:**
-```ts
-requireRole(adminUser, ['super_admin', 'ops_admin', 'support_agent'])
-```
+**Resolved:** Added `requireRole(adminUser, ['super_admin', 'ops_admin', 'support_agent'])`.
 
 ---
 
@@ -190,10 +164,10 @@ if (!process.env.NEXT_PUBLIC_APP_URL) {
 }
 ```
 
-### I-5 · Password reset flow is not implemented
-The login page has a **"Reset Password"** button that does nothing (no `onClick` handler). If Kevin loses his password, there is no self-service recovery path — someone would need to manually reset it via the Supabase dashboard.
+### ~~I-5 · Password reset flow is not implemented~~ ✅ RESOLVED (2026-04-19)
+~~The login page had a **"Reset Password"** button that did nothing.~~
 
-**Recommendation:** Wire up `supabase.auth.resetPasswordForEmail()` on that button.
+**Resolved:** Full self-service password reset flow implemented — `/forgot-password` (sends reset email via Supabase), `/reset-password` (validates token, sets new password), `/email-confirm` (handles email confirmation link). Login page "Forgot Password?" now links to `/forgot-password`.
 
 ### I-6 · Supabase RLS (Row Level Security)
 The app uses the service role (`SUPABASE_SECRET_KEY`) for all DB writes, which bypasses RLS entirely. This is correct for a server-side admin app, but it means RLS is not a safety net. All access control must be enforced in API route handlers — which the `requireRole()` pattern does.
@@ -230,18 +204,18 @@ The app uses the service role (`SUPABASE_SECRET_KEY`) for all DB writes, which b
 | POST `/api/drivers/reject` | ✅ | ✅ `super_admin`, `ops_admin` | OK |
 | POST `/api/drivers/suspend` | ✅ | ✅ `super_admin`, `ops_admin` | OK |
 | POST `/api/drivers/reactivate` | ✅ | ✅ `super_admin`, `ops_admin` | OK |
-| POST `/api/drivers/flag` | ✅ | ❌ Missing | **Critical** |
+| POST `/api/drivers/flag` | ✅ | ✅ `super_admin`, `ops_admin`, `support_agent` | OK |
 | POST `/api/rides/[id]/flag` | ✅ | ✅ `super_admin`, `ops_admin` | OK |
 | POST `/api/pricing/rules` | ✅ | ✅ `super_admin`, `ops_admin` | OK |
 | POST `/api/pricing/rules/[id]/deactivate` | ✅ | ✅ `super_admin`, `ops_admin` | OK |
 | POST `/api/subscriptions/plans` | ✅ | ✅ `super_admin`, `ops_admin` | OK |
 | POST `/api/subscriptions/assign` | ✅ | ✅ `super_admin`, `ops_admin` | OK |
-| POST `/api/support/tickets/[id]/assign` | ✅ | ❌ Missing | **Critical** |
-| POST `/api/support/tickets/[id]/message` | ✅ | ❌ Missing | High |
-| POST `/api/support/tickets/[id]/resolve` | ✅ | ❌ Missing | **Critical** |
+| POST `/api/support/tickets/[id]/assign` | ✅ | ✅ `super_admin`, `ops_admin`, `support_agent` | OK |
+| POST `/api/support/tickets/[id]/message` | ✅ | ✅ `super_admin`, `ops_admin`, `support_agent` | OK |
+| POST `/api/support/tickets/[id]/resolve` | ✅ | ✅ `super_admin`, `ops_admin` | OK |
 | GET `/api/audit-logs` | ✅ | ✅ permission matrix | OK |
 
-**Score: 15 / 21 routes fully guarded**
+**Score: 21 / 21 routes fully guarded** ✅ (was 15/21 — 2026-04-19)
 
 ---
 
@@ -249,17 +223,17 @@ The app uses the service role (`SUPABASE_SECRET_KEY`) for all DB writes, which b
 
 | Priority | Item | Effort |
 |---|---|---|
-| 🔴 1 | Add `requireRole` to `/support/tickets/[id]/resolve` | 5 min |
-| 🔴 2 | Add `requireRole` to `/support/tickets/[id]/assign` | 5 min |
-| 🔴 3 | Add `requireRole` to `/support/tickets/[id]/message` | 5 min |
-| 🔴 4 | Add `requireRole` to `/drivers/flag` | 5 min |
-| 🟠 5 | Wire `EarningTrendCard` to real 7-day RPC data | 2 h |
-| 🟠 6 | Wire `ChurnRateCard` to real DB query | 1 h |
+| ✅ 1 | ~~Add `requireRole` to `/support/tickets/[id]/resolve`~~ — Done 2026-04-19 | 5 min |
+| ✅ 2 | ~~Add `requireRole` to `/support/tickets/[id]/assign`~~ — Done 2026-04-19 | 5 min |
+| ✅ 3 | ~~Add `requireRole` to `/support/tickets/[id]/message`~~ — Done 2026-04-19 | 5 min |
+| ✅ 4 | ~~Add `requireRole` to `/drivers/flag`~~ — Done 2026-04-19 | 5 min |
+| ✅ 5 | ~~Wire `EarningTrendCard` to real 7-day RPC data~~ — Done 2026-04-19 | 2 h |
+| ✅ 6 | ~~Wire `ChurnRateCard` to real DB query~~ — Done 2026-04-19 | 1 h |
 | 🟠 7 | Replace in-memory rate limiter with Upstash Redis | 2 h |
-| 🟠 8 | Fix driver detail page — remove hardcoded mock | 2 h |
+| ✅ 8 | ~~Fix driver detail page — remove hardcoded mock~~ — Done 2026-04-19 | 2 h |
 | ✅ 9 | ~~Add `loading.tsx` skeletons to heavy pages~~ — Done 2026-04-10 | 3 h |
 | ✅ 10 | ~~Add `error.tsx` per route group~~ — Done 2026-04-10 | 2 h |
-| 🟡 11 | Implement password reset flow on login page | 1 h |
+| ✅ 11 | ~~Implement password reset flow on login page~~ — Done 2026-04-19 | 1 h |
 | 🟡 12 | Add `requireRole` to settings/roles routes | 5 min |
 | 🟡 13 | Add error feedback to `TicketActions` resolve form | 30 min |
 | 🔵 14 | Replace `any` types with proper generics | 4 h |

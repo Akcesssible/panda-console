@@ -3,6 +3,7 @@
 // ============================================================
 
 export type AdminRole = 'super_admin' | 'ops_admin' | 'support_agent' | 'finance_viewer'
+export type AdminUserStatus = 'invited' | 'active' | 'logged_out' | 'deactivated'
 export type DriverStatus = 'pending' | 'active' | 'suspended' | 'churned'
 export type RiderStatus = 'active' | 'inactive' | 'banned'
 export type VehicleType = 'bodaboda' | 'bajaj' | 'car'
@@ -20,6 +21,7 @@ export interface AdminUser {
   email: string
   role: AdminRole
   is_active: boolean
+  status: AdminUserStatus
   created_at: string
   updated_at: string
 }

@@ -7,14 +7,9 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded'
 
-const MOCK_CHURN = [
-  { month: 'Jul', rate: 4.98 },
-  { month: 'Aug', rate: 4.85 },
-  { month: 'Sep', rate: 4.68 },
-  { month: 'Oct', rate: 4.52 },
-  { month: 'Nov', rate: 4.31 },
-  { month: 'Dec', rate: 4.10 },
-]
+interface ChurnRateCardProps {
+  churnData: { month: string; rate: number }[]
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload, label }: any) {
@@ -36,7 +31,19 @@ function CustomTooltip({ active, payload, label }: any) {
   )
 }
 
-export function ChurnRateCard() {
+export function ChurnRateCard({ churnData }: ChurnRateCardProps) {
+  const currentRate = churnData.at(-1)?.rate ?? 0
+  const prevRate    = churnData.at(-2)?.rate ?? 0
+  const delta       = Math.round((currentRate - prevRate) * 10) / 10
+
+  const maxRate = Math.max(...churnData.map(d => d.rate), 1)
+  const yMin    = 0
+  const yMax    = Math.ceil(maxRate * 1.3 * 10) / 10
+
+  const trendLabel = delta === 0
+    ? 'No change vs last month'
+    : `${delta > 0 ? '+' : ''}${delta}% vs last month`
+
   return (
     <div className="bg-white rounded-2xl p-6 flex flex-col gap-5">
 
@@ -49,16 +56,16 @@ export function ChurnRateCard() {
       {/* Metric */}
       <div>
         <p className="leading-tight tracking-[-2px]" style={{ fontSize: 32, fontWeight: 600, color: '#1d242d' }}>
-          4.1%
+          {currentRate}%
         </p>
-        <p className="text-sm text-gray-400 mt-1">−0.6% vs last month</p>
+        <p className="text-sm text-gray-400 mt-1">{trendLabel}</p>
       </div>
 
       {/* Chart */}
       <div className="-mx-1">
         <ResponsiveContainer width="100%" height={192}>
           <AreaChart
-            data={MOCK_CHURN}
+            data={churnData}
             margin={{ top: 8, right: 4, left: 4, bottom: 0 }}
           >
             <defs>
@@ -84,8 +91,7 @@ export function ChurnRateCard() {
             />
 
             <YAxis
-              domain={[3.9, 5.1]}
-              ticks={[4.0, 4.4, 4.8, 5.0]}
+              domain={[yMin, yMax]}
               tickFormatter={v => `${v}%`}
               tick={{ fontSize: 10, fill: '#b0b8c4', fontWeight: 400 }}
               tickLine={false}

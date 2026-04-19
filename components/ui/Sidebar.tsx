@@ -48,12 +48,14 @@ export default function Sidebar({ role }: { role: AdminRole }) {
   const router = useRouter()
 
   async function handleLogout() {
+    // Record logout + transition status to 'logged_out' BEFORE invalidating
+    // the session, so the request still carries a valid auth cookie.
+    await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+
     const supabase = createClient()
     await supabase.auth.signOut()
     // Hard navigation + history replace — the login page overwrites the current
     // history entry so the back button cannot return to any protected page.
-    // router.push() would leave cached pages in history; window.location.replace()
-    // does a full reload and removes the entry from the browser history stack.
     window.location.replace('/login')
   }
 

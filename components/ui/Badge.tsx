@@ -59,8 +59,16 @@ export function RiderStatusBadge({ status }: { status: string }) {
   return <Badge variant={m.variant}>{m.label}</Badge>
 }
 
-export function AdminUserStatusBadge({ isActive }: { isActive: boolean }) {
-  return <Badge variant={isActive ? 'green' : 'gray'}>{isActive ? 'Active' : 'Inactive'}</Badge>
+// Full lifecycle status badge for admin users
+export function AdminUserStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { variant: BadgeVariant; label: string }> = {
+    invited:     { variant: 'blue',   label: 'Invited' },
+    active:      { variant: 'green',  label: 'Active' },
+    logged_out:  { variant: 'gray',   label: 'Logged Out' },
+    deactivated: { variant: 'red',    label: 'Deactivated' },
+  }
+  const m = map[status] ?? { variant: 'gray' as BadgeVariant, label: status }
+  return <Badge variant={m.variant}>{m.label}</Badge>
 }
 
 export function IsActiveBadge({ isActive }: { isActive: boolean }) {
