@@ -47,7 +47,6 @@ function formatShortDate(iso: string) {
 
 const PER_PAGE = 5
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MOCK_RIDES: Ride[] = [
   { id:'m1', ride_number:'R-10529', pickup_address:'Kariakoo', destination_address:'Mbezi',       status:'completed', total_fare_tzs:12000, commission_tzs:1200, driver_earnings_tzs:10800, requested_at: new Date(Date.now()-3*3600000).toISOString(), completed_at: new Date(Date.now()-2*3600000).toISOString(), accepted_at: null },
   { id:'m2', ride_number:'R-10511', pickup_address:'Posta',    destination_address:'Kinondoni',   status:'completed', total_fare_tzs:9000,  commission_tzs:900,  driver_earnings_tzs:8100,  requested_at: new Date(Date.now()-5*3600000).toISOString(), completed_at: new Date(Date.now()-4*3600000).toISOString(), accepted_at: null },

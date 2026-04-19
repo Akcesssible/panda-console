@@ -5,7 +5,14 @@ import { rateLimit, AUTH_LIMIT, MUTATION_LIMIT, READ_LIMIT } from '@/lib/rate-li
 // NOTE: do NOT set `export const runtime` here — not allowed in proxy files.
 
 // Paths that don't require a logged-in session
-const PUBLIC_PATHS = new Set(['/login', '/set-password'])
+const PUBLIC_PATHS = new Set([
+  '/login',
+  '/set-password',
+  '/forgot-password',
+  '/reset-password',
+  '/email-confirm',
+  '/api/auth/reset-password',  // called by forgot-password form before user is logged in
+])
 
 const WRITE_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE'])
 
@@ -99,7 +106,7 @@ export async function proxy(req: NextRequest) {
     const bucket  = isAuth ? 'auth' : isWrite ? 'write' : 'read'
     const options = isAuth ? AUTH_LIMIT : isWrite ? MUTATION_LIMIT : READ_LIMIT
 
-    const result = rateLimit(`${ip}:${bucket}`, options)
+    const result = await rateLimit(`${ip}:${bucket}`, options)
 
     if (!result.allowed) {
       const limited = NextResponse.json(

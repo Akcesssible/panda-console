@@ -29,8 +29,7 @@ export function EarningsTrendChart({ data = MOCK_DATA }: { data?: typeof MOCK_DA
         <XAxis dataKey="day" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
         <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={formatYAxis} />
         <Tooltip
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          formatter={(value: any) => [`TZS ${Number(value).toLocaleString()}`, '']}
+          formatter={(value: number | string) => [`TZS ${Number(value).toLocaleString()}`, '']}
           labelStyle={{ fontSize: 12 }}
           contentStyle={{ fontSize: 12, borderRadius: 8 }}
         />

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { getAdminUserFromRequest } from '@/lib/auth'
+import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { parseBody } from '@/lib/validations'
 
@@ -15,6 +15,8 @@ const ResolveSchema = z.object({
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const adminUser = await getAdminUserFromRequest()
   if (!adminUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try { requireRole(adminUser, ['super_admin', 'ops_admin']) }
+  catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
 
   const { id } = await params
 

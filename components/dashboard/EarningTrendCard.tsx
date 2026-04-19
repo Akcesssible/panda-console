@@ -9,12 +9,20 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const today = new Date().getDay()
 const todayIdx = today === 0 ? 6 : today - 1
 
-const MOCK_COMMISSION   = [180000, 220000, 150000, 270000, 310000, 390000, 250000]
-const MOCK_SUBSCRIPTION = [210000, 190000, 240000, 300000, 280000, 350000, 220000]
+interface EarningTrendCardProps {
+  commissionTrend:   number[]
+  subscriptionTrend: number[]
+  commissionChange:   number | null
+  subscriptionChange: number | null
+}
+
+interface TooltipProps {
+  active?: boolean
+  payload?: { value: number }[]
+}
 
 // Tooltip: bubble above bar, arrow pointing DOWN toward the bar
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload }: TooltipProps) {
   if (!active || !payload?.length) return null
   const val = Number(payload[0].value).toLocaleString()
   return (
@@ -36,12 +44,19 @@ function CustomTooltip({ active, payload }: any) {
   )
 }
 
+interface BarShapeProps {
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  index?: number
+}
+
 // Custom bar shape: rounded rect + SVG inner shadow filter on active bar
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function BarShape(props: any) {
+function BarShape(props: BarShapeProps) {
   const { x, y, width, height, index } = props
   if (!width || !height || height <= 0) return null
-  const r     = Math.min(12, width / 2, height / 2)
+  const r        = Math.min(12, width / 2, height / 2)
   const isActive = index === todayIdx
 
   return (
@@ -58,11 +73,23 @@ function BarShape(props: any) {
   )
 }
 
-export function EarningTrendCard() {
+export function EarningTrendCard({
+  commissionTrend,
+  subscriptionTrend,
+  commissionChange,
+  subscriptionChange,
+}: EarningTrendCardProps) {
   const [mode, setMode] = useState<'commission' | 'subscription'>('commission')
-  const data = (mode === 'commission' ? MOCK_COMMISSION : MOCK_SUBSCRIPTION)
-    .map((v, i) => ({ day: DAYS[i], value: v }))
-  const total = data.reduce((s, d) => s + d.value, 0)
+
+  const trend  = mode === 'commission' ? commissionTrend : subscriptionTrend
+  const change = mode === 'commission' ? commissionChange : subscriptionChange
+
+  const data  = trend.map((v, i) => ({ day: DAYS[i], value: v }))
+  const total = trend.reduce((s, v) => s + v, 0)
+
+  const changeLabel = change === null
+    ? null
+    : `${change >= 0 ? '+' : ''}${change}%`
 
   return (
     <div className="bg-white rounded-2xl p-6 flex flex-col gap-5">
@@ -133,12 +160,14 @@ export function EarningTrendCard() {
           </p>
           <p className="text-sm text-gray-400 mt-1">This Week</p>
         </div>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-sm font-semibold bg-gray-100 text-[#1d242d] px-3 py-1 rounded-full">
-            +6.3%
-          </span>
-          <span className="text-sm text-gray-400">vs last week</span>
-        </div>
+        {changeLabel && (
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-sm font-semibold bg-gray-100 text-[#1d242d] px-3 py-1 rounded-full">
+              {changeLabel}
+            </span>
+            <span className="text-sm text-gray-400">vs last week</span>
+          </div>
+        )}
       </div>
 
       {/* Bar chart */}

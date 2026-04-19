@@ -21,6 +21,7 @@ export function TicketActions({ ticket, adminUser }: { ticket: SupportTicket; ad
   const [fareAmount, setFareAmount] = useState('')
   const [refundAmount, setRefundAmount] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState<string | null>(null)
 
   const canAct = ['super_admin', 'ops_admin', 'support_agent'].includes(adminUser.role)
   const isResolved = ['resolved', 'closed'].includes(ticket.status)
@@ -36,19 +37,30 @@ export function TicketActions({ ticket, adminUser }: { ticket: SupportTicket; ad
 
   async function handleResolve() {
     setLoading(true)
-    await fetch(`/api/support/tickets/${ticket.id}/resolve`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action,
-        note,
-        fare_adjusted: fareAmount ? Number(fareAmount) : undefined,
-        refund_amount: refundAmount ? Number(refundAmount) : undefined,
-      }),
-    })
-    setLoading(false)
-    setResolveModal(false)
-    router.refresh()
+    setError(null)
+    try {
+      const res = await fetch(`/api/support/tickets/${ticket.id}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          note,
+          fare_adjusted: fareAmount ? Number(fareAmount) : undefined,
+          refund_amount: refundAmount ? Number(refundAmount) : undefined,
+        }),
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        setError((json as { error?: string }).error ?? 'Something went wrong. Please try again.')
+        return
+      }
+      setResolveModal(false)
+      router.refresh()
+    } catch {
+      setError('Network error. Please check your connection and try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (!canAct) return null
@@ -89,11 +101,11 @@ export function TicketActions({ ticket, adminUser }: { ticket: SupportTicket; ad
 
       <Modal
         open={resolveModal}
-        onClose={() => setResolveModal(false)}
+        onClose={() => { setResolveModal(false); setError(null) }}
         title="Resolve Ticket"
         footer={
           <>
-            <button onClick={() => setResolveModal(false)} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Cancel</button>
+            <button onClick={() => { setResolveModal(false); setError(null) }} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Cancel</button>
             <button
               disabled={loading}
               onClick={handleResolve}
@@ -152,6 +164,12 @@ export function TicketActions({ ticket, adminUser }: { ticket: SupportTicket; ad
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
+
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
         </div>
       </Modal>
     </>

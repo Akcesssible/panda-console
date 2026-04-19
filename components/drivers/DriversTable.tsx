@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
+import type { RowAction } from '@/components/ui/DataTable'
 import { DriverStatusBadge, SubscriptionBadge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, timeAgoShort } from '@/lib/utils'
@@ -10,8 +11,7 @@ import type { Driver } from '@/lib/types'
 interface Tab { key: string; label: string }
 
 // ── Mock data (shown when DB is not yet seeded) ───────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MOCK_DRIVERS: any[] = [
+const MOCK_DRIVERS: Driver[] = [
   { id: 'm1', full_name: 'John Mawella',    driver_number: 'DRV-000001', phone: '0712 345 678', status: 'active',    total_trips: 1284, last_active_at: new Date(Date.now() - 2*60_000).toISOString(),       vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'active' }] },
   { id: 'm2', full_name: 'Asha Kassim',     driver_number: 'DRV-000002', phone: '0754 221 990', status: 'churned',   total_trips: 342,  last_active_at: new Date(Date.now() - 32*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'bajaj' }],    driver_subscriptions: [{ status: 'expired' }] },
   { id: 'm3', full_name: "Liam O'Connor",   driver_number: 'DRV-000003', phone: '0765 432 109', status: 'active',    total_trips: 2567, last_active_at: new Date(Date.now() - 5*60_000).toISOString(),        vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'active' }] },
@@ -76,8 +76,7 @@ export function DriversTable({
         selectable
         rowActions={row => {
           const d = row as Driver
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const actions: any[] = [{ label: 'View Profile', onClick: () => router.push(`/drivers/${d.id}`) }]
+          const actions: RowAction[] = [{ label: 'View Profile', onClick: () => router.push(`/drivers/${d.id}`) }]
           if (d.status === 'pending') {
             actions.push({ label: 'Approve', onClick: () => router.push(`/drivers/${d.id}?action=approve`) })
             actions.push({ label: 'Reject', onClick: () => router.push(`/drivers/${d.id}?action=reject`), danger: true })
@@ -134,8 +133,7 @@ function getColumns(tab: string) {
       label: 'Vehicle Type',
       render: (row: Record<string, unknown>) => {
         const d = row as unknown as Driver
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const v = (d as any).vehicles?.[0]
+        const v = d.vehicles?.[0]
         if (!v) return <span className="text-gray-400">—</span>
         const labels: Record<string, string> = { car: 'Car', bajaj: 'Bajaj', bodaboda: 'Boda' }
         return <span className="font-semibold text-[#1d242d]">{labels[v.vehicle_type] ?? v.vehicle_type}</span>
@@ -151,8 +149,7 @@ function getColumns(tab: string) {
         label: 'Subscription',
         render: (row: Record<string, unknown>) => {
           const d = row as unknown as Driver
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const sub = (d as any).driver_subscriptions?.[0]
+          const sub = d.driver_subscriptions?.[0]
           if (!sub) return <span className="text-gray-400 text-sm">None</span>
           return <SubscriptionBadge status={sub.status} />
         },

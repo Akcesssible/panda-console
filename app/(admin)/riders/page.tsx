@@ -3,13 +3,9 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { RidersTable } from '@/components/riders/RidersTable'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatsRow } from '@/components/ui/StatsRow'
+import { settled } from '@/lib/utils'
 import type { RiderStatus } from '@/lib/types'
 import type { StatItem } from '@/components/ui/StatsRow'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function settled(r: PromiseSettledResult<any>, fallback: any) {
-  return r.status === 'fulfilled' ? r.value : fallback
-}
 
 const MOCK_STATS: StatItem[] = [
   { label: 'Total Riders',     value: 18_420, subBadge: '+312 this week', subText: 'registered on platform' },

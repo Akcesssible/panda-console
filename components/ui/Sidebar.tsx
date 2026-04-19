@@ -48,12 +48,19 @@ export default function Sidebar({ role }: { role: AdminRole }) {
   const router = useRouter()
 
   async function handleLogout() {
+    // Record logout + transition status to 'logged_out' BEFORE invalidating
+    // the session — must be awaited so the cookie is still valid when the
+    // request hits the server.
+    await fetch('/api/auth/activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'logout' }),
+    }).catch(() => {})
+
     const supabase = createClient()
     await supabase.auth.signOut()
     // Hard navigation + history replace — the login page overwrites the current
     // history entry so the back button cannot return to any protected page.
-    // router.push() would leave cached pages in history; window.location.replace()
-    // does a full reload and removes the entry from the browser history stack.
     window.location.replace('/login')
   }
 
@@ -84,20 +91,30 @@ export default function Sidebar({ role }: { role: AdminRole }) {
         })}
       </nav>
 
-      <div className="bg-white rounded-full flex flex-col items-center py-2.5 gap-0.5 w-[60px]">
-        <a
-          href="mailto:support@pandahailing.com"
-          title="Help"
-          className="w-11 h-11 flex items-center justify-center rounded-full text-[#1a2547] hover:bg-gray-100 transition-colors">
-          <HugeiconsIcon icon={HelpCircleIcon} size={20} color="currentColor" strokeWidth={1.8} />
-        </a>
-        <button
-          onClick={handleLogout}
-          title="Sign out"
-          className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+      <div className="flex flex-col items-center gap-1.5">
+        {/* Version badge */}
+        <span
+          title="Panda Console v0.7.0"
+          className="text-[9px] font-mono text-gray-400 tracking-wide select-none"
         >
-          <HugeiconsIcon icon={Logout02Icon} size={20} color="#e02020" strokeWidth={1.8} />
-        </button>
+          v0.7.0
+        </span>
+
+        <div className="bg-white rounded-full flex flex-col items-center py-2.5 gap-0.5 w-[60px]">
+          <a
+            href="mailto:support@pandahailing.com"
+            title="Help"
+            className="w-11 h-11 flex items-center justify-center rounded-full text-[#1a2547] hover:bg-gray-100 transition-colors">
+            <HugeiconsIcon icon={HelpCircleIcon} size={20} color="currentColor" strokeWidth={1.8} />
+          </a>
+          <button
+            onClick={handleLogout}
+            title="Sign out"
+            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <HugeiconsIcon icon={Logout02Icon} size={20} color="#e02020" strokeWidth={1.8} />
+          </button>
+        </div>
       </div>
     </aside>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 
@@ -10,10 +11,11 @@ export function LoginForm() {
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
 
-  const searchParams   = useSearchParams()
-  const reason         = searchParams.get('reason')
-  const sessionExpired = reason === 'session_expired'
-  const deactivated    = reason === 'deactivated'
+  const searchParams    = useSearchParams()
+  const reason          = searchParams.get('reason')
+  const sessionExpired  = reason === 'session_expired'
+  const deactivated     = reason === 'deactivated'
+  const passwordReset   = reason === 'password_reset'
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -28,6 +30,14 @@ export function LoginForm() {
       setLoading(false)
       return
     }
+
+    // Record login + transition status (invited → active, logged_out → active).
+    // Fire-and-forget — don't block navigation on audit/status write.
+    fetch('/api/auth/activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'login' }),
+    }).catch(() => {})
 
     // Hard navigation — guarantees the fresh session cookie is included in
     // the very first request to /dashboard. router.push() is a client-side
@@ -51,6 +61,12 @@ export function LoginForm() {
       {deactivated && (
         <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-2 rounded-xl mb-4 text-center">
           Your account has been deactivated. Contact your administrator.
+        </p>
+      )}
+
+      {passwordReset && (
+        <p className="text-sm text-green-700 bg-green-50 border border-green-200 px-4 py-2 rounded-xl mb-4 text-center">
+          Password updated successfully. Sign in with your new password.
         </p>
       )}
 
@@ -98,7 +114,9 @@ export function LoginForm() {
       </form>
 
       <div className="mt-6 flex justify-between text-sm text-gray-500">
-        <button className="hover:text-gray-800 transition-colors">Reset Password</button>
+        <Link href="/forgot-password" className="hover:text-gray-800 transition-colors">
+          Forgot Password?
+        </Link>
         <button className="hover:text-gray-800 transition-colors">Contact Support</button>
       </div>
     </div>

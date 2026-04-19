@@ -1,48 +1,31 @@
-const ROLE_LABELS: Record<string, string> = {
-  super_admin:    'Super Admin',
-  ops_admin:      'Operations Admin',
-  support_agent:  'Support Agent',
-  finance_viewer: 'Finance Viewer',
+interface ResetPasswordEmailProps {
+  full_name: string
+  reset_url: string
+  app_url:   string
 }
 
-interface WelcomeEmailProps {
-  full_name:     string
-  email:         string
-  role:          string
-  temp_password: string
-  invited_by:    string
-  app_url:       string
-}
-
-export function inviteEmailHtml({
+export function resetPasswordEmailHtml({
   full_name,
-  email,
-  role,
-  temp_password,
-  invited_by,
+  reset_url,
   app_url,
-}: WelcomeEmailProps): string {
-  const roleLabel = ROLE_LABELS[role] ?? role
-  const firstName = full_name.split(' ')[0]
-  const logoUrl   = `${app_url}/panda-logo_console.png`
-  const loginUrl  = `${app_url}/login`
+}: ResetPasswordEmailProps): string {
+  const logoUrl = `${app_url}/panda-logo_console.png`
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Panda Console account is ready</title>
+  <title>Reset your Panda Console password</title>
   <!--[if !mso]><!-->
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" type="text/css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" type="text/css" />
   <!--<![endif]-->
 </head>
 <body style="margin:0;padding:0;background-color:#f4f4f5;font-family:'DM Sans',Arial,Helvetica,sans-serif;">
   <!--[if !mso]><!-->
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
     body, table, td, p, a, span { font-family: 'DM Sans', Arial, Helvetica, sans-serif !important; }
-    .mono { font-family: 'DM Mono', 'Courier New', Courier, monospace !important; }
   </style>
   <!--<![endif]-->
 
@@ -61,54 +44,22 @@ export function inviteEmailHtml({
 
         <!-- Title -->
         <p style="margin:0 0 24px;font-size:28px;font-weight:700;color:#1d242d;line-height:1.2;">
-          Your Panda Console Account Is Ready
+          Reset Your Panda Console Password
         </p>
 
         <!-- Body -->
         <p style="margin:0 0 16px;font-size:15px;color:#4b5563;line-height:1.7;">
-          Hi ${firstName}, <strong style="color:#1d242d;">${invited_by}</strong> has created your
-          Panda Console account. You have been assigned the role of
-          <strong style="color:#1d242d;">${roleLabel}</strong>.
+          Hi ${full_name}, we received a request to reset your Panda Console password.
+          Click the button below to create a new password.
         </p>
-
-        <p style="margin:0 0 8px;font-size:15px;font-weight:600;color:#1d242d;">
-          Your login credentials
-        </p>
-
-        <!-- Credentials box -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
-          <tr>
-            <td style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:20px 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
-                <tr>
-                  <td style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:4px;">
-                    Email
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-size:15px;color:#1d242d;font-weight:500;">${email}</td>
-                </tr>
-              </table>
-              <hr style="border:none;border-top:1px solid #e9ecef;margin:0 0 16px;" />
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:6px;">
-                    Temporary Password
-                  </td>
-                </tr>
-                <tr>
-                  <td class="mono" style="font-size:22px;font-weight:500;color:#1d242d;letter-spacing:0.12em;font-family:'DM Mono','Courier New',Courier,monospace;">
-                    ${temp_password}
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
 
         <p style="margin:0 0 16px;font-size:15px;color:#4b5563;line-height:1.7;">
-          <strong style="color:#1d242d;">Important:</strong> Change your password after your first login.
-          Do not share these credentials with anyone.
+          This link will expire in <strong style="color:#1d242d;">1 hour</strong> for your security.
+        </p>
+
+        <p style="margin:0 0 16px;font-size:15px;color:#4b5563;line-height:1.7;">
+          If you did not request this, you can safely ignore this email.
+          Your account will remain unchanged.
         </p>
 
         <p style="margin:0 0 32px;font-size:15px;color:#4b5563;line-height:1.7;">
@@ -120,13 +71,19 @@ export function inviteEmailHtml({
         <table cellpadding="0" cellspacing="0" style="margin-bottom:48px;">
           <tr>
             <td style="background:#2B39C7;border-radius:8px;">
-              <a href="${loginUrl}"
+              <a href="${reset_url}"
                 style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;letter-spacing:0.01em;">
-                Go to Panda Console
+                Reset My Password
               </a>
             </td>
           </tr>
         </table>
+
+        <!-- Fallback link -->
+        <p style="margin:0 0 48px;font-size:12px;color:#9ca3af;line-height:1.6;">
+          Button not working? Copy and paste this link into your browser:<br />
+          <a href="${reset_url}" style="color:#2B39C7;word-break:break-all;">${reset_url}</a>
+        </p>
 
             </td>
           </tr>
@@ -185,28 +142,22 @@ export function inviteEmailHtml({
 </html>`
 }
 
-export function inviteEmailText({
+export function resetPasswordEmailText({
   full_name,
-  email,
-  role,
-  temp_password,
-  invited_by,
-  app_url,
-}: WelcomeEmailProps): string {
-  const roleLabel = ROLE_LABELS[role] ?? role
+  reset_url,
+}: ResetPasswordEmailProps): string {
   return `Hi ${full_name},
 
-${invited_by} has created your Panda Console account with the role: ${roleLabel}.
+We received a request to reset your Panda Console password.
+Click the link below to create a new password.
 
-YOUR LOGIN CREDENTIALS
-----------------------
-Email:               ${email}
-Temporary Password:  ${temp_password}
+This link will expire in 1 hour for your security.
 
-Important: Change your password after your first login.
-Do not share these credentials with anyone.
+If you did not request this, you can safely ignore this email.
+Your account will remain unchanged.
 
-Login here: ${app_url}/login
+Reset link:
+${reset_url}
 
 For any help, reach out to: support@panda.tz
 
