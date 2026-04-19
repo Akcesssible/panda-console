@@ -97,17 +97,17 @@ These routes check authentication but do not call `requireRole`. Updating or del
 
 **Fix:** Add `requireRole(admin, ['super_admin'])` to POST/PATCH/DELETE handlers.
 
-### M-2 · `any` types across the codebase
-The codebase uses `// eslint-disable-next-line @typescript-eslint/no-explicit-any` in approximately 17 files, primarily in `DataTable.tsx`, chart components, and page-level `settled()` helpers.
-
-**Impact:** Low — TypeScript still passes. The `any` types are mostly in UI glue code (render functions, recharts props) where the third-party library types are awkward.
-
-**Recommendation:** Not urgent. Replace the `settled()` helper with a proper typed generic when time allows:
-```ts
-function settled<T>(r: PromiseSettledResult<T>, fallback: T): T {
-  return r.status === 'fulfilled' ? r.value : fallback
-}
-```
+### ~~M-2 · `any` types across the codebase~~ ✅ RESOLVED 2026-04-19
+All `any` types removed:
+- `settled<T>()` typed generic added to `lib/utils.ts`; all 7 page-level copies removed
+- `DataTable<T>` generics: `Column<T>`, `DataTableProps<T>`, `RowAction` — all `any` replaced
+- Recharts: `CustomTooltip` and `BarShape` given typed interfaces instead of `any`
+- `MOCK_DRIVERS`, `MOCK_RIDERS` typed as `Driver[]` / `Rider[]`
+- `displayRides`, `displayTickets` cast to `Ride[]` / `SupportTicket[]` instead of `any[]`
+- `actions: any[]` → `RowAction[]` (DriversTable, RidersTable)
+- `(d as any).vehicles` → `d.vehicles` (Driver type already has optional joined fields)
+- `icon as any` → `icon: IconSvgElement` in DriverProfileCard
+- `formatter={(value: any)` → `(value: number | string)` in EarningsTrendChart
 
 ### M-3 · Silent error swallowing in commissions query
 **File:** `lib/queries/commissions.ts`, line 59
@@ -152,13 +152,11 @@ These are operational error logs for email send failures and audit log failures 
 
 **Resolved:** Added 5 error boundaries across the hierarchy. A shared `components/ui/ErrorView.tsx` provides the branded error card (icon, title, message, retry button, optional back link). `app/(admin)/error.tsx` catches all admin page errors. Detail pages (`/drivers/[id]`, `/rides/[id]`, `/support/[id]`) have their own error boundaries with contextual messages and back-navigation links. `app/error.tsx` is the root-level last-resort fallback. All boundaries log the error digest for Vercel tracing.
 
-### I-4 · `NEXT_PUBLIC_APP_URL` not validated at startup
-The invite email uses `APP_URL` from environment variables. If it's missing, the invite link in the email will be wrong. Consider adding a startup check:
-```ts
-if (!process.env.NEXT_PUBLIC_APP_URL) {
-  throw new Error('NEXT_PUBLIC_APP_URL is required')
-}
-```
+### ~~I-4 · `NEXT_PUBLIC_APP_URL` not validated at startup~~ ✅ RESOLVED 2026-04-19
+Created `lib/env.ts` — a typed, validated environment module. All required vars
+(`NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+`SUPABASE_SECRET_KEY`, `RESEND_API_KEY`) throw a clear error at startup if missing.
+API routes and `lib/email/resend.ts` now import from `env` instead of reading `process.env` directly.
 
 ### ~~I-5 · Password reset flow is not implemented~~ ✅ RESOLVED (2026-04-19)
 ~~The login page had a **"Reset Password"** button that did nothing.~~
@@ -232,8 +230,8 @@ The app uses the service role (`SUPABASE_SECRET_KEY`) for all DB writes, which b
 | ✅ 11 | ~~Implement password reset flow on login page~~ — Done 2026-04-19 | 1 h |
 | 🟡 12 | Add `requireRole` to settings/roles routes | 5 min |
 | 🟡 13 | Add error feedback to `TicketActions` resolve form | 30 min |
-| 🔵 14 | Replace `any` types with proper generics | 4 h |
-| 🔵 15 | Add `NEXT_PUBLIC_APP_URL` startup validation | 15 min |
+| ✅ 14 | Replace `any` types with proper generics | Done |
+| ✅ 15 | Add `NEXT_PUBLIC_APP_URL` startup validation | Done |
 
 ---
 

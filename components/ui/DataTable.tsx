@@ -13,12 +13,10 @@ import { FilterButton } from '@/components/ui/FilterButton'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface Column<T = any> {
+export interface Column<T = Record<string, unknown>> {
   key: string
   label: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  render?: (row: any) => React.ReactNode
+  render?: (row: T) => React.ReactNode
   className?: string
 }
 
@@ -28,14 +26,11 @@ export interface RowAction {
   danger?: boolean
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface DataTableProps<T = any> {
+export interface DataTableProps<T = Record<string, unknown>> {
   columns: Column<T>[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
+  data: T[]
   keyField?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onRowClick?: (row: any) => void
+  onRowClick?: (row: T) => void
   emptyMessage?: string
   // Card header
   cardTitle?: string
@@ -45,8 +40,7 @@ export interface DataTableProps<T = any> {
   headerRight?: React.ReactNode
   // Row features
   selectable?: boolean
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rowActions?: (row: any) => RowAction[]
+  rowActions?: (row: T) => RowAction[]
 }
 
 // ── Three-dot action menu ─────────────────────────────────────────────────────
@@ -90,7 +84,7 @@ function RowActionsMenu({ actions }: { actions: RowAction[] }) {
 }
 
 // ── Main DataTable ─────────────────────────────────────────────────────────────
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends Record<string, unknown> = Record<string, unknown>>({
   columns,
   data,
   keyField = 'id',

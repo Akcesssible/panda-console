@@ -3,13 +3,8 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { SubscriptionsView } from '@/components/subscriptions/SubscriptionsView'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatsRow } from '@/components/ui/StatsRow'
-import { formatTZS } from '@/lib/utils'
+import { formatTZS, settled } from '@/lib/utils'
 import type { StatItem } from '@/components/ui/StatsRow'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function settled(r: PromiseSettledResult<any>, fallback: any) {
-  return r.status === 'fulfilled' ? r.value : fallback
-}
 
 const MOCK_STATS: StatItem[] = [
   { label: 'Active Subscriptions',  value: 842,         subBadge: '842 of 1,168', subText: 'drivers subscribed' },

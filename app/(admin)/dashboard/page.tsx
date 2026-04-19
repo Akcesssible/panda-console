@@ -8,11 +8,8 @@ import { RecentActivityTable } from '@/components/dashboard/RecentActivityTable'
 import Link from 'next/link'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { ArrowUpRight01Icon } from '@hugeicons-pro/core-stroke-rounded'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function settled(result: PromiseSettledResult<any>, fallback: any): any {
-  return result.status === 'fulfilled' ? result.value : fallback
-}
+import { settled } from '@/lib/utils'
+import type { AuditLog } from '@/lib/types'
 
 /** Index into Mon–Sun array (0 = Mon, 6 = Sun) from a JS Date */
 function dayIndex(date: Date): number {
@@ -219,7 +216,7 @@ export default async function DashboardPage() {
 
         {/* Right column — recent activity */}
         <div className="col-span-2">
-          <RecentActivityTable initialLogs={data.recentActivity as any[]} />
+          <RecentActivityTable initialLogs={data.recentActivity as AuditLog[]} />
         </div>
       </div>
     </div>

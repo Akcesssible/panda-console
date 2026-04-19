@@ -33,7 +33,11 @@ export function LoginForm() {
 
     // Record login + transition status (invited → active, logged_out → active).
     // Fire-and-forget — don't block navigation on audit/status write.
-    fetch('/api/auth/session', { method: 'POST' }).catch(() => {})
+    fetch('/api/auth/activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'login' }),
+    }).catch(() => {})
 
     // Hard navigation — guarantees the fresh session cookie is included in
     // the very first request to /dashboard. router.push() is a client-side

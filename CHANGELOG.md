@@ -5,6 +5,23 @@ Format: [Semantic Versioning](https://semver.org) — `MAJOR.MINOR.PATCH`
 
 ---
 
+## [0.7.0] — 2026-04-19
+
+### Code Quality
+- **Zero `any` types** — all `eslint-disable @typescript-eslint/no-explicit-any` removed:
+  - `settled<T>()` typed generic centralised in `lib/utils.ts`; 7 per-page copies removed
+  - `DataTable<T>` fully generic — `Column<T>`, `DataTableProps<T>`, `RowAction` typed
+  - Recharts tooltips given typed interfaces (`TooltipProps`, `BarShapeProps`)
+  - Mock arrays (`MOCK_DRIVERS`, `MOCK_RIDERS`) typed as `Driver[]` / `Rider[]`
+  - `actions: RowAction[]` (was `any[]`) in DriversTable and RidersTable
+  - `d.vehicles` / `d.driver_subscriptions` accessed directly (Driver type already has optional joined fields)
+  - `icon: IconSvgElement` imported from `@hugeicons/react` for DriverProfileCard
+
+### Infrastructure
+- **`lib/env.ts`** — validated, typed environment module. All required vars throw a clear error at server startup if missing. API routes now import `env.NEXT_PUBLIC_APP_URL` instead of `process.env` with a silent fallback
+
+---
+
 ## [0.6.0] — 2026-04-19
 
 ### Security

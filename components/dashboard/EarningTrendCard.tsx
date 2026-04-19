@@ -16,9 +16,13 @@ interface EarningTrendCardProps {
   subscriptionChange: number | null
 }
 
+interface TooltipProps {
+  active?: boolean
+  payload?: { value: number }[]
+}
+
 // Tooltip: bubble above bar, arrow pointing DOWN toward the bar
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload }: TooltipProps) {
   if (!active || !payload?.length) return null
   const val = Number(payload[0].value).toLocaleString()
   return (
@@ -40,9 +44,16 @@ function CustomTooltip({ active, payload }: any) {
   )
 }
 
+interface BarShapeProps {
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  index?: number
+}
+
 // Custom bar shape: rounded rect + SVG inner shadow filter on active bar
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function BarShape(props: any) {
+function BarShape(props: BarShapeProps) {
   const { x, y, width, height, index } = props
   if (!width || !height || height <= 0) return null
   const r        = Math.min(12, width / 2, height / 2)

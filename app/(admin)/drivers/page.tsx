@@ -3,12 +3,8 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { DriversTable } from '@/components/drivers/DriversTable'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatsRow } from '@/components/ui/StatsRow'
+import { settled } from '@/lib/utils'
 import type { StatItem } from '@/components/ui/StatsRow'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function settled(r: PromiseSettledResult<any>, fallback: any) {
-  return r.status === 'fulfilled' ? r.value : fallback
-}
 
 const MOCK_STATS: StatItem[] = [
   { label: 'Total Drivers',    value: 4218, subBadge: '+421 trips',   subText: 'vs yesterday' },

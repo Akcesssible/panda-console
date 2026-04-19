@@ -3,8 +3,9 @@ import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/server'
 import { resend } from '@/lib/email/resend'
 import { resetPasswordEmailHtml, resetPasswordEmailText } from '@/lib/email/templates/reset-password'
+import { env } from '@/lib/env'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+const APP_URL = env.NEXT_PUBLIC_APP_URL
 
 const Schema = z.object({
   email: z.string().email(),

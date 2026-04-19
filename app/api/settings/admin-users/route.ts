@@ -5,8 +5,9 @@ import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { parseBody, InviteAdminUserSchema } from '@/lib/validations'
 import { resend } from '@/lib/email/resend'
 import { inviteEmailHtml, inviteEmailText } from '@/lib/email/templates/invite'
+import { env } from '@/lib/env'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+const APP_URL = env.NEXT_PUBLIC_APP_URL
 
 // Generates a readable temporary password: e.g. "Kx7P-m3Qr-N8wZ"
 // Avoids ambiguous chars (0/O, 1/l/I) so it's easy to read from an email.

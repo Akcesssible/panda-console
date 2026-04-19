@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 import { IdCardLanyardIcon, SmartPhoneIcon, CalendarIcon, PinLocationIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { CheckmarkBadge04Icon } from '@hugeicons-pro/core-solid-sharp'
 import { DriverStatusBadge } from '@/components/ui/Badge'
@@ -146,11 +147,10 @@ export function DriverProfileCard({ driver }: { driver: Driver }) {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function Chip({ icon, label }: { icon: React.ComponentType | object; label: string }) {
+function Chip({ icon, label }: { icon: IconSvgElement; label: string }) {
   return (
     <div className="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1">
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <HugeiconsIcon icon={icon as any} size={13} color="#6b7280" strokeWidth={1.5} />
+      <HugeiconsIcon icon={icon} size={13} color="#6b7280" strokeWidth={1.5} />
       <span className="text-xs text-gray-500">{label}</span>
     </div>
   )

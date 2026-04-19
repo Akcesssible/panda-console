@@ -60,8 +60,7 @@ export function SupportTable({ tickets, total, page, tab, tabs, useMock, search 
   }
 
   const mockForTab = MOCK_BY_TAB[tab] ?? MOCK_TICKETS
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const displayTickets: any[] = useMock ? mockForTab : tickets
+  const displayTickets = (useMock ? mockForTab : tickets) as SupportTicket[]
   const displayTotal = useMock ? mockForTab.length : total
 
   const columns = [

@@ -58,3 +58,11 @@ export function generateRideNumber(count: number): string {
 export function generateTicketNumber(count: number): string {
   return `TKT-${String(count).padStart(5, '0')}`
 }
+
+/**
+ * Safely unwrap a Promise.allSettled result.
+ * Returns the fulfilled value or the fallback if the promise rejected.
+ */
+export function settled<T>(r: PromiseSettledResult<T>, fallback: T): T {
+  return r.status === 'fulfilled' ? r.value : fallback
+}

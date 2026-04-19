@@ -11,8 +11,13 @@ interface ChurnRateCardProps {
   churnData: { month: string; rate: number }[]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ active, payload, label }: any) {
+interface TooltipProps {
+  active?: boolean
+  payload?: { value: number }[]
+  label?: string
+}
+
+function CustomTooltip({ active, payload, label }: TooltipProps) {
   if (!active || !payload?.length) return null
   return (
     <div className="flex flex-col items-center pointer-events-none">

@@ -74,8 +74,7 @@ export function RidesTable({
   }
 
   const mockForTab = MOCK_BY_TAB[tab] ?? MOCK_RIDES
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const displayRides: any[] = useMock ? mockForTab : rides
+  const displayRides = (useMock ? mockForTab : rides) as Ride[]
   const displayTotal = useMock ? mockForTab.length : total
 
   const columns = [

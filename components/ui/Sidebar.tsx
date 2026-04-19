@@ -49,8 +49,13 @@ export default function Sidebar({ role }: { role: AdminRole }) {
 
   async function handleLogout() {
     // Record logout + transition status to 'logged_out' BEFORE invalidating
-    // the session, so the request still carries a valid auth cookie.
-    await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+    // the session — must be awaited so the cookie is still valid when the
+    // request hits the server.
+    await fetch('/api/auth/activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'logout' }),
+    }).catch(() => {})
 
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -89,10 +94,10 @@ export default function Sidebar({ role }: { role: AdminRole }) {
       <div className="flex flex-col items-center gap-1.5">
         {/* Version badge */}
         <span
-          title="Panda Console v0.6.0"
+          title="Panda Console v0.7.0"
           className="text-[9px] font-mono text-gray-400 tracking-wide select-none"
         >
-          v0.6.0
+          v0.7.0
         </span>
 
         <div className="bg-white rounded-full flex flex-col items-center py-2.5 gap-0.5 w-[60px]">

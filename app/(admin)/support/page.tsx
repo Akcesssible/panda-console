@@ -3,12 +3,8 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { SupportTable } from '@/components/support/SupportTable'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatsRow } from '@/components/ui/StatsRow'
+import { settled } from '@/lib/utils'
 import type { StatItem } from '@/components/ui/StatsRow'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function settled(r: PromiseSettledResult<any>, fallback: any) {
-  return r.status === 'fulfilled' ? r.value : fallback
-}
 
 const MOCK_STATS: StatItem[] = [
   { label: 'Open Tickets',        value: 23,  subBadge: '23',    subText: 'needs attention' },

@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DataTable, Pagination } from '@/components/ui/DataTable'
+import type { RowAction } from '@/components/ui/DataTable'
 import { RiderStatusBadge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, timeAgoShort } from '@/lib/utils'
@@ -10,8 +11,7 @@ import type { Rider } from '@/lib/types'
 interface Tab { key: string; label: string }
 
 // ── Mock data (shown when DB is not yet seeded) ──────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MOCK_RIDERS: any[] = [
+const MOCK_RIDERS: Rider[] = [
   { id: 'r1', rider_number: 'RDR-000001', full_name: 'Amina Salum',     phone: '0712 001 111', email: 'amina@email.com',  status: 'active',   total_rides: 142, completed_rides: 138, cancelled_rides: 4,  last_ride_at: new Date(Date.now() - 1  * 60_000).toISOString(),        registered_at: '2024-01-10T08:00:00Z', ban_reason: null },
   { id: 'r2', rider_number: 'RDR-000002', full_name: 'Brian Makundi',   phone: '0754 002 222', email: null,               status: 'active',   total_rides: 87,  completed_rides: 83,  cancelled_rides: 4,  last_ride_at: new Date(Date.now() - 30 * 60_000).toISOString(),       registered_at: '2024-02-14T10:30:00Z', ban_reason: null },
   { id: 'r3', rider_number: 'RDR-000003', full_name: 'Cynthia Omondi',  phone: '0765 003 333', email: 'cynthia@email.com', status: 'inactive', total_rides: 23,  completed_rides: 20,  cancelled_rides: 3,  last_ride_at: new Date(Date.now() - 45 * 86_400_000).toISOString(),   registered_at: '2024-03-05T14:00:00Z', ban_reason: null },
@@ -72,8 +72,7 @@ export function RidersTable({
         selectable
         rowActions={row => {
           const r = row as Rider
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const actions: any[] = [{ label: 'View Profile', onClick: () => router.push(`/riders/${r.id}`) }]
+          const actions: RowAction[] = [{ label: 'View Profile', onClick: () => router.push(`/riders/${r.id}`) }]
           if (r.status === 'active') {
             actions.push({ label: 'Mark Inactive', onClick: () => router.push(`/riders/${r.id}?action=deactivate`), danger: false })
             actions.push({ label: 'Ban Rider',     onClick: () => router.push(`/riders/${r.id}?action=ban`),        danger: true  })
