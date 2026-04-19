@@ -86,20 +86,30 @@ export default function Sidebar({ role }: { role: AdminRole }) {
         })}
       </nav>
 
-      <div className="bg-white rounded-full flex flex-col items-center py-2.5 gap-0.5 w-[60px]">
-        <a
-          href="mailto:support@pandahailing.com"
-          title="Help"
-          className="w-11 h-11 flex items-center justify-center rounded-full text-[#1a2547] hover:bg-gray-100 transition-colors">
-          <HugeiconsIcon icon={HelpCircleIcon} size={20} color="currentColor" strokeWidth={1.8} />
-        </a>
-        <button
-          onClick={handleLogout}
-          title="Sign out"
-          className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+      <div className="flex flex-col items-center gap-1.5">
+        {/* Version badge */}
+        <span
+          title="Panda Console v0.6.0"
+          className="text-[9px] font-mono text-gray-400 tracking-wide select-none"
         >
-          <HugeiconsIcon icon={Logout02Icon} size={20} color="#e02020" strokeWidth={1.8} />
-        </button>
+          v0.6.0
+        </span>
+
+        <div className="bg-white rounded-full flex flex-col items-center py-2.5 gap-0.5 w-[60px]">
+          <a
+            href="mailto:support@pandahailing.com"
+            title="Help"
+            className="w-11 h-11 flex items-center justify-center rounded-full text-[#1a2547] hover:bg-gray-100 transition-colors">
+            <HugeiconsIcon icon={HelpCircleIcon} size={20} color="currentColor" strokeWidth={1.8} />
+          </a>
+          <button
+            onClick={handleLogout}
+            title="Sign out"
+            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <HugeiconsIcon icon={Logout02Icon} size={20} color="#e02020" strokeWidth={1.8} />
+          </button>
+        </div>
       </div>
     </aside>
   )

@@ -76,14 +76,10 @@ The system is in a **good foundational state**. Authentication is correctly impl
 
 **Resolved:** Mock data removed. Page uses real `getDriverById` data exclusively and shows a proper not-found state when the query returns nothing.
 
-### H-4 · In-memory rate limiter will not work on Vercel
-**File:** `lib/rate-limit.ts`
+### ~~H-4 · In-memory rate limiter will not work on Vercel~~ ✅ RESOLVED (2026-04-19)
+~~The sliding-window rate limiter stored request counts in a `Map` in Node.js memory, resetting on every cold start.~~
 
-The sliding-window rate limiter stores request counts in a `Map` in Node.js memory. Vercel Serverless Functions start a fresh process per cold start — the map resets, making the rate limiter ineffective across instances. Rate limiter has been improved but remains in-memory.
-
-**Recommendation:** Replace with an edge-compatible store before scaling:
-- **Upstash Redis** (recommended — has a free tier, works on Vercel Edge)
-- **Vercel KV** (same underlying technology)
+**Resolved:** `lib/rate-limit.ts` now uses `@upstash/ratelimit` + `@upstash/redis`. When `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set (production/Vercel) it uses Redis. Falls back to in-memory sliding window for local development where those env vars are absent. **Action required:** create a free Redis database at console.upstash.com and add the two env vars to Vercel project settings.
 
 ### ~~H-5 · `/api/support/tickets/[id]/message` — No role check~~ ✅ RESOLVED (2026-04-19)
 ~~A `finance_viewer` can currently post messages to support tickets.~~
@@ -229,7 +225,7 @@ The app uses the service role (`SUPABASE_SECRET_KEY`) for all DB writes, which b
 | ✅ 4 | ~~Add `requireRole` to `/drivers/flag`~~ — Done 2026-04-19 | 5 min |
 | ✅ 5 | ~~Wire `EarningTrendCard` to real 7-day RPC data~~ — Done 2026-04-19 | 2 h |
 | ✅ 6 | ~~Wire `ChurnRateCard` to real DB query~~ — Done 2026-04-19 | 1 h |
-| 🟠 7 | Replace in-memory rate limiter with Upstash Redis | 2 h |
+| ✅ 7 | ~~Replace in-memory rate limiter with Upstash Redis~~ — Done 2026-04-19 | 2 h |
 | ✅ 8 | ~~Fix driver detail page — remove hardcoded mock~~ — Done 2026-04-19 | 2 h |
 | ✅ 9 | ~~Add `loading.tsx` skeletons to heavy pages~~ — Done 2026-04-10 | 3 h |
 | ✅ 10 | ~~Add `error.tsx` per route group~~ — Done 2026-04-10 | 2 h |
