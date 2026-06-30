@@ -1,28 +1,28 @@
-import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { SettingsView } from '@/components/settings/SettingsView'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { api } from '@/lib/api/client'
+import { paths } from '@/lib/api/paths'
+import { toUiRole } from '@/lib/api/adapters'
+import type { BackendAdminUser } from '@/lib/api/types'
+import type { AdminUser } from '@/lib/types'
 
-async function getSettingsData() {
-  const supabase = createAdminClient()
-  const [{ data: admins }, { data: zones }, { data: config }, { data: logs, count: logsTotal }, { data: customRoles }] = await Promise.all([
-    supabase.from('admin_users').select('*').order('created_at'),
-    supabase.from('zones').select('*').order('name'),
-    supabase.from('system_config').select('*'),
-    supabase.from('audit_logs')
-      .select('*, admin_users(full_name)', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .limit(50),
-    supabase.from('custom_roles').select('*').order('created_at'),
-  ])
-  return {
-    admins: admins ?? [],
-    zones: zones ?? [],
-    config: config ?? [],
-    logs: logs ?? [],
-    logsTotal: logsTotal ?? 0,
-    customRoles: customRoles ?? [],
+async function getAdmins(): Promise<AdminUser[]> {
+  try {
+    const users = await api.get<BackendAdminUser[]>(paths.adminUsers)
+    return (users ?? []).map(u => ({
+      id: u.id,
+      auth_id: null,
+      full_name: u.fullName,
+      email: u.email,
+      role: toUiRole(u.role),
+      is_active: u.status === 'ACTIVE',
+      created_at: u.createdAt,
+      updated_at: u.createdAt,
+    }))
+  } catch {
+    return []
   }
 }
 
@@ -31,10 +31,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const tab = params.tab ?? 'users'
   const adminUser = await getAdminUser()
 
-  // Only super_admin can access settings
   if (adminUser.role !== 'super_admin') redirect('/dashboard')
 
-  const data = await getSettingsData()
+  const admins = await getAdmins()
 
   const TABS = [
     { key: 'users',  label: 'Users' },
@@ -53,7 +52,16 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         activeTab={tab}
         basePath="/settings"
       />
-      <SettingsView tab={tab} {...data} currentAdmin={adminUser} />
+      <SettingsView
+        tab={tab}
+        admins={admins}
+        zones={[]}
+        config={[]}
+        logs={[]}
+        logsTotal={0}
+        currentAdmin={adminUser}
+        customRoles={[]}
+      />
     </div>
   )
 }

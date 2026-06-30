@@ -4,24 +4,21 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 
-// Static placeholder data — replaced by real data from API via parent
-const MOCK_DATA = [
-  { day: 'Mon', commission: 180000, subscription: 210000 },
-  { day: 'Tue', commission: 220000, subscription: 190000 },
-  { day: 'Wed', commission: 150000, subscription: 240000 },
-  { day: 'Thu', commission: 270000, subscription: 300000 },
-  { day: 'Fri', commission: 310000, subscription: 280000 },
-  { day: 'Sat', commission: 390000, subscription: 350000 },
-  { day: 'Sun', commission: 250000, subscription: 220000 },
-]
-
 function formatYAxis(value: number) {
   if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
   if (value >= 1000) return `${(value / 1000).toFixed(0)}K`
   return String(value)
 }
 
-export function EarningsTrendChart({ data = MOCK_DATA }: { data?: typeof MOCK_DATA }) {
+type ChartEntry = { day: string; commission: number; subscription: number }
+
+export function EarningsTrendChart({ data = [] }: { data?: ChartEntry[] }) {
+  if (data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-sm text-gray-400">No data yet</div>
+    )
+  }
+
   return (
     <ResponsiveContainer width="100%" height={220}>
       <LineChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>

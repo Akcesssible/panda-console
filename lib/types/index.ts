@@ -3,7 +3,7 @@
 // ============================================================
 
 export type AdminRole = 'super_admin' | 'ops_admin' | 'support_agent' | 'finance_viewer'
-export type DriverStatus = 'pending' | 'active' | 'suspended' | 'churned'
+export type DriverStatus = 'pending' | 'active' | 'inactive' | 'suspended' | 'banned' | 'churned'
 export type RiderStatus = 'active' | 'inactive' | 'banned'
 export type VehicleType = 'bodaboda' | 'bajaj' | 'car'
 export type RideStatus = 'requested' | 'accepted' | 'ongoing' | 'completed' | 'cancelled'
@@ -54,6 +54,9 @@ export interface Driver {
   suspended_reason: string | null
   suspended_at: string | null
   suspended_by: string | null
+  banned_reason: string | null
+  banned_at: string | null
+  banned_by: string | null
   approved_at: string | null
   approved_by: string | null
   last_active_at: string | null
@@ -66,6 +69,14 @@ export interface Driver {
   zones?: Zone | null
   vehicles?: Vehicle[]
   driver_subscriptions?: DriverSubscription[]
+  documents?: DriverDocument[]
+  identity_verification?: {
+    status: string
+    verified_at: string | null
+    face_match_score: number | null
+    liveness_score: number | null
+    id_ocr_passed: boolean
+  } | null
 }
 
 export interface Vehicle {
@@ -96,6 +107,10 @@ export interface DriverDocument {
   verified_by: string | null
   verified_at: string | null
   uploaded_at: string
+  mime_type?: string | null
+  rejection_reason?: string | null
+  verification_status?: 'pending' | 'verified' | 'rejected'
+  label?: string
 }
 
 export interface SubscriptionPlan {

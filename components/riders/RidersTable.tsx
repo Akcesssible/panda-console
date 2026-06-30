@@ -9,19 +9,6 @@ import type { Rider } from '@/lib/types'
 
 interface Tab { key: string; label: string }
 
-// ── Mock data (shown when DB is not yet seeded) ──────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MOCK_RIDERS: any[] = [
-  { id: 'r1', rider_number: 'RDR-000001', full_name: 'Amina Salum',     phone: '0712 001 111', email: 'amina@email.com',  status: 'active',   total_rides: 142, completed_rides: 138, cancelled_rides: 4,  last_ride_at: new Date(Date.now() - 1  * 60_000).toISOString(),        registered_at: '2024-01-10T08:00:00Z', ban_reason: null },
-  { id: 'r2', rider_number: 'RDR-000002', full_name: 'Brian Makundi',   phone: '0754 002 222', email: null,               status: 'active',   total_rides: 87,  completed_rides: 83,  cancelled_rides: 4,  last_ride_at: new Date(Date.now() - 30 * 60_000).toISOString(),       registered_at: '2024-02-14T10:30:00Z', ban_reason: null },
-  { id: 'r3', rider_number: 'RDR-000003', full_name: 'Cynthia Omondi',  phone: '0765 003 333', email: 'cynthia@email.com', status: 'inactive', total_rides: 23,  completed_rides: 20,  cancelled_rides: 3,  last_ride_at: new Date(Date.now() - 45 * 86_400_000).toISOString(),   registered_at: '2024-03-05T14:00:00Z', ban_reason: null },
-  { id: 'r4', rider_number: 'RDR-000004', full_name: 'Daniel Juma',     phone: '0789 004 444', email: 'daniel@email.com', status: 'active',   total_rides: 310, completed_rides: 298, cancelled_rides: 12, last_ride_at: new Date(Date.now() - 2  * 3600_000).toISOString(),      registered_at: '2023-11-20T09:00:00Z', ban_reason: null },
-  { id: 'r5', rider_number: 'RDR-000005', full_name: 'Esther Kimani',   phone: '0798 005 555', email: 'esther@email.com', status: 'banned',   total_rides: 15,  completed_rides: 10,  cancelled_rides: 5,  last_ride_at: new Date(Date.now() - 60 * 86_400_000).toISOString(),   registered_at: '2024-04-01T11:00:00Z', ban_reason: 'Repeated misconduct reported by drivers' },
-  { id: 'r6', rider_number: 'RDR-000006', full_name: 'Farida Hassan',   phone: '0800 006 666', email: null,               status: 'active',   total_rides: 208, completed_rides: 200, cancelled_rides: 8,  last_ride_at: new Date(Date.now() - 10 * 60_000).toISOString(),       registered_at: '2023-12-01T08:00:00Z', ban_reason: null },
-  { id: 'r7', rider_number: 'RDR-000007', full_name: 'George Mwangi',   phone: '0822 007 777', email: 'george@email.com', status: 'inactive', total_rides: 41,  completed_rides: 38,  cancelled_rides: 3,  last_ride_at: new Date(Date.now() - 35 * 86_400_000).toISOString(),   registered_at: '2024-01-25T07:30:00Z', ban_reason: null },
-  { id: 'r8', rider_number: 'RDR-000008', full_name: 'Halima Ngowi',    phone: '0843 008 888', email: 'halima@email.com', status: 'active',   total_rides: 512, completed_rides: 500, cancelled_rides: 12, last_ride_at: new Date(Date.now() - 5  * 60_000).toISOString(),        registered_at: '2023-09-15T06:00:00Z', ban_reason: null },
-]
-
 const CARD_TITLES: Record<string, string> = {
   all:      'All Riders',
   active:   'Active Riders',
@@ -29,16 +16,8 @@ const CARD_TITLES: Record<string, string> = {
   banned:   'Banned Riders',
 }
 
-// Mock filtered by tab so switching tabs works correctly in demo mode
-const MOCK_BY_TAB: Record<string, typeof MOCK_RIDERS> = {
-  all:      MOCK_RIDERS,
-  active:   MOCK_RIDERS.filter(r => r.status === 'active'),
-  inactive: MOCK_RIDERS.filter(r => r.status === 'inactive'),
-  banned:   MOCK_RIDERS.filter(r => r.status === 'banned'),
-}
-
 export function RidersTable({
-  riders, total, page, tab, tabs, search, useMock,
+  riders, total, page, tab, tabs, search,
 }: {
   riders: Rider[]
   total:  number
@@ -46,7 +25,6 @@ export function RidersTable({
   tab:    string
   tabs:   Tab[]
   search?: string
-  useMock?: boolean
 }) {
   const router       = useRouter()
   const searchParams = useSearchParams()
@@ -57,9 +35,8 @@ export function RidersTable({
     router.push(`/riders?${params.toString()}`)
   }
 
-  const mockForTab    = MOCK_BY_TAB[tab] ?? MOCK_RIDERS
-  const displayRiders = useMock ? mockForTab as Rider[] : riders
-  const displayTotal  = useMock ? mockForTab.length : total
+  const displayRiders = riders
+  const displayTotal  = total
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-gray-100">

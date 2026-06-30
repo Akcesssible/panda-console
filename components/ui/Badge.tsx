@@ -22,9 +22,11 @@ export function Badge({ children, variant = 'gray' }: { children: React.ReactNod
 export function DriverStatusBadge({ status }: { status: string }) {
   const map: Record<string, { variant: BadgeVariant; label: string }> = {
     active:    { variant: 'green',  label: 'active' },
+    inactive:  { variant: 'gray',   label: 'inactive' },
     pending:   { variant: 'yellow', label: 'pending' },
     suspended: { variant: 'red',    label: 'suspended' },
-    churned:   { variant: 'orange', label: 'churned' },
+    banned:    { variant: 'red',    label: 'banned' },
+    churned:   { variant: 'orange', label: 'rejected' },
   }
   const m = map[status] ?? { variant: 'gray' as BadgeVariant, label: status }
   return <Badge variant={m.variant}>{m.label}</Badge>

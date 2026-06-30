@@ -1,28 +1,10 @@
-import { createAdminClient } from '@/lib/supabase/server'
 import type { AuditLogParams } from '@/lib/types'
 
-// Append-only audit log — called after every admin mutation
-export async function logAdminAction(params: AuditLogParams) {
-  const supabase = createAdminClient()
-  const {
-    adminId, adminEmail, adminRole,
-    action, entityType, entityId,
-    oldValue, newValue, metadata, request,
-  } = params
-
-  await supabase.from('audit_logs').insert({
-    admin_id: adminId,
-    admin_email: adminEmail,
-    admin_role: adminRole,
-    action,
-    entity_type: entityType,
-    entity_id: entityId ?? null,
-    old_value: oldValue ?? null,
-    new_value: newValue ?? null,
-    metadata: metadata ?? null,
-    ip_address: request?.headers?.get('x-forwarded-for') ?? null,
-    user_agent: request?.headers?.get('user-agent') ?? null,
-  })
+// No backend audit-write endpoint exists yet. Log locally so mutations leave a
+// trace without blocking, and the call-sites need no changes when it lands.
+export async function logAdminAction(params: AuditLogParams): Promise<void> {
+  const { action, entityType, entityId, adminEmail } = params
+  console.warn('[audit]', action, entityType, entityId ?? '-', 'by', adminEmail)
 }
 
 // Action code constants — keeps usage consistent across modules
@@ -30,6 +12,7 @@ export const AUDIT_ACTIONS = {
   DRIVER_APPROVE: 'driver.approve',
   DRIVER_REJECT: 'driver.reject',
   DRIVER_SUSPEND: 'driver.suspend',
+  DRIVER_BAN: 'driver.ban',
   DRIVER_REACTIVATE: 'driver.reactivate',
   DRIVER_FLAG: 'driver.flag',
   SUB_ASSIGN: 'subscription.assign',
@@ -37,6 +20,7 @@ export const AUDIT_ACTIONS = {
   SUB_EXTEND: 'subscription.extend',
   SUB_PLAN_CREATE: 'subscription.plan.create',
   SUB_PLAN_UPDATE: 'subscription.plan.update',
+  SUB_PLAN_DELETE: 'subscription.plan.deactivate',
   PRICING_CREATE: 'pricing.rule.create',
   PRICING_DEACTIVATE: 'pricing.rule.deactivate',
   TICKET_ASSIGN: 'support.ticket.assign',

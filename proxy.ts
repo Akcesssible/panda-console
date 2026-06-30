@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 import { rateLimit, AUTH_LIMIT, MUTATION_LIMIT, READ_LIMIT } from '@/lib/rate-limit'
+import { JWT_COOKIE, verifyJwt } from '@/lib/api/jwt'
 
 // NOTE: do NOT set `export const runtime` here — not allowed in proxy files.
 
@@ -20,77 +20,51 @@ function getClientIP(req: NextRequest): string {
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // ── 1. Session refresh via Supabase SSR ──────────────────────────────────
-  // Collect any cookies the SSR client wants to set during token refresh.
-  // We apply them to the final response after building it below.
-  const pendingCookies: Array<{ name: string; value: string; options: Record<string, unknown> }> = []
+  // ── 1. Authenticate via the backend-issued JWT cookie ────────────────────
+  // Verify signature + expiry locally (jose, Edge-compatible). Revocation is
+  // enforced backend-side — a logged-out token still verifies here until expiry,
+  // but the next backend call returns 401 and the client clears the cookie.
+  const token = req.cookies.get(JWT_COOKIE)?.value
+  const claims = await verifyJwt(token)
+  const isAuthed = !!claims
+  const mustChangePassword = claims?.mcp ?? false
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return req.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          // Accumulate rather than building a response here — we build once
-          // below so we can also inject x-auth-user-id in the same call.
-          pendingCookies.push(...cookiesToSet as typeof pendingCookies)
-        },
-      },
-    }
-  )
-
-  // getUser() validates the token server-side AND triggers silent refresh.
-  // IMPORTANT: always use getUser(), never getSession() — getSession() trusts
-  // the local cookie without re-validating with the Supabase Auth server.
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // ── 2. Build the forwarded request headers ───────────────────────────────
-  // Strip any client-supplied x-auth-user-id (security), then set the
-  // authoritative value from our validated getUser() result.
-  // Server components read this header via next/headers to skip their own
-  // getUser() call, cutting one full Supabase Auth round trip per page load.
-  const requestHeaders = new Headers(req.headers)
-  requestHeaders.delete('x-auth-user-id')           // never trust the client
-  if (user) {
-    requestHeaders.set('x-auth-user-id', user.id)
-  }
-
-  // Build the final response — one allocation, carries both the modified
-  // request headers (for server components) and the session cookies (for
-  // the browser) accumulated above.
-  let response = NextResponse.next({ request: { headers: requestHeaders } })
-  pendingCookies.forEach(({ name, value, options }) =>
-    response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
-  )
-
-  // ── 3. Route protection ──────────────────────────────────────────────────
   const isPublic = PUBLIC_PATHS.has(pathname)
 
-  if (!user && !isPublic) {
+  // ── 2. Route protection ──────────────────────────────────────────────────
+  if (!isAuthed && !isPublic) {
     const loginUrl = req.nextUrl.clone()
     loginUrl.pathname = '/login'
     loginUrl.search = ''
     return NextResponse.redirect(loginUrl)
   }
 
-  if (user && pathname === '/login') {
+  // Temp-password admins must set a new password before reaching the app.
+  if (isAuthed && mustChangePassword && pathname !== '/set-password' && !pathname.startsWith('/api/')) {
+    const setPwUrl = req.nextUrl.clone()
+    setPwUrl.pathname = '/set-password'
+    setPwUrl.search = ''
+    return NextResponse.redirect(setPwUrl)
+  }
+
+  // Already authed (and not mid-password-change) — keep them out of auth pages.
+  if (isAuthed && !mustChangePassword && (pathname === '/login' || pathname === '/set-password')) {
     const dashboardUrl = req.nextUrl.clone()
     dashboardUrl.pathname = '/dashboard'
+    dashboardUrl.search = ''
     return NextResponse.redirect(dashboardUrl)
   }
 
-  // ── 4. No-cache headers on protected pages ───────────────────────────────
-  // Prevents the browser from serving a cached copy after logout.
+  const response = NextResponse.next()
+
+  // ── 3. No-cache headers on protected pages ───────────────────────────────
   if (!isPublic && !pathname.startsWith('/api/')) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
   }
 
-  // ── 5. Rate limiting (API routes only) ───────────────────────────────────
+  // ── 4. Rate limiting (API routes only) ───────────────────────────────────
   if (pathname.startsWith('/api/')) {
     const ip = getClientIP(req)
     const isAuth  = pathname.startsWith('/api/auth')

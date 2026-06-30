@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useState } from 'react'
 import { timeAgo } from '@/lib/utils'
 import type { AuditLog } from '@/lib/types'
 import Link from 'next/link'
@@ -25,18 +24,6 @@ const ACTION_LABELS: Record<string, { label: string; type: string }> = {
 export function RecentActivityFeed({ initialLogs }: { initialLogs: AuditLog[] }) {
   const [logs, setLogs] = useState<AuditLog[]>(initialLogs)
 
-  // Subscribe to new audit log entries via Realtime
-  useEffect(() => {
-    const supabase = createClient()
-    const channel = supabase
-      .channel('audit-feed')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, (payload: { new: unknown }) => {
-        setLogs(prev => [payload.new as AuditLog, ...prev].slice(0, 20))
-      })
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [])
 
   return (
     <div className="divide-y divide-gray-100">

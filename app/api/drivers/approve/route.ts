@@ -1,57 +1,39 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { parseBody, DriverActionSchema } from '@/lib/validations'
+import { api } from '@/lib/api/client'
+import { paths } from '@/lib/api/paths'
+import { toDriver } from '@/lib/api/adapters'
+import type { BackendDriverProfile } from '@/lib/api/types'
+import { ApiError } from '@/lib/api/errors'
 
 export async function POST(request: Request) {
   const adminUser = await getAdminUserFromRequest()
   if (!adminUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  try {
-    requireRole(adminUser, ['super_admin', 'ops_admin'])
-  } catch {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  try { requireRole(adminUser, ['super_admin', 'ops_admin']) }
+  catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
 
   const body = await parseBody(request, DriverActionSchema)
   if (body instanceof NextResponse) return body
 
   const { driver_id, notes } = body
 
-  const supabase = createAdminClient()
+  try {
+    const profile = await api.post<BackendDriverProfile>(paths.driverApprove(driver_id))
+    const driver = toDriver(profile)
 
-  const { data: driver } = await supabase.from('drivers').select('status').eq('id', driver_id).single()
-  if (!driver) return NextResponse.json({ error: 'Driver not found' }, { status: 404 })
+    logAdminAction({
+      adminId: adminUser.id, adminEmail: adminUser.email, adminRole: adminUser.role,
+      action: AUDIT_ACTIONS.DRIVER_APPROVE, entityType: 'driver', entityId: driver_id,
+      newValue: { status: 'active' }, metadata: notes ? { notes } : undefined, request,
+    }).catch(err => console.error('[approve] audit failed', err))
 
-  const { data: updated, error } = await supabase
-    .from('drivers')
-    .update({
-      status: 'active',
-      approved_by: adminUser.id,
-      approved_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', driver_id)
-    .eq('status', 'pending')
-    .select()
-    .single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  if (!updated) return NextResponse.json({ error: 'Driver not pending' }, { status: 400 })
-
-  await logAdminAction({
-    adminId: adminUser.id,
-    adminEmail: adminUser.email,
-    adminRole: adminUser.role,
-    action: AUDIT_ACTIONS.DRIVER_APPROVE,
-    entityType: 'driver',
-    entityId: driver_id,
-    oldValue: { status: 'pending' },
-    newValue: { status: 'active' },
-    metadata: notes ? { notes } : undefined,
-    request,
-  })
-
-  return NextResponse.json({ success: true, driver: updated })
+    return NextResponse.json({ success: true, driver })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to approve driver'
+    const status = err instanceof ApiError ? err.status : 500
+    return NextResponse.json({ error: message }, { status })
+  }
 }

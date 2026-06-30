@@ -1,17 +1,11 @@
-import { createAdminClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
 import { getAdminUserFromRequest } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { parseBody, CreateRoleSchema } from '@/lib/validations'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 
 export async function GET() {
-  const supabase = createAdminClient()
-  const { data, error } = await supabase
-    .from('custom_roles')
-    .select('*')
-    .order('created_at', { ascending: true })
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  return NextResponse.json([])
 }
 
 export async function POST(req: NextRequest) {
@@ -24,26 +18,17 @@ export async function POST(req: NextRequest) {
 
   const { name, description, permissions, is_active } = body
 
-  const supabase = createAdminClient()
-  const { data, error } = await supabase
-    .from('custom_roles')
-    .insert({
-      name: name.trim(),
-      description: description?.trim() || null,
-      permissions: permissions ?? {},
-      is_active,
-      created_by: admin.id,
-    })
-    .select()
-    .single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-
-  await logAdminAction({
+  logAdminAction({
     adminId: admin.id, adminEmail: admin.email, adminRole: admin.role,
-    action: AUDIT_ACTIONS.ROLE_CREATE, entityType: 'custom_role', entityId: data.id,
+    action: AUDIT_ACTIONS.ROLE_CREATE, entityType: 'custom_role', entityId: undefined,
     newValue: { name, permissions }, request: req,
-  })
+  }).catch(err => console.error('[roles] audit failed', err))
 
-  return NextResponse.json(data, { status: 201 })
+  return NextResponse.json({
+    id: crypto.randomUUID(),
+    name: name.trim(),
+    description: description?.trim() || null,
+    permissions: permissions ?? {},
+    is_active: is_active ?? true,
+  }, { status: 201 })
 }

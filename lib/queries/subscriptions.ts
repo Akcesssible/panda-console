@@ -1,65 +1,30 @@
-import { createAdminClient } from '@/lib/supabase/server'
 import type { DriverSubscription, SubscriptionPayment, SubscriptionPlan } from '@/lib/types'
+import { api } from '@/lib/api/client'
+import { paths } from '@/lib/api/paths'
+import { toPlan } from '@/lib/api/adapters'
+import type { PlanResponse } from '@/lib/api/types'
 
-const PER_PAGE = 20
-
-export async function getSubscriptions(params: {
+export async function getSubscriptions(_params: {
   status?: string
   driverId?: string
   page?: number
-}) {
-  const supabase = createAdminClient()
-  const { status, driverId, page = 1 } = params
-  const from = (page - 1) * PER_PAGE
-  const to = from + PER_PAGE - 1
-
-  let query = supabase
-    .from('driver_subscriptions')
-    .select(`
-      *,
-      drivers(id, full_name, phone, driver_number),
-      subscription_plans(id, name, price_tzs, duration_days)
-    `, { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(from, to)
-
-  if (status) query = query.eq('status', status)
-  if (driverId) query = query.eq('driver_id', driverId)
-
-  const { data, count, error } = await query
-  if (error) throw error
-  return { subscriptions: data as DriverSubscription[], total: count ?? 0 }
+}): Promise<{ subscriptions: DriverSubscription[]; total: number }> {
+  return { subscriptions: [], total: 0 }
 }
 
-export async function getPlans() {
-  const supabase = createAdminClient()
-  const { data, error } = await supabase
-    .from('subscription_plans')
-    .select('*')
-    .order('price_tzs', { ascending: true })
-  if (error) throw error
-  return data as SubscriptionPlan[]
+// Plans are owned by the backend (subscription-service). GET /api/v1/subscriptions/plans
+// returns the full catalogue (admin-only). The adapter fills UI-only fields
+// (duration_days, vehicle_types) that the backend plan model lacks.
+export async function getPlans(): Promise<SubscriptionPlan[]> {
+  const plans = await api.get<PlanResponse[]>(paths.subscriptionPlans)
+  return (plans ?? [])
+    .map(toPlan)
+    .sort((a, b) => a.price_tzs - b.price_tzs)
 }
 
-export async function getPayments(params: { status?: string; page?: number }) {
-  const supabase = createAdminClient()
-  const { status, page = 1 } = params
-  const from = (page - 1) * PER_PAGE
-  const to = from + PER_PAGE - 1
-
-  let query = supabase
-    .from('subscription_payments')
-    .select(`
-      *,
-      drivers(id, full_name, phone, driver_number),
-      subscription_plans(name, price_tzs)
-    `, { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(from, to)
-
-  if (status) query = query.eq('status', status)
-
-  const { data, count, error } = await query
-  if (error) throw error
-  return { payments: data as SubscriptionPayment[], total: count ?? 0 }
+export async function getPayments(_params: {
+  status?: string
+  page?: number
+}): Promise<{ payments: SubscriptionPayment[]; total: number }> {
+  return { payments: [], total: 0 }
 }

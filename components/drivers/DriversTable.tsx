@@ -9,38 +9,18 @@ import type { Driver } from '@/lib/types'
 
 interface Tab { key: string; label: string }
 
-// ── Mock data (shown when DB is not yet seeded) ───────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MOCK_DRIVERS: any[] = [
-  { id: 'm1', full_name: 'John Mawella',    driver_number: 'DRV-000001', phone: '0712 345 678', status: 'active',    total_trips: 1284, last_active_at: new Date(Date.now() - 2*60_000).toISOString(),       vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'active' }] },
-  { id: 'm2', full_name: 'Asha Kassim',     driver_number: 'DRV-000002', phone: '0754 221 990', status: 'churned',   total_trips: 342,  last_active_at: new Date(Date.now() - 32*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'bajaj' }],    driver_subscriptions: [{ status: 'expired' }] },
-  { id: 'm3', full_name: "Liam O'Connor",   driver_number: 'DRV-000003', phone: '0765 432 109', status: 'active',    total_trips: 2567, last_active_at: new Date(Date.now() - 5*60_000).toISOString(),        vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'active' }] },
-  { id: 'm4', full_name: 'Sofia Lee',       driver_number: 'DRV-000004', phone: '0789 654 321', status: 'active',    total_trips: 1256, last_active_at: new Date(Date.now() - 10*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'bajaj' }],    driver_subscriptions: [{ status: 'active' }] },
-  { id: 'm5', full_name: 'Maya Patel',      driver_number: 'DRV-000005', phone: '0798 876 543', status: 'churned',   total_trips: 874,  last_active_at: new Date(Date.now() - 20*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'expired' }] },
-  { id: 'm6', full_name: 'Ethan Wright',    driver_number: 'DRV-000006', phone: '0800 123 456', status: 'active',    total_trips: 1789, last_active_at: new Date(Date.now() - 15*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'bodaboda' }], driver_subscriptions: [{ status: 'active' }] },
-  { id: 'm7', full_name: 'Olivia Martinez', driver_number: 'DRV-000007', phone: '0822 345 678', status: 'active',    total_trips: 3456, last_active_at: new Date(Date.now() - 3*60_000).toISOString(),        vehicles: [{ vehicle_type: 'car' }],      driver_subscriptions: [{ status: 'active' }] },
-  { id: 'm8', full_name: 'Noah Smith',      driver_number: 'DRV-000008', phone: '0843 987 654', status: 'churned',   total_trips: 912,  last_active_at: new Date(Date.now() - 25*86_400_000).toISOString(),  vehicles: [{ vehicle_type: 'bodaboda' }], driver_subscriptions: [{ status: 'expired' }] },
-]
-
 const CARD_TITLES: Record<string, string> = {
   all: 'Total Drivers',
   active: 'Active Drivers',
   pending: 'Pending Approval',
+  inactive: 'Inactive Drivers',
+  banned: 'Banned Drivers',
   suspended: 'Suspended Drivers',
-  churned: 'Churned Drivers',
-}
-
-// Mock filtered by tab so switching tabs works correctly in demo mode
-const MOCK_BY_TAB: Record<string, typeof MOCK_DRIVERS> = {
-  all:       MOCK_DRIVERS,
-  active:    MOCK_DRIVERS.filter(d => d.status === 'active'),
-  pending:   MOCK_DRIVERS.filter(d => d.status === 'pending'),
-  suspended: MOCK_DRIVERS.filter(d => d.status === 'suspended'),
-  churned:   MOCK_DRIVERS.filter(d => d.status === 'churned'),
+  churned: 'Rejected Drivers',
 }
 
 export function DriversTable({
-  drivers, total, page, tab, tabs, search, useMock,
+  drivers, total, page, tab, tabs, search,
 }: {
   drivers: Driver[]
   total: number
@@ -48,7 +28,6 @@ export function DriversTable({
   tab: string
   tabs: Tab[]
   search?: string
-  useMock?: boolean
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -59,9 +38,8 @@ export function DriversTable({
     router.push(`/drivers?${params.toString()}`)
   }
 
-  const mockForTab     = MOCK_BY_TAB[tab] ?? MOCK_DRIVERS
-  const displayDrivers = useMock ? mockForTab as Driver[] : drivers
-  const displayTotal   = useMock ? mockForTab.length : total
+  const displayDrivers = drivers
+  const displayTotal   = total
 
   const columns = getColumns(tab)
 
@@ -82,11 +60,12 @@ export function DriversTable({
             actions.push({ label: 'Approve', onClick: () => router.push(`/drivers/${d.id}?action=approve`) })
             actions.push({ label: 'Reject', onClick: () => router.push(`/drivers/${d.id}?action=reject`), danger: true })
           }
-          if (d.status === 'active') {
+          if (d.status === 'active' || d.status === 'inactive') {
+            actions.push({ label: 'Ban', onClick: () => router.push(`/drivers/${d.id}?action=ban`), danger: true })
             actions.push({ label: 'Suspend', onClick: () => router.push(`/drivers/${d.id}?action=suspend`), danger: true })
             actions.push({ label: 'Flag', onClick: () => router.push(`/drivers/${d.id}?action=flag`), danger: true })
           }
-          if (d.status === 'suspended') {
+          if (d.status === 'suspended' || d.status === 'banned') {
             actions.push({ label: 'Reactivate', onClick: () => router.push(`/drivers/${d.id}?action=reactivate`) })
           }
           return actions
@@ -220,6 +199,56 @@ function getColumns(tab: string) {
         render: (row: Record<string, unknown>) => (
           <span className="text-red-600 font-medium">{(row as unknown as Driver).complaints_count}</span>
         ),
+      },
+    ]
+  }
+
+  if (tab === 'inactive') {
+    return [
+      ...base,
+      {
+        key: 'total_trips',
+        label: 'Total Trips',
+        render: (row: Record<string, unknown>) => (
+          <span className="text-gray-700">{((row as unknown as Driver).total_trips ?? 0).toLocaleString()}</span>
+        ),
+      },
+      {
+        key: 'last_active_at',
+        label: 'Last Active',
+        render: (row: Record<string, unknown>) => (
+          <span className="text-gray-400 text-sm">{timeAgoShort((row as unknown as Driver).last_active_at ?? undefined)}</span>
+        ),
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        render: (row: Record<string, unknown>) => <DriverStatusBadge status={(row as unknown as Driver).status} />,
+      },
+    ]
+  }
+
+  if (tab === 'banned') {
+    return [
+      ...base,
+      {
+        key: 'banned_reason',
+        label: 'Ban Reason',
+        render: (row: Record<string, unknown>) => (
+          <span className="text-gray-600 text-sm">{(row as unknown as Driver).banned_reason ?? '—'}</span>
+        ),
+      },
+      {
+        key: 'banned_at',
+        label: 'Banned On',
+        render: (row: Record<string, unknown>) => (
+          <span className="text-gray-600">{formatDate((row as unknown as Driver).banned_at ?? undefined)}</span>
+        ),
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        render: (row: Record<string, unknown>) => <DriverStatusBadge status={(row as unknown as Driver).status} />,
       },
     ]
   }

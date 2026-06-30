@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { api } from '@/lib/api/client'
+import { paths } from '@/lib/api/paths'
+import { toPlan, toCreatePlanBody } from '@/lib/api/adapters'
+import { ApiError } from '@/lib/api/errors'
+import type { PlanResponse } from '@/lib/api/types'
+
+// Plans are owned by the backend (subscription-service). These handlers proxy
+// to /api/v1/subscriptions/plans; admin audit logging stays in Supabase.
 
 export async function GET() {
-  const supabase = createAdminClient()
-  const { data, error } = await supabase.from('subscription_plans').select('*').order('price_tzs')
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ plans: data })
+  try {
+    const plans = await api.get<PlanResponse[]>(paths.subscriptionPlans)
+    return NextResponse.json({ plans: (plans ?? []).map(toPlan) })
+  } catch (e) {
+    const status = e instanceof ApiError ? e.status : 500
+    return NextResponse.json({ error: (e as Error).message }, { status })
+  }
 }
 
 export async function POST(request: Request) {
@@ -18,26 +28,27 @@ export async function POST(request: Request) {
   catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
 
   const body = await request.json()
-  const { name, duration_days, price_tzs, vehicle_types, description } = body
+  const { name, price_tzs, description, tripQuota } = body
 
-  if (!name || !duration_days || !price_tzs) {
-    return NextResponse.json({ error: 'name, duration_days, price_tzs required' }, { status: 400 })
+  if (!name || !price_tzs) {
+    return NextResponse.json({ error: 'name and price_tzs are required' }, { status: 400 })
   }
 
-  const supabase = createAdminClient()
-  const { data, error } = await supabase
-    .from('subscription_plans')
-    .insert({ name, duration_days, price_tzs, vehicle_types: vehicle_types ?? ['bodaboda', 'bajaj', 'car'], description })
-    .select()
-    .single()
+  try {
+    const created = await api.post<PlanResponse>(
+      paths.subscriptionPlans,
+      toCreatePlanBody({ name, price_tzs, description, tripQuota }),
+    )
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    await logAdminAction({
+      adminId: adminUser.id, adminEmail: adminUser.email, adminRole: adminUser.role,
+      action: AUDIT_ACTIONS.SUB_PLAN_CREATE, entityType: 'subscription_plan', entityId: created.id,
+      newValue: { name, price_tzs }, request,
+    })
 
-  await logAdminAction({
-    adminId: adminUser.id, adminEmail: adminUser.email, adminRole: adminUser.role,
-    action: AUDIT_ACTIONS.SUB_PLAN_CREATE, entityType: 'subscription_plan', entityId: data.id,
-    newValue: { name, duration_days, price_tzs }, request,
-  })
-
-  return NextResponse.json({ plan: data })
+    return NextResponse.json({ plan: toPlan(created) })
+  } catch (e) {
+    const status = e instanceof ApiError ? e.status : 500
+    return NextResponse.json({ error: (e as Error).message }, { status })
+  }
 }

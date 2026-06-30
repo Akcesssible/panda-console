@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Home01Icon,
@@ -20,7 +20,7 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import type { AdminRole } from '@/lib/types'
 import { ROLE_PERMISSIONS } from '@/lib/types'
-import { createClient } from '@/lib/supabase/client'
+import { logoutAction } from '@/lib/api/auth'
 
 interface NavItem {
   label: string
@@ -45,16 +45,11 @@ const NAV_ITEMS: NavItem[] = [
 
 export default function Sidebar({ role }: { role: AdminRole }) {
   const pathname = usePathname()
-  const router = useRouter()
 
   async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    // Hard navigation + history replace — the login page overwrites the current
-    // history entry so the back button cannot return to any protected page.
-    // router.push() would leave cached pages in history; window.location.replace()
-    // does a full reload and removes the entry from the browser history stack.
-    window.location.replace('/login')
+    // Server action revokes the backend token and clears the httpOnly cookie,
+    // then redirects to /login.
+    await logoutAction()
   }
 
   const visibleItems = NAV_ITEMS.filter(item => {

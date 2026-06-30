@@ -1,12 +1,25 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { parseBody, InviteAdminUserSchema } from '@/lib/validations'
-import { resend } from '@/lib/email/resend'
-import { inviteEmailHtml, inviteEmailText } from '@/lib/email/templates/invite'
+import { api } from '@/lib/api/client'
+import { paths } from '@/lib/api/paths'
+import { toUiRole, toBackendRole } from '@/lib/api/adapters'
+import type { BackendAdminUser } from '@/lib/api/types'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+function toPortalUser(u: BackendAdminUser) {
+  return {
+    id: u.id,
+    full_name: u.fullName,
+    email: u.email,
+    role: toUiRole(u.role),
+    is_active: u.status === 'ACTIVE',
+    must_change_password: u.mustChangePassword,
+    mfa_enabled: u.mfaEnabled,
+    last_login_at: u.lastLoginAt,
+    created_at: u.createdAt,
+  }
+}
 
 export async function GET() {
   const adminUser = await getAdminUserFromRequest()
@@ -15,10 +28,13 @@ export async function GET() {
   try { requireRole(adminUser, ['super_admin']) }
   catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
 
-  const supabase = createAdminClient()
-  const { data, error } = await supabase.from('admin_users').select('*').order('created_at')
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ users: data })
+  try {
+    const users = await api.get<BackendAdminUser[]>(paths.adminUsers)
+    return NextResponse.json({ users: (users ?? []).map(toPortalUser) })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to fetch users'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }
 
 export async function POST(request: Request) {
@@ -32,58 +48,23 @@ export async function POST(request: Request) {
   if (body instanceof NextResponse) return body
 
   const { email, full_name, role } = body
-  const supabase = createAdminClient()
 
-  // Step 1 — generate invite link (must be first, everything depends on it)
-  const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-    type: 'invite',
-    email,
-    options: {
-      redirectTo: `${APP_URL}/set-password`,
-      data: { full_name, role },
-    },
-  })
+  try {
+    const created = await api.post<BackendAdminUser>(paths.adminUsers, {
+      fullName: full_name,
+      email,
+      role: toBackendRole(role),
+    })
 
-  if (linkError) return NextResponse.json({ error: linkError.message }, { status: 500 })
+    logAdminAction({
+      adminId: adminUser.id, adminEmail: adminUser.email, adminRole: adminUser.role,
+      action: AUDIT_ACTIONS.ADMIN_CREATE, entityType: 'admin_user', entityId: created?.id,
+      newValue: { email, full_name, role }, request,
+    }).catch(err => console.error('[admin-users] audit failed', err))
 
-  const inviteUrl = linkData.properties.action_link
-  const emailPayload = {
-    full_name,
-    email,
-    role,
-    invite_url: inviteUrl,
-    invited_by: adminUser.full_name,
-    app_url: APP_URL,
+    return NextResponse.json({ user: toPortalUser(created), email_sent: true })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to create user'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  // Step 2 — DB insert + email send in parallel (neither depends on the other)
-  const [{ data: user, error: userError }, { error: emailError }] = await Promise.all([
-    supabase
-      .from('admin_users')
-      .insert({ full_name, email, role, auth_id: linkData.user.id })
-      .select()
-      .single(),
-    resend.emails.send({
-      from: 'Panda Console <noreply@pandahailing.com>',
-      to: email,
-      subject: `You've been invited to Panda Console`,
-      html: inviteEmailHtml(emailPayload),
-      text: inviteEmailText(emailPayload),
-    }),
-  ])
-
-  if (userError) return NextResponse.json({ error: userError.message }, { status: 500 })
-
-  if (emailError) {
-    console.error('[invite] Email send failed:', emailError)
-  }
-
-  // Step 3 — audit log: fire and forget, no need to block the response
-  logAdminAction({
-    adminId: adminUser.id, adminEmail: adminUser.email, adminRole: adminUser.role,
-    action: AUDIT_ACTIONS.ADMIN_CREATE, entityType: 'admin_user', entityId: user.id,
-    newValue: { email, full_name, role }, request,
-  }).catch(err => console.error('[invite] Audit log failed:', err))
-
-  return NextResponse.json({ user, email_sent: !emailError })
 }

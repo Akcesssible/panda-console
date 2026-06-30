@@ -6,19 +6,6 @@ import { Avatar } from '@/components/ui/Avatar'
 import { formatDate, formatTZS } from '@/lib/utils'
 import type { CommissionRide } from '@/lib/queries/commissions'
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
-// Active subscribers are excluded at the query level. The "Subscribed" badge
-// means the driver holds an expired/grace subscription — they once had a plan
-// but it lapsed, so their rides are now commission-bearing again.
-const MOCK_COMMISSIONS: CommissionRide[] = [
-  { id: 'r1', ride_number: 'RDE-000101', driver_id: 'd12', vehicle_type: 'bodaboda', total_fare_tzs: 12000, commission_rate: 0.20, commission_tzs: 2400,  driver_earnings_tzs: 9600,  completed_at: '2026-04-08T10:30:00Z', drivers: { full_name: 'Ali Hassan',      driver_number: 'DRV-000012', phone: '0712 111 222', driver_subscriptions: [] } },
-  { id: 'r2', ride_number: 'RDE-000102', driver_id: 'd15', vehicle_type: 'bajaj',    total_fare_tzs: 18000, commission_rate: 0.20, commission_tzs: 3600,  driver_earnings_tzs: 14400, completed_at: '2026-04-08T09:15:00Z', drivers: { full_name: 'Fatuma Salim',    driver_number: 'DRV-000015', phone: '0754 333 444', driver_subscriptions: [{ status: 'expired' }] } },
-  { id: 'r3', ride_number: 'RDE-000103', driver_id: 'd9',  vehicle_type: 'car',      total_fare_tzs: 35000, commission_rate: 0.20, commission_tzs: 7000,  driver_earnings_tzs: 28000, completed_at: '2026-04-07T16:45:00Z', drivers: { full_name: 'James Mwangi',    driver_number: 'DRV-000009', phone: '0789 555 666', driver_subscriptions: [] } },
-  { id: 'r4', ride_number: 'RDE-000104', driver_id: 'd21', vehicle_type: 'bodaboda', total_fare_tzs: 8500,  commission_rate: 0.20, commission_tzs: 1700,  driver_earnings_tzs: 6800,  completed_at: '2026-04-07T14:20:00Z', drivers: { full_name: 'Grace Odhiambo', driver_number: 'DRV-000021', phone: '0798 777 888', driver_subscriptions: [] } },
-  { id: 'r5', ride_number: 'RDE-000105', driver_id: 'd33', vehicle_type: 'bajaj',    total_fare_tzs: 22000, commission_rate: 0.20, commission_tzs: 4400,  driver_earnings_tzs: 17600, completed_at: '2026-04-06T11:00:00Z', drivers: { full_name: 'Moses Kariuki',   driver_number: 'DRV-000033', phone: '0765 999 000', driver_subscriptions: [{ status: 'expired' }] } },
-  { id: 'r6', ride_number: 'RDE-000106', driver_id: 'd41', vehicle_type: 'car',      total_fare_tzs: 48000, commission_rate: 0.20, commission_tzs: 9600,  driver_earnings_tzs: 38400, completed_at: '2026-04-06T08:30:00Z', drivers: { full_name: 'Sarah Mutua',     driver_number: 'DRV-000041', phone: '0800 112 233', driver_subscriptions: [] } },
-]
-
 const VEHICLE_LABELS: Record<string, string> = { bodaboda: 'Bodaboda', bajaj: 'Bajaj', car: 'Car' }
 
 const columns = [
@@ -105,12 +92,10 @@ export function CommissionsView({
   commissions,
   commissionsTotal,
   page,
-  useMock,
 }: {
   commissions: CommissionRide[]
   commissionsTotal: number
   page: number
-  useMock?: boolean
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -121,8 +106,8 @@ export function CommissionsView({
     router.push(`/commissions?${params.toString()}`)
   }
 
-  const displayCommissions = (useMock && commissions.length === 0) ? MOCK_COMMISSIONS : commissions
-  const displayTotal       = (useMock && commissions.length === 0) ? MOCK_COMMISSIONS.length : commissionsTotal
+  const displayCommissions = commissions
+  const displayTotal       = commissionsTotal
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-gray-100">

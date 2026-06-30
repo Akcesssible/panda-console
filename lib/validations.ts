@@ -13,10 +13,12 @@ export const DriverActionSchema = z.object({
   notes,
 })
 
-export const DriverFlagSchema = z.object({
+export const DriverReasonSchema = z.object({
   driver_id: uuid,
   reason: z.string().min(1, 'Reason is required').max(1000),
 })
+
+export const DriverFlagSchema = DriverReasonSchema
 
 // ── Rides ─────────────────────────────────────────────────────────────────────
 

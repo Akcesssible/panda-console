@@ -1,55 +1,50 @@
-import { headers } from 'next/headers'
-import { createAdminClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { JWT_COOKIE, verifyJwt } from '@/lib/api/jwt'
+import { toUiRole } from '@/lib/api/adapters/roles'
 import type { AdminUser, AdminRole } from '@/lib/types'
 
-// The proxy (proxy.ts) calls supabase.auth.getUser() on every request and
-// forwards the validated auth ID as a request header. Reading that header here
-// avoids a second round trip to Supabase Auth, cutting ~1-3 s per page load.
-async function getAuthUserId(): Promise<string | null> {
-  const h = await headers()
-  return h.get('x-auth-user-id')
+// Build an AdminUser from verified JWT claims. The JWT carries id, role,
+// sub_name (email), and mcp — but not full_name / is_active / timestamps.
+// Those are filled with sensible defaults; a backend GET /api/v1/admin/me
+// endpoint (gap) would let us populate the full profile.
+async function adminFromCookie(): Promise<{ user: AdminUser; mcp: boolean } | null> {
+  const store = await cookies()
+  const token = store.get(JWT_COOKIE)?.value
+  const claims = await verifyJwt(token)
+  if (!claims) return null
+
+  const user: AdminUser = {
+    id: claims.sub,
+    auth_id: null,
+    full_name: claims.sub_name,
+    email: claims.sub_name,
+    role: toUiRole(claims.role),
+    is_active: true,
+    created_at: '',
+    updated_at: '',
+  }
+  return { user, mcp: claims.mcp }
 }
 
-// Fetch the admin_users record for a given Supabase auth ID.
-async function fetchAdminRecord(authId: string) {
-  const admin = createAdminClient()
-  const { data, error } = await admin
-    .from('admin_users')
-    .select('*')
-    .eq('auth_id', authId)
-    .single()
-  return { data, error }
-}
-
-// Get authenticated admin user — redirects to /login if not authed or inactive.
-// Two-layer guard:
-//   Layer 1 — proxy.ts: blocks requests with no Supabase session at all.
-//   Layer 2 — here: verifies the user exists in admin_users and is_active.
+// Get authenticated admin user — redirects if not authed.
+// Middleware (proxy.ts) is the first guard; this re-verifies the JWT for
+// server components and exposes the decoded profile.
 export async function getAdminUser(): Promise<AdminUser> {
-  const authId = await getAuthUserId()
-  if (!authId) redirect('/login')
-
-  const { data, error } = await fetchAdminRecord(authId)
-
-  if (error || !data) redirect('/login')
-  if (!data.is_active) redirect('/login?reason=deactivated')
-
-  return data as AdminUser
+  const result = await adminFromCookie()
+  if (!result) redirect('/login')
+  if (result.mcp) redirect('/set-password')
+  return result.user
 }
 
-// Use in API routes — returns null instead of redirecting.
+// Use in API routes / server actions — returns null instead of redirecting.
 export async function getAdminUserFromRequest(): Promise<AdminUser | null> {
-  const authId = await getAuthUserId()
-  if (!authId) return null
-
-  const { data } = await fetchAdminRecord(authId)
-  if (!data || !data.is_active) return null
-
-  return data as AdminUser
+  const result = await adminFromCookie()
+  if (!result || result.mcp) return null
+  return result.user
 }
 
-// Role guard — call in API routes before mutations
+// Role guard — call before mutations.
 export function requireRole(adminUser: AdminUser, roles: AdminRole[]): void {
   if (!roles.includes(adminUser.role)) {
     throw new Error('FORBIDDEN')

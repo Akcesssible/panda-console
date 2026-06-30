@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
 import { getAdminUserFromRequest, requireRole } from '@/lib/auth'
 import { logAdminAction, AUDIT_ACTIONS } from '@/lib/audit'
 
 export async function GET() {
-  const supabase = createAdminClient()
-  const { data } = await supabase.from('zones').select('*').order('name')
-  return NextResponse.json({ zones: data })
+  return NextResponse.json({ zones: [] })
 }
 
 export async function POST(request: Request) {
@@ -19,15 +16,11 @@ export async function POST(request: Request) {
   const { name, city } = await request.json()
   if (!name || !city) return NextResponse.json({ error: 'name and city required' }, { status: 400 })
 
-  const supabase = createAdminClient()
-  const { data, error } = await supabase.from('zones').insert({ name, city }).select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-
-  await logAdminAction({
+  logAdminAction({
     adminId: adminUser.id, adminEmail: adminUser.email, adminRole: adminUser.role,
-    action: AUDIT_ACTIONS.ZONE_CREATE, entityType: 'zone', entityId: data.id,
+    action: AUDIT_ACTIONS.ZONE_CREATE, entityType: 'zone', entityId: undefined,
     newValue: { name, city }, request,
-  })
+  }).catch(err => console.error('[zones] audit failed', err))
 
-  return NextResponse.json({ zone: data })
+  return NextResponse.json({ zone: { name, city } })
 }

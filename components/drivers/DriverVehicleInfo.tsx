@@ -33,7 +33,7 @@ export function DriverVehicleInfo({ driver }: { driver: Driver }) {
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         <InfoRow label="Vehicle Type" value={vehicle.vehicle_type} />
-        <InfoRow label="Make & Model" value={`${vehicle.make} ${vehicle.model}`} />
+        <InfoRow label="Make & Model" value={[vehicle.make, vehicle.model].filter(Boolean).join(' ') || '—'} />
         <InfoRow label="Year" value={vehicle.year ? String(vehicle.year) : '—'} />
         <InfoRow label="Color" value={vehicle.color ?? '—'} />
         <InfoRow label="Engine CC" value={vehicle.engine_cc ? `${vehicle.engine_cc} CC` : '—'} />

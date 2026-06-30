@@ -47,23 +47,11 @@ function formatShortDate(iso: string) {
 
 const PER_PAGE = 5
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MOCK_RIDES: Ride[] = [
-  { id:'m1', ride_number:'R-10529', pickup_address:'Kariakoo', destination_address:'Mbezi',       status:'completed', total_fare_tzs:12000, commission_tzs:1200, driver_earnings_tzs:10800, requested_at: new Date(Date.now()-3*3600000).toISOString(), completed_at: new Date(Date.now()-2*3600000).toISOString(), accepted_at: null },
-  { id:'m2', ride_number:'R-10511', pickup_address:'Posta',    destination_address:'Kinondoni',   status:'completed', total_fare_tzs:9000,  commission_tzs:900,  driver_earnings_tzs:8100,  requested_at: new Date(Date.now()-5*3600000).toISOString(), completed_at: new Date(Date.now()-4*3600000).toISOString(), accepted_at: null },
-  { id:'m3', ride_number:'R-10496', pickup_address:'Ubungo',   destination_address:'Mwenge',      status:'completed', total_fare_tzs:11000, commission_tzs:1100, driver_earnings_tzs:9900,  requested_at: new Date(Date.now()-7*3600000).toISOString(), completed_at: new Date(Date.now()-6*3600000).toISOString(), accepted_at: null },
-  { id:'m4', ride_number:'R-10482', pickup_address:'Sinza',    destination_address:'City Center', status:'completed', total_fare_tzs:8000,  commission_tzs:800,  driver_earnings_tzs:7200,  requested_at: new Date(Date.now()-9*3600000).toISOString(), completed_at: new Date(Date.now()-8*3600000).toISOString(), accepted_at: null },
-  { id:'m5', ride_number:'R-10470', pickup_address:'Tegeta',   destination_address:'Mlimani',     status:'cancelled', total_fare_tzs:null,  commission_tzs:null, driver_earnings_tzs:null,  requested_at: new Date(Date.now()-11*3600000).toISOString(), completed_at: null, accepted_at: null },
-  { id:'m6', ride_number:'R-10455', pickup_address:'Gongo la Mboto', destination_address:'Kariakoo', status:'cancelled', total_fare_tzs:null, commission_tzs:null, driver_earnings_tzs:null, requested_at: new Date(Date.now()-13*3600000).toISOString(), completed_at: null, accepted_at: null },
-]
-
 export function DriverRideHistory({ rides }: { rides: Ride[] }) {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
 
-  const data = rides.length > 0 ? rides : MOCK_RIDES
-
-  const filtered = data.filter(r => {
+  const filtered = rides.filter(r => {
     if (!search) return true
     const q = search.toLowerCase()
     return r.ride_number.toLowerCase().includes(q)

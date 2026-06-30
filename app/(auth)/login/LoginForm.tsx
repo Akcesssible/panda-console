@@ -1,40 +1,20 @@
 'use client'
 
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useActionState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { loginAction, type AuthActionState } from '@/lib/api/auth'
 
 export function LoginForm() {
-  const [email, setEmail]       = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError]       = useState('')
-  const [loading, setLoading]   = useState(false)
+  const [state, formAction, pending] = useActionState<AuthActionState, FormData>(
+    loginAction,
+    {},
+  )
 
   const searchParams   = useSearchParams()
   const reason         = searchParams.get('reason')
   const sessionExpired = reason === 'session_expired'
   const deactivated    = reason === 'deactivated'
-
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-    if (error) {
-      setError('Invalid email or password.')
-      setLoading(false)
-      return
-    }
-
-    // Hard navigation — guarantees the fresh session cookie is included in
-    // the very first request to /dashboard. router.push() is a client-side
-    // transition that can race with cookie propagation; window.location.href
-    // is a full browser navigation that always carries the latest cookies.
-    window.location.href = '/dashboard'
-  }
+  const passwordChanged = reason === 'password_changed'
 
   return (
     <div className="w-full max-w-md px-4">
@@ -54,7 +34,13 @@ export function LoginForm() {
         </p>
       )}
 
-      <form onSubmit={handleLogin} className="space-y-3">
+      {passwordChanged && (
+        <p className="text-sm text-green-700 bg-green-50 border border-green-200 px-4 py-2 rounded-xl mb-4 text-center">
+          Password updated. Please sign in with your new password.
+        </p>
+      )}
+
+      <form action={formAction} className="space-y-3">
         {/* Email field */}
         <div className="bg-[#E8E8E8] rounded-2xl px-4 pt-3 pb-3 border-2 border-transparent focus-within:border-[#1d242d] transition-colors">
           <label className="block font-mono text-xs font-normal text-gray-500 uppercase tracking-wider mb-1">
@@ -62,8 +48,7 @@ export function LoginForm() {
           </label>
           <input
             type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
+            name="email"
             placeholder="kevin@pandahailing.com"
             required
             className="w-full bg-transparent text-[#1d242d] text-sm placeholder-gray-400 focus:outline-none"
@@ -77,23 +62,22 @@ export function LoginForm() {
           </label>
           <input
             type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
+            name="password"
             required
             className="w-full bg-transparent text-[#1d242d] text-sm placeholder-gray-400 focus:outline-none"
           />
         </div>
 
-        {error && (
-          <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-xl">{error}</p>
+        {state.error && (
+          <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-xl">{state.error}</p>
         )}
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={pending}
           className="w-full bg-[#2B39C7] text-white py-3.5 px-4 rounded-2xl text-sm font-medium hover:bg-[#202b95] disabled:opacity-60 transition-colors mt-2 cursor-pointer"
         >
-          {loading ? 'Signing in...' : 'Login'}
+          {pending ? 'Signing in...' : 'Login'}
         </button>
       </form>
 

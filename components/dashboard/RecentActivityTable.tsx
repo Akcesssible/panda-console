@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { timeAgoShort } from '@/lib/utils'
 import type { AuditLog } from '@/lib/types'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -41,17 +40,6 @@ const ACTION_META: Record<string, {
   'ride.cancel':              { label: 'Ride cancelled by driver', type: 'Ride',         status: 'cancelled', statusVariant: 'red',    refLabel: 'Ride Details',   refHref: id => `/rides/${id}` },
 }
 
-// ── Dev mock data (shown when DB returns empty) ───────────────────────────────
-const MOCK_LOGS: AuditLog[] = [
-  { id: 'm1', action: 'driver.approve',      entity_type: 'driver',       entity_id: '1',  metadata: { driver_name: 'John M.' },    admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 2  * 60_000).toISOString() },
-  { id: 'm2', action: 'subscription.assign', entity_type: 'subscription', entity_id: '2',  metadata: { name: 'Weekly Plan' },       admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 5  * 60_000).toISOString() },
-  { id: 'm3', action: 'ride.complete',       entity_type: 'ride',         entity_id: '49321', metadata: { name: 'Ride #49321' },    admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 8  * 60_000).toISOString() },
-  { id: 'm4', action: 'driver.signup',       entity_type: 'driver',       entity_id: '3',  metadata: { driver_name: 'Asha K.' },    admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 15 * 60_000).toISOString() },
-  { id: 'm5', action: 'ride.cancel',         entity_type: 'ride',         entity_id: '49318', metadata: { name: 'Ride #49318' },    admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 30 * 60_000).toISOString() },
-  { id: 'm6', action: 'subscription.expire', entity_type: 'subscription', entity_id: '5',  metadata: { driver_name: 'Neema P.' },   admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 3  * 3_600_000).toISOString() },
-  { id: 'm7', action: 'support.ticket.open', entity_type: 'support',      entity_id: '49112', metadata: { name: 'Ride #49112' },   admin_email: 'admin@panda.com', admin_id: null, admin_role: 'super_admin', old_value: null, new_value: null, ip_address: null, user_agent: null, created_at: new Date(Date.now() - 26 * 3_600_000).toISOString() },
-]
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function getRefName(log: AuditLog): string {
   return (
@@ -63,22 +51,9 @@ function getRefName(log: AuditLog): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export function RecentActivityTable({ initialLogs }: { initialLogs: AuditLog[] }) {
-  const [logs, setLogs] = useState<AuditLog[]>(
-    initialLogs.length > 0 ? initialLogs : MOCK_LOGS
-  )
+  const [logs, setLogs] = useState<AuditLog[]>(initialLogs)
   const [search, setSearch] = useState('')
 
-  // Realtime subscription
-  useEffect(() => {
-    const supabase = createClient()
-    const channel = supabase
-      .channel('audit-feed')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, (payload: { new: unknown }) => {
-        setLogs(prev => [payload.new as AuditLog, ...prev].slice(0, 20))
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [])
 
   const filtered = logs.filter(log => {
     if (!search) return true
